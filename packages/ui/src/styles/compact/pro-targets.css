@@ -1,0 +1,75 @@
+/**
+ * M-B (Medium batch) — Pro workspaces + InputPanel heading floors.
+ *
+ * Covers: EU02-04 (Pro: ⋮ 36×40, Collapse 76×36, Add Message 129×36,
+ * Run All 84×36, run-a/b 34×34, 5 prompt-header icons 40×36 + X 24×24),
+ * EU10-01 (16 controls on pro/multi + pro/variable + Variable Editor),
+ * A11Y-M03 (10 targets on the Basic main screen — the InputPanel heading
+ * icons are shared across all workspaces, so the heading rule lives here).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches teleported sheets). Run All SIZE only — the Run All
+ * OVERLAP belongs to another worker and is deliberately untouched here.
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* EU02-04 / EU10-01 — ConversationManager (components/context-mode/
+ * ConversationManager.vue): Collapse (quaternary size="small", :47), Add
+ * Message (:241-252, pro-multi-add-message), message-row actions (select /
+ * move-up / move-down / delete, all :size="buttonSize" small quaternary
+ * circle, :175-227), Open Editor, "Add your first message". Live rule:
+ * context.css:68 `.compact-two-region .conversation-manager .n-button
+ * { min-height: 36px }` (0,3,0) — same selector, later import wins.
+ * The workspace ⋮ (pro-multi-workspace-utility-menu, 36×40) is a
+ * WorkspaceUtilityMenu button and is floored by nav-targets.css, not here. */
+.compact-two-region .conversation-manager .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU10-01 — temporary-variable row actions. Live rule: context.css:54-55
+ * `.compact-two-region .cm-row-actions .n-button,
+ * .compact-two-region .temporary-variable-actions .n-button
+ * { min-height: 36px }` — same selectors, later import wins. */
+.compact-two-region .cm-row-actions .n-button,
+.compact-two-region .temporary-variable-actions .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU10-01 / EU03-02 — "Add Variable" empty-state button 82×28.
+ * Live rule: context.css:189 `.compact-empty-variables .n-button
+ * { min-height: 28px }` (0,2,0) — this rule is (0,3,0) + !important. */
+.workspace-compact .compact-empty-variables .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU10-01 — VariableEditor footer (components/variable/VariableEditor.vue:76,
+ * .variable-editor-actions, compact only): Cancel 78×40 / Add 58×40.
+ * No live compact rule targets them. */
+.workspace-compact .variable-editor-actions .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU02-04 / EU10-01 / A11Y-M03 — InputPanel heading icons, 40×36 on every
+ * workspace (extract, preview, fullscreen, collapse, help — InputPanel.vue
+ * heading-actions, plus the #header-extra collapse PoButton from the
+ * workspaces). Live rule: input.css:66-71
+ * `.compact-two-region .input-panel-heading .n-button
+ * { min-width: 40px; min-height: 36px; height: 36px }` (0,3,0) — same
+ * selector, later import wins. */
+.compact-two-region .input-panel-heading .n-button {
+  --n-height: 44px !important;
+  height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}

@@ -1,0 +1,77 @@
+/**
+ * M-B (Medium batch) — shell / sheet-header touch-target floors.
+ *
+ * Covers: NAV-05 (shell utility buttons), UIUX-M07 (40px modal buttons),
+ * H4-NEW-01 (sheet-header back chevrons, PoButton ghost icon-only).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches teleported sheets). !important is used wherever the
+ * live rule is itself !important or scoped CSS must be beaten.
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* NAV-05 — shell utility buttons: header ⋮ 36×40, Theme 48×40,
+ * Language 38×40. Live rule: navigation.css:141-143
+ * `.workspace-compact .compact-navigation .workspace-utility-button
+ * { width: 36px !important; height: 40px !important; min-width: 36px }`
+ * (0,3,0) + !important — same selector, later import wins. The second
+ * selector covers the same buttons via their .workspace-utility-button-column
+ * wrapper (WorkspaceUtilityMenu.vue:3). */
+.workspace-compact .compact-navigation .workspace-utility-button,
+.workspace-compact .workspace-utility-button-column .workspace-utility-button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* NAV-05 — menu-sheet preference rows (Theme / Language) are NButtons.
+ * Live rule: navigation.css:206 `.workspace-compact
+ * .compact-menu-preferences .n-button { min-height: 40px }` (0,3,0) —
+ * DESCENDANT selector (.compact-menu-preferences is a container div, not
+ * the button). V-B-FIX: M-B wrote this as a COMPOUND selector
+ * (`.compact-menu-preferences.n-button`, no space) which matches nothing —
+ * the rule was in dist but never applied. Same selector as the live rule,
+ * later import wins. */
+.workspace-compact .compact-menu-preferences .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* UIUX-M07 — 40px modal buttons. Live rules: overlay.css:139
+ * `.workspace-compact .adaptive-modal-page .n-button { min-height: 40px }`,
+ * :143 `.n-button--circle { min-width: 40px }`,
+ * :147 `.n-base-selection { --n-height: 40px !important }` — same selectors,
+ * later import wins. */
+.workspace-compact .adaptive-modal-page .n-button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.workspace-compact .adaptive-modal-page .n-button--circle {
+  min-width: 44px;
+}
+
+.workspace-compact .adaptive-modal-page .n-base-selection {
+  --n-height: 44px !important;
+}
+
+/* H4-NEW-01 — sheet-header back chevrons measure 34.49×32.99px although
+ * PoButton's own floor is 36px (mechanism unisolated; the explicit
+ * 44px box below is deterministic regardless of it). Same rule floors every
+ * other icon-only header chevron that renders inside .po-sheet-page-heading:
+ * ToolManagerModal, HistoryDrawer, TemplateManager, ContextEditor,
+ * DataManager, VariableManagerModal (all use that wrapper class).
+ * PoSheet's sheet close X is already 44px (tokens.css:288) and is untouched. */
+.workspace-compact .po-sheet-page-heading .po-button,
+.workspace-compact .po-sheet-page-heading .n-button {
+  --n-height: 44px !important;
+  height: 44px !important;
+  width: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}

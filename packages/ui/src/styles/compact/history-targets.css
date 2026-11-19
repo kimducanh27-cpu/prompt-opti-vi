@@ -1,0 +1,65 @@
+/**
+ * M-B (Medium batch) — History sheet touch-target floors.
+ *
+ * Covers: EU07-02 (search 36, mode select 36, Clear 28, row ⋮ 38×28,
+ * "Use This Version" 36).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches the teleported History sheet). The History sheet is
+ * `.history-manager-sheet` (HistoryDrawer.vue root); the mobile list is
+ * `.mobile-history` (search NInput :51, mode NSelect :52, Clear NButton
+ * quaternary size="small" :56, row ⋮ NButton quaternary size="small" :68)
+ * and the detail page's "Use This Version" is a plain NButton type="primary"
+ * (:277) inside `.mobile-history-content`.
+ *
+ * No live compact rule targets these controls, so these are new floors rather
+ * than overrides. The detail-page version NSelect in the header-extra slot
+ * (:25) is floored by the same NSelect rule — same 36px class, same sheet.
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* Search input (Naive NInput — height driven by --n-height on the element
+ * itself; this rule is correct and the search measured 44px live). */
+.workspace-compact .history-manager-sheet .mobile-history .n-input {
+  --n-height: 44px !important;
+}
+
+/* Mode select + detail-page version select (Naive NSelect, HistoryDrawer
+ * :60 and :33). V-B-FIX: M-B set --n-height on the outer .n-select, but
+ * Naive sets --n-height: 36px INLINE on the inner .n-base-selection (plus
+ * min-height: 36px) — an inline declaration beats an inherited value, so
+ * the outer rule never changed the height (both selects measured 36px live).
+ * The var + min-height must be set on .n-base-selection itself (same fix
+ * class as the NInput case, where the var IS read on the targeted element).
+ * !important on both beats the inline declarations. */
+.workspace-compact .history-manager-sheet .mobile-history .n-select .n-base-selection,
+.workspace-compact .history-manager-sheet .n-select .n-base-selection {
+  --n-height: 44px !important;
+  min-height: 44px !important;
+}
+
+/* Every NButton in the sheet: Clear, row ⋮, "Use This Version". */
+.workspace-compact .history-manager-sheet .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* V-B new finding — History detail "Original Prompt" <details><summary>
+ * (HistoryDrawer.vue:278, .mobile-history-original summary): a tappable
+ * disclosure toggle, 19.19px tall live (12px text, no height rule).
+ * Same class as EU09-03's "More" (M-G converted that one to a real button);
+ * this one stays a native <details>/<summary> — it is already keyboard
+ * accessible — and is floored to 44px instead. Symmetric padding centers
+ * the text; display is left as list-item so the disclosure marker is kept.
+ * min-height holds under either box model (border-box: 44px box;
+ * content-box: 44px + padding, still ≥44px). Covers the second instance
+ * at :282 too (same class, iteration note). */
+.workspace-compact .history-manager-sheet .mobile-history-original summary {
+  min-height: 44px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}

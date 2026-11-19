@@ -1,0 +1,411 @@
+/**
+ * Design tokens — single source of truth (Slice 2).
+ *
+ * Source: docs/design-system-mobile-first.md §1 (foundations), values copied
+ * from research/astryx-foundations.md §1 (Astryx Neutral 0.7.16, MIT).
+ * App code must use these tokens, never raw hex/px in components.
+ *
+ * How it works
+ * - Semantic colours are `light-dark()` pairs. They follow the page
+ *   `color-scheme`, which this file switches via the app's own markers:
+ *   `html.dark` (naive-theme.ts) and `html[data-workspace-theme="dark"]`
+ *   (PromptOptimizerApp.vue). Before the app mounts, `prefers-color-scheme`
+ *   is the fallback. Do NOT add a second colour definition elsewhere.
+ * - Tailwind v4 tree-shakes @theme variables nothing references: in the
+ *   Slice 2 production build only 13 of 55 @theme keys survived (the ones
+ *   referenced by other CSS, e.g. the --compact-* aliases). The @theme
+ *   block is therefore ONLY the utility mapping — the same values are
+ *   repeated as plain `:root` custom properties below, which the build
+ *   does NOT shake (verified: every plain :root var survived, referenced
+ *   or not). That :root block is the runtime guarantee; keep both blocks
+ *   in this one file and keep their values identical.
+ * - Lightning CSS rewrites light-dark() into a color-scheme-driven
+ *   var(--lightningcss-light/--lightningcss-dark) pair, and it honours
+ *   the .dark class / data-workspace-theme switch below (verified in the
+ *   built CSS) — the app's manual dark toggle keeps working.
+ * - Type sizes are semantic (`--text-h1` …), not numeric: the numeric
+ *   Tailwind scale (text-lg = 18px …) is left at its default and is NOT
+ *   the design scale (12/14/17/20/24/29/35/42px, §1.2).
+ * - `--compact-*` aliases live in styles/compact/foundation.css and point
+ *   at these tokens (backward compat for later slices only).
+ *
+ * Locked decisions (do not change silently)
+ * - Accent #1f6bd1 / #6d9cfe is the proposed brand accent (design-system
+ *   D-08, awaiting Kduu's approval). Contrast measured by script, Slice 2:
+ *   #1f6bd1 on white 5.14:1, #ffffff on #1f6bd1 5.14:1 — both pass 4.5:1.
+ * - Breakpoints are ranges, not single widths; the Magic6 CSS viewport
+ *   has NOT been measured on the real phone yet (design-system §1.5).
+ */
+
+/* NOTE: this file is imported by styles/index.css AFTER its own
+ * `@import "tailwindcss"` (Vite inlines it before Tailwind processes the
+ * bundle), so the @theme block below is picked up by Tailwind 4. Do NOT
+ * `@import "tailwindcss"` here again (it would emit Tailwind twice) and
+ * do not import this file from JS — a separate JS import would split it
+ * into its own CSS chunk and Tailwind would not see the @theme tokens. */
+
+@theme {
+  /* ---- 1.1 Semantic colours (light-dark pairs) ---- */
+  --color-background-body: light-dark(#f1f1f1, #1b1b1b);
+  --color-background-surface: light-dark(#ffffff, #262626);
+  --color-background-card: light-dark(#ffffff, #1b1b1b);
+  --color-background-popover: light-dark(#ffffff, #1b1b1b);
+  --color-background-muted: light-dark(#f1f1f1, #1b1b1b);
+  --color-text-primary: light-dark(#000000, #ffffff);
+  --color-text-secondary: light-dark(#474747, #9e9e9e);
+  /* M-Ea (R3X-01): tertiary text grey. Naive-theme.ts already uses
+   * #767676/#9e9e9e for text3, placeholder, icon and inputBorder (with
+   * measured contrast 4.54:1 light / 5.65:1 dark); this token names it so
+   * the --n-text-color-3 bridge below and M01's input border can share
+   * the same value instead of a third copy of the hex pair. */
+  --color-text-tertiary: light-dark(#767676, #9e9e9e);
+  --color-text-disabled: light-dark(#919191, #525252);
+  --color-border: light-dark(#00000014, #ffffff1a);
+  --color-border-emphasized: light-dark(#d4d4d4, #525252);
+  --color-overlay: light-dark(#00000080, #000000cc);
+  --color-overlay-hover: light-dark(#0000000d, #ffffff0d);
+  --color-overlay-pressed: light-dark(#0000001a, #ffffff1a);
+  --color-skeleton: light-dark(#f1f1f1, #525252);
+  --color-accent: light-dark(#1f6bd1, #6d9cfe);
+  --color-on-accent: light-dark(#ffffff, #111111);
+  --color-accent-muted: light-dark(#b9d7ff, #253c5a);
+
+  /* Status roles (base + text + muted background, Astryx Neutral §1.2).
+   * Warning base is #ffce2f in both modes. Status is never colour-only:
+   * always pair with text/icon (design-system §1.1). */
+  --color-status-info: light-dark(#0074e2, #6d9cfe);
+  --color-status-info-text: light-dark(#0067ce, #a1caff);
+  --color-status-info-muted: light-dark(#b9d7ff, #88bcff3d);
+  --color-status-success: light-dark(#198100, #64af4c);
+  --color-status-success-text: light-dark(#2f7d33, #90ca90);
+  --color-status-success-muted: light-dark(#bce0bb, #90ca903d);
+  --color-status-warning: #ffce2f;
+  --color-status-warning-text: light-dark(#836700, #eec448);
+  --color-status-warning-muted: light-dark(#fae19e, #e2b6233d);
+  --color-status-error: light-dark(#c9303a, #ff705d);
+  --color-status-error-text: light-dark(#c0262c, #ffaea7);
+  --color-status-error-muted: light-dark(#ffc4be, #ff98903d);
+
+  /* ---- Legacy Tailwind colour names (tailwind.config.js:14-19) ----
+   * These 6 utilities referenced `--color-primary/secondary/background/
+   * card/text/border`, which were never defined anywhere: the baseline
+   * dist/style.css contains ZERO occurrences of them, so Tailwind v4 does
+   * NOT emit v3-style `theme.extend.colors` as CSS variables (verified
+   * Slice 2 — while default vars such as --color-red-500 ARE emitted).
+   * The v3 `theme.extend.colors` block has therefore been removed from
+   * tailwind.config.js and the names are defined here, from the tokens
+   * above. `--color-border` needs no alias: it IS the semantic token. */
+  --color-primary: var(--color-accent);
+  --color-secondary: var(--color-text-secondary);
+  --color-background: var(--color-background-body);
+  --color-card: var(--color-background-card);
+  --color-text: var(--color-text-primary);
+
+  /* ---- 1.2 Type: semantic levels, desktop base 14px ratio 1.2 ----
+   * Sizes: 12 / 14 / 17 / 20 / 24 / 29 / 35 / 42px. Mobile values are
+   * overridden in the coarse-pointer media query at the bottom of this
+   * file (base 16px, ratio 1.1736, Display 1 stays 42px — shipped
+   * Astryx Neutral values, NOT 16 x 1.2^step). */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Monaco, Consolas, monospace;
+
+  --text-display: 42px;
+  --text-display--line-height: 1.24;
+  --text-display-2: 35px;
+  --text-display-2--line-height: 1.26;
+  --text-display-3: 29px;
+  --text-display-3--line-height: 1.38;
+  --text-h1: 24px;
+  --text-h1--line-height: 1.33;
+  --text-h2: 20px;
+  --text-h2--line-height: 1.4;
+  --text-h3: 17px;
+  --text-h3--line-height: 1.41;
+  --text-large: 17px;
+  --text-large--line-height: 1.41;
+  --text-body: 14px;
+  --text-body--line-height: 1.43;
+  --text-label: 14px;
+  --text-label--line-height: 1.43;
+  --text-supporting: 12px;
+  --text-supporting--line-height: 1.67;
+
+  /* ---- 1.3 Radii (inner 6 / element 10 / container 12 / page 28 / full) ---- */
+  --radius-inner: 6px;
+  --radius-element: 10px;
+  --radius-container: 12px;
+  --radius-page: 28px;
+  --radius-full: 9999px;
+
+  /* ---- 1.3 Elevation (Astryx Neutral oklch low/med/high, §1.6) ----
+   * Card = low, popover/dialog = med, sheet/modal = high. */
+  --shadow-low: 0 2px 4px light-dark(oklch(0 0 0 / 5%), oklch(0 0 0 / 25%)),
+    0 4px 8px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 40%)),
+    inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 8%));
+  --shadow-med: 0 2px 4px light-dark(oklch(0 0 0 / 5%), oklch(0 0 0 / 35%)),
+    0 4px 12px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 50%)),
+    inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 12%));
+  --shadow-high: 0 4px 6px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 50%)),
+    0 12px 24px light-dark(oklch(0 0 0 / 15%), oklch(0 0 0 / 70%)),
+    inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 15%));
+
+  /* ---- 1.3 Motion (Neutral: fast 125ms / medium 300ms / slow 700ms) ----
+   * prefers-reduced-motion override at the bottom: medium -> 0ms. */
+  --duration-fast: 125ms;
+  --duration-medium: 300ms;
+  --duration-slow: 700ms;
+}
+
+/* Class-based dark mode, v4-native form of the old config's
+ * `darkMode: 'class'`. The app toggles `.dark` on <html> (naive-theme.ts);
+ * this keeps `dark:` utilities working the same way. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---- 1.5 Breakpoints as range variants ----
+ * handset 360-430 / tablet 768-1023 / desktop >=1024 / wide >=1440.
+ * (Tailwind's default sm/md/lg breakpoints are untouched: existing code
+ * uses md: utilities, and the numeric scale is not this scale.) */
+@custom-variant handset (@media (width >= 360px) and (width <= 430px));
+@custom-variant tablet (@media (width >= 768px) and (width <= 1023px));
+@custom-variant desktop (@media (width >= 1024px));
+@custom-variant wide (@media (width >= 1440px));
+
+:root {
+  /* light-dark() follows this. The app sets both markers when the theme
+   * changes; either one alone is enough to flip the tokens. */
+  color-scheme: light;
+
+  /* ---- Runtime token definitions (plain :root, NOT shaken) ----
+   * Same values as the @theme block above — see the header note for why
+   * both exist. This block is what plain CSS (compact/*.css, SFCs) and
+   * JS (getComputedStyle) actually read at runtime. */
+  --color-background-body: light-dark(#f1f1f1, #1b1b1b);
+  --color-background-surface: light-dark(#ffffff, #262626);
+  --color-background-card: light-dark(#ffffff, #1b1b1b);
+  --color-background-popover: light-dark(#ffffff, #1b1b1b);
+  --color-background-muted: light-dark(#f1f1f1, #1b1b1b);
+  --color-text-primary: light-dark(#000000, #ffffff);
+  --color-text-secondary: light-dark(#474747, #9e9e9e);
+  --color-text-tertiary: light-dark(#767676, #9e9e9e);
+  --color-text-disabled: light-dark(#919191, #525252);
+  --color-border: light-dark(#00000014, #ffffff1a);
+  --color-border-emphasized: light-dark(#d4d4d4, #525252);
+  --color-overlay: light-dark(#00000080, #000000cc);
+  --color-overlay-hover: light-dark(#0000000d, #ffffff0d);
+  --color-overlay-pressed: light-dark(#0000001a, #ffffff1a);
+  --color-skeleton: light-dark(#f1f1f1, #525252);
+  --color-accent: light-dark(#1f6bd1, #6d9cfe);
+  --color-on-accent: light-dark(#ffffff, #111111);
+  --color-accent-muted: light-dark(#b9d7ff, #253c5a);
+  --color-status-info: light-dark(#0074e2, #6d9cfe);
+  --color-status-info-text: light-dark(#0067ce, #a1caff);
+  --color-status-info-muted: light-dark(#b9d7ff, #88bcff3d);
+  --color-status-success: light-dark(#198100, #64af4c);
+  --color-status-success-text: light-dark(#2f7d33, #90ca90);
+  --color-status-success-muted: light-dark(#bce0bb, #90ca903d);
+  --color-status-warning: #ffce2f;
+  --color-status-warning-text: light-dark(#836700, #eec448);
+  --color-status-warning-muted: light-dark(#fae19e, #e2b6233d);
+  --color-status-error: light-dark(#c9303a, #ff705d);
+  --color-status-error-text: light-dark(#c0262c, #ffaea7);
+  --color-status-error-muted: light-dark(#ffc4be, #ff98903d);
+  /* Legacy Tailwind colour names (ex-tailwind.config.js), same mapping. */
+  --color-primary: var(--color-accent);
+  --color-secondary: var(--color-text-secondary);
+  --color-background: var(--color-background-body);
+  --color-card: var(--color-background-card);
+  --color-text: var(--color-text-primary);
+
+  /* ---- R3X-01: Naive UI --n-* bridge vars (M-Ea) ----
+   * Naive UI 2.44.1 NEVER emits `--n-primary-color`, `--n-text-color-3`,
+   * `--n-success-color` etc. as CSS variables (0 files in
+   * node_modules/naive-ui/es/ set them, NConfigProvider sets none, the
+   * repo defined none) — yet 119 declarations across 33 files reference
+   * them. A var() with no definition and no fallback makes the whole
+   * declaration invalid, so those 119 rules were silently dead (e.g.
+   * the Compare diff had no highlighting at all, R3A-01). These
+   * definitions, once, at the app root, make all 119 resolve. Values are
+   * what Naive's theme would have supplied for the same name, taken from
+   * the tokens above / the palette in config/naive-theme.ts:
+   * - `--n-text-color-primary` is the text ON a primary background at
+   *   both usage sites (MarkdownRenderer code-language-label,
+   *   PromptOptimizerApp .active-button), so it maps to
+   *   --color-on-accent, NOT to the primary text colour.
+   * - `--n-color-warning` is text at its one site (CategoryManager
+   *   delete-dialog paragraph), so it maps to the warning TEXT token:
+   *   the raw #ffce2f would be unreadable (the A11Y-H02 bug class).
+   * - The four light-dark() pairs with raw hex are palette values with
+   *   no token (naive-theme.ts accentHover / primaryColorSuppl /
+   *   hoverOverlay / inputBorderHover); they are copied from the palette
+   *   and pinned by tests/unit/config/naive-theme-tokens.spec.ts.
+   * Do NOT "fix" the known-safe usages: var(--n-…) WITH a fallback,
+   * vars Naive components emit inside their own subtree, and the repo's
+   * own --n-height/--n-font-size overrides (the documented mechanism
+   * behind the Highs batch's 44px floors). Those are NOT defined here
+   * and must stay untouched. */
+  --n-primary-color: var(--color-accent);
+  --n-primary-color-hover: light-dark(#185cb8, #87aefe);
+  --n-primary-color-suppl: light-dark(#6caef7, #253c5a);
+  --n-text-color-1: var(--color-text-primary);
+  --n-text-color-2: var(--color-text-secondary);
+  --n-text-color-3: var(--color-text-tertiary);
+  --n-text-color-primary: var(--color-on-accent);
+  --n-hover-color: light-dark(rgba(31, 107, 209, 0.08), rgba(109, 156, 254, 0.08));
+  --n-success-color: var(--color-status-success);
+  --n-success-color-suppl: var(--color-status-success-muted);
+  --n-error-color: var(--color-status-error);
+  --n-error-color-suppl: var(--color-status-error-muted);
+  --n-warning-color: var(--color-status-warning);
+  --n-warning-color-suppl: var(--color-status-warning-muted);
+  --n-info-color: var(--color-status-info);
+  --n-card-color: var(--color-background-card);
+  --n-font-family-mono: var(--font-mono);
+  --n-color-warning: var(--color-status-warning-text);
+  --n-color-error: var(--color-status-error);
+  --n-box-shadow-1: var(--shadow-low);
+  --n-border-hover-color: light-dark(#525252, #c2c2c2);
+  --n-border-pressed-color: var(--color-accent);
+
+  /* Type sizes (desktop) + leading — mobile overrides in the
+   * coarse-pointer media query at the bottom of this file. */
+  --text-display: 42px;
+  --text-display--line-height: 1.24;
+  --text-display-2: 35px;
+  --text-display-2--line-height: 1.26;
+  --text-display-3: 29px;
+  --text-display-3--line-height: 1.38;
+  --text-h1: 24px;
+  --text-h1--line-height: 1.33;
+  --text-h2: 20px;
+  --text-h2--line-height: 1.4;
+  --text-h3: 17px;
+  --text-h3--line-height: 1.41;
+  --text-large: 17px;
+  --text-large--line-height: 1.41;
+  --text-body: 14px;
+  --text-body--line-height: 1.43;
+  --text-label: 14px;
+  --text-label--line-height: 1.43;
+  --text-supporting: 12px;
+  --text-supporting--line-height: 1.67;
+
+  /* Radii. */
+  --radius-inner: 6px;
+  --radius-element: 10px;
+  --radius-container: 12px;
+  --radius-page: 28px;
+  --radius-full: 9999px;
+
+  /* Elevation (same oklch values as @theme). */
+  --shadow-low: 0 2px 4px light-dark(oklch(0 0 0 / 5%), oklch(0 0 0 / 25%)),
+    0 4px 8px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 40%)),
+    inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 8%));
+  --shadow-med: 0 2px 4px light-dark(oklch(0 0 0 / 5%), oklch(0 0 0 / 35%)),
+    0 4px 12px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 50%)),
+    inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 12%));
+  --shadow-high: 0 4px 6px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 50%)),
+    0 12px 24px light-dark(oklch(0 0 0 / 15%), oklch(0 0 0 / 70%)),
+    inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 15%));
+
+  /* Motion. */
+  --duration-fast: 125ms;
+  --duration-medium: 300ms;
+  --duration-slow: 700ms;
+
+  /* ---- 1.3 Spacing, 4px scale, 0-48px ----
+   * (Tailwind's own dynamic scale already steps 4px from --spacing, so
+   * these are the plain-CSS handles for non-utility code. In-group 16px,
+   * between sections 24px, between major groups 32px.) */
+  --spacing-0: 0;
+  --spacing-0-5: 2px;
+  --spacing-1: 4px;
+  --spacing-1-5: 6px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-11: 44px;
+  --spacing-12: 48px;
+
+  /* ---- 1.5 Breakpoint values (plain-CSS handles; variants above) ---- */
+  --breakpoint-handset-min: 360px;
+  --breakpoint-handset-max: 430px;
+  --breakpoint-tablet-min: 768px;
+  --breakpoint-tablet-max: 1023px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+
+  /* ---- 1.4 Touch target & safe-area ---- */
+  --touch-target-min: 44px;
+  --touch-target-gap: 8px;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+  /* ---- 1.4 Viewport: 100dvh with 100svh fallback ----
+   * Usage: `height: 100svh; height: var(--viewport-height);` */
+  --viewport-height: 100svh;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
+}
+
+:root.dark,
+:root[data-workspace-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Pre-mount fallback only: before the app sets data-workspace-theme,
+ * follow the OS preference so first paint is not forced light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-workspace-theme]):not(.dark) {
+    color-scheme: dark;
+  }
+}
+
+/* ---- 1.2 Mobile type (pointer: coarse, width < 1024px) ----
+ * Shipped Astryx Neutral 0.7.16 values: body 14->16px, H1 24->26px,
+ * H2 20->22px, H3 17->19px, large 17->19px, display-2 35->36px,
+ * display-3 29->30px, supporting 12->14px, body leading 1.4286->1.5.
+ * Display 1 stays 42px. */
+@media (width < 1024px) and (pointer: coarse) {
+  :root {
+    --text-body: 16px;
+    --text-body--line-height: 1.5;
+    --text-label: 16px;
+    --text-supporting: 14px;
+    --text-h1: 26px;
+    --text-h2: 22px;
+    --text-h3: 19px;
+    --text-large: 19px;
+    --text-display-2: 36px;
+    --text-display-3: 30px;
+  }
+
+  /* Form controls: minimum 16px on touch devices, stops iOS zooming
+   * on focus. NOTE: Naive UI inputs take their size from --n-font-size,
+   * not from the native element — Slice 3 (naive-theme.ts) must set
+   * --n-font-size: 16px there; this rule covers native controls. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* ---- 1.3 Reduced motion: medium -> 0ms, per design-system §1.3 ---- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-medium: 0ms;
+  }
+}

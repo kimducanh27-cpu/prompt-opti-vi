@@ -1,0 +1,23 @@
+/* Scrollbar styling — canonical home for ::-webkit-scrollbar rules.
+ * (Previously duplicated in styles/index.css; deduped Slice 2.) */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 隐藏水平滚动条 */
+::-webkit-scrollbar-horizontal {
+  display: none;
+}

@@ -1,0 +1,23 @@
+HUONG DAN - prompt-opti-vi (ban rebuild mobile-first + tieng Viet)
+============================================================
+
+1) CHAY WEB TREN MAY TINH
+- Cai Node.js 24 (nodejs.org) neu chua co. Sau do cai pnpm: mo terminal chay: npm install -g pnpm
+- Giai nen file zip nay ra, mo terminal/CMD trong thu muc prompt-opti-vi
+- Chay: pnpm install        (lan dau mat vai phut)
+- Chay: pnpm dev            (lan dau no build core + ui, mat vai phut)
+- Mo trinh duyet: http://localhost:18181
+- Vao Model Manager them key DeepSeek (hoac model khac) thi moi toi uu duoc.
+  App khong kem key san.
+
+2) DAY LEN GITHUB (repo kimducanh27-cpu/prompt-opti-vi)
+- Cai GitHub Desktop, dang nhap tai khoan kimducanh27-cpu.
+- Trong GitHub Desktop: File > Clone repository > chon prompt-opti-vi > Clone.
+- Copy TOAN BO file trong thu muc giai nen nay VAO thu muc vua clone (ghi de README.md).
+- Quay lai GitHub Desktop: thay doi hien ra ben trai, ghi commit "Snapshot rebuild" > Commit to main > Push origin.
+- Xong: mo https://github.com/kimducanh27-cpu/prompt-opti-vi de kiem tra.
+
+LUU Y:
+- File anh (logo, favicon, anh demo) DA CO trong zip nay.
+- Khong can chay gi them: chi can 2 lenh pnpm install va pnpm dev.
+- May can mang de tai goi pnpm lan dau.

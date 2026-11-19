@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "./tokens.css";
+@config "../../tailwind.config.js";
+
+/* Style entry point. Tokens live in tokens.css (imported first, above) and
+ * are the single source of truth — no colours, sizes or radii here.
+ * Scrollbar rules live in scrollbar.css, .custom-select in common.css;
+ * both were previously duplicated in this file (Slice 2 dedup). */

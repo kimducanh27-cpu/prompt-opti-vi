@@ -1,0 +1,62 @@
+/* 自定义选择器样式 — canonical home for .custom-select.
+ * (Previously byte-identical in styles/index.css and styles/scrollbar.css;
+ * deduped Slice 2. A 4th copy exists in MainLayout.vue scoped styles —
+ * .vue files are out of scope for this slice; see Slice 2 open items.) */
+.custom-select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+}
+
+.custom-select::-ms-expand {
+  display: none;
+}
+
+/* L-C (A11Y-L02): Naive NButtons have NO focus outline of their own —
+ * keyboard focus on a quaternary/icon button (e.g. the per-result run-a/b
+ * buttons) was only a faint grey wash (settled alpha 0.09, 1.18:1 —
+ * functionally invisible). Every Naive button now gets a real visible
+ * focus ring on keyboard focus only (:focus-visible, mouse users
+ * unaffected). Accent vs background: 5.14:1 on white / 4.55:1 on #f1f1f1
+ * (light), 6.43:1 on #1b1b1b (dark) — all ≥3:1. Components with their own
+ * :focus-visible rule keep it (scoped rules are more specific); this rule
+ * only fills the gaps. No !important here on purpose, so intentional
+ * per-component outlines still win.
+ * PF1-NEW-02: the same gap for two more Naive controls — the sheet close X
+ * (.n-base-close, tabindex 0, Naive's own rendering, no tabindex override
+ * exists in src) and the NSelect label (.n-base-selection-label, tabindex
+ * 0) showed literally zero visual change on focus (byte-identical
+ * before/focused/after) in the Template Manager sheet — and the close X
+ * on the Model Manager sheet too, same class, sheet-wide. Same 2px accent
+ * ring as the buttons above. Grep-checked: no rule in src sets
+ * outline/box-shadow on either selector, so nothing conflicts. */
+.n-button:focus-visible,
+.n-base-close:focus-visible,
+.n-base-selection-label:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* L-C (A11Y-N02 + EU02-07 + UIUX-N02): a disabled PRIMARY button's label
+ * is white-at-0.6-alpha on the pale disabled blue #b9d7ff — measured
+ * 1.27:1, and even SOLID white on #b9d7ff caps at 1.48:1, so no alpha
+ * tweak can reach 3:1 with the white text family (Naive Button.mjs
+ * final branch: --n-text-color-disabled comes from
+ * textColorDisabledPrimary; the text-color prop would change the ENABLED
+ * label too, so it cannot fix the disabled state alone). Scoped fix for
+ * the two primary buttons whose disabled state is the DEFAULT view on
+ * page open (Optimize, Run All): the label uses the secondary text token
+ * instead — #474747 on #b9d7ff = 6.29:1 light, #9e9e9e on #253c5a =
+ * 4.19:1 dark. The pale disabled chrome (bg, border, no hover) is
+ * untouched, so the button still reads as disabled — only its label is
+ * legible. !important is required: Naive sets --n-text-color-disabled
+ * inline on the button element. The theme-level alternative
+ * (textColorDisabledPrimary -> text2 in naive-theme.ts) would change
+ * EVERY disabled primary button in the app; that is a product-wide
+ * restyle of the disabled state and is deliberately NOT done here —
+ * add this class to any future primary button that is disabled by
+ * default instead. */
+.disabled-label-readable:disabled {
+  --n-text-color-disabled: var(--color-text-secondary) !important;
+}

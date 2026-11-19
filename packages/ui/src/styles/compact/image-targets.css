@@ -1,0 +1,74 @@
+/**
+ * M-B (Medium batch) — image-workspace touch-target floors.
+ *
+ * Covers: EU03-02 (sub-44px controls across all 3 image workspaces:
+ * Prompt tools 87×36, Inspiration 95×36, Select upload 98×36,
+ * Remove image 30×36, Move earlier/later 32×36, plus the test-plan controls
+ * — Run All, run-a/b, A/B labels, model selects — which are floored by
+ * test-targets.css, and Expand/Collapse 40×36, which are floored by
+ * pro-targets.css via the InputPanel heading rule).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches teleported sheets). The Optimize submit button is
+ * deliberately NOT touched: image.css:157-160 sets it to 36px but the live
+ * button measures 79×44 (the rule does not match it), so touching it blindly
+ * would risk a regression for no gain.
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* Prompt tools (ImageText2ImageWorkspace.vue:60,160 — NButtons type="tertiary"
+ * size="small" ghost, class header-utility-button, testid
+ * reference-action-*-button). Live rule: image.css:39
+ * `.reference-action-toolbar .n-button { min-height: 36px }`. */
+.workspace-compact .reference-action-toolbar .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Select upload (ImageImage2ImageWorkspace.vue:174-182 — NButton size="medium",
+ * testid image-image2image-open-upload). Live rule: image.css:220-221
+ * `.image-reference-row .n-button { min-height: 36px; height: 36px }`. */
+.workspace-compact .image-reference-row .n-button {
+  --n-height: 44px !important;
+  height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Inspiration trigger (PromptGardenInspirationPopover.vue:15-35 — NButton
+ * size="small", class prompt-garden-inspiration-trigger, 95×36).
+ * No live compact rule targets it. */
+.workspace-compact .prompt-garden-inspiration-trigger.n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Reorder ‹ › (32×36) and Remove image (30×36) on multi-image cards.
+ * Root cause per the R1 image report: reorder is a bare NButton quaternary
+ * with no size (ImageMultiImageWorkspace.vue:196-202); Remove is size="small"
+ * + 30px CSS (:161-172, :1951-1965). Live rules: image.css:78-80 (reorder,
+ * 32×36) and :86-87 (remove, 36px) under .image-reference-actions. */
+.workspace-compact .image-reference-actions .n-button {
+  --n-height: 44px !important;
+  height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Generated-image result actions (Download etc., NButton size="small") and
+ * result utility buttons. Live rules: image.css:138
+ * `.image-result-actions .n-button { min-height: 40px }` and :182-183
+ * `.image-result-utility .n-button { min-height: 36px }`. These appear only
+ * after a generation, so they were not in the R1 empty-state sweep, but
+ * they are the same 40px/36px control class on the same workspaces. */
+.workspace-compact .image-result-actions .n-button,
+.workspace-compact .image-result-utility .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}

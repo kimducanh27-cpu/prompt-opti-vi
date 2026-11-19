@@ -1,0 +1,34 @@
+/* EU05-01 (High) — Favorites controls below the 44px touch target on
+   compact. Same class fix as compact/arena.css: Naive buttons/inputs size
+   from --n-height, so the floor is set there plus a min-height/min-width
+   guard (icon-only buttons need the width too).
+   Scoped to .workspace-compact (set on <html>, so it also reaches the
+   teleported detail sheet — .app-frame--compact does NOT, the sheet is
+   teleported to body). Covers the 9 measured controls:
+   search 36px, + Add 36px, Category/Tags toggle 36px, list-item menu 28px,
+   detail "Use now" 36px, detail menu 36px. The sheet close X is 44px via
+   PoSheet (the 36px override in FavoriteAssetPanelDialog.vue was deleted);
+   the shared confirm dialog is fixed in useConfirmDialog.ts + overlay.css. */
+.workspace-compact .favorites-manager-search {
+  --n-height: 44px !important;
+}
+
+.workspace-compact [data-testid='favorites-manager-add'],
+.workspace-compact [data-testid='favorites-manager-filters-toggle'],
+.workspace-compact [data-testid='favorites-manager-actions'],
+.workspace-compact [data-testid='favorite-workspace-item-menu'],
+.workspace-compact [data-testid='favorite-detail-use'],
+.workspace-compact [data-testid='favorite-detail-more'] {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU05-01 residual (H2 verification): the mode-filter chips ("All",
+ * "Basic-System", ...) measured 28px tall with the filters open — the
+ * toggle above is covered but the chips were not. Same 44px floor. */
+.workspace-compact [data-testid^='favorites-manager-mode-filter-'] {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}

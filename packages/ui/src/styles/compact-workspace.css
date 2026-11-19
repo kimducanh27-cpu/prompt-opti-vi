@@ -1,0 +1,26 @@
+/* Mobile presentation entrypoint. Feature rules belong to their named owner module.
+ * Keep imports deterministic: shared surfaces first; narrow comparison and management adaptations last.
+ * Component defaults and desktop rules stay in their existing SFCs.
+ */
+@import './compact/foundation.css';
+@import './compact/overlay.css';
+@import './compact/workspace.css';
+@import './compact/navigation.css';
+@import './compact/input.css';
+@import './compact/prompt.css';
+@import './compact/output.css';
+@import './compact/context.css';
+@import './compact/image.css';
+@import './compact/test-result.css';
+@import './compact/arena.css';
+@import './compact/favorites.css';
+@import './compact/management.css';
+/* M-B (Medium batch) — 44px touch-target floors. Appended last so
+ * equal-specificity rules win over the files above. */
+@import './compact/nav-targets.css';
+@import './compact/history-targets.css';
+@import './compact/managers-targets.css';
+@import './compact/output-targets.css';
+@import './compact/test-targets.css';
+@import './compact/pro-targets.css';
+@import './compact/image-targets.css';
