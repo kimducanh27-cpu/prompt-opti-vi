@@ -1,0 +1,1 @@
+export{x as TextAdapterRegistry}from"./chunk-V6J4HEIL-CQ4z2OSW.js";
