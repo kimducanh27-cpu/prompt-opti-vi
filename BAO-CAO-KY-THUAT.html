@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Báo cáo kỹ thuật — Prompt Optimizer Mobile-First &amp; vi-VN</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 20px 64px;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+    font-size: 16px; line-height: 1.7; color: #1f2933; background: #f5f6f8;
+  }
+  main { max-width: 920px; margin: 0 auto; background: #fff; padding: 40px 44px 56px; border-radius: 14px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 12px 40px rgba(15,23,42,.08); }
+  h1 { font-size: 30px; line-height: 1.3; margin: 0 0 18px; letter-spacing: -.01em; }
+  h2 { font-size: 22px; margin: 42px 0 14px; padding-top: 18px; border-top: 1px solid #eef1f4; }
+  h3 { font-size: 18px; margin: 28px 0 10px; }
+  p, li { color: #334155; }
+  strong { color: #0f172a; }
+  a { color: #2563eb; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14.5px; display: block; overflow-x: auto; }
+  th, td { border: 1px solid #e5e7eb; padding: 9px 12px; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; font-weight: 600; color: #0f172a; }
+  tr:nth-child(even) td { background: #fbfcfe; }
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; font-size: 14px; font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 16px 18px; border-radius: 10px; overflow-x: auto; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  blockquote { margin: 16px 0; padding: 10px 16px; border-left: 3px solid #94a3b8; background: #f8fafc; color: #475569; }
+  hr { border: 0; border-top: 1px solid #eef1f4; margin: 32px 0; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  @media (max-width: 640px) {
+    body { padding: 12px 10px 40px; font-size: 15.5px; }
+    main { padding: 22px 18px 34px; border-radius: 10px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 19px; }
+    table { font-size: 13.5px; }
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    main { box-shadow: none; border-radius: 0; padding: 0; max-width: none; }
+    h2 { break-after: avoid; }
+    table, pre { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<main>
+<h1>Báo cáo kỹ thuật — Prompt Optimizer bản Mobile-First &amp; Việt hóa (vi-VN)</h1>
+<p><strong>Dự án:</strong> <code>linshenkx/prompt-optimizer</code> — phiên bản 2.15.2<br />
+<strong>Phạm vi:</strong> giao diện Mobile-First hiệu chuẩn cho Honor Magic 6, Việt hóa toàn bộ giao diện và đóng gói mã nguồn kèm báo cáo.<br />
+<strong>Ngày hoàn tất kiểm chứng:</strong> 18/11/2026<br />
+<strong>Môi trường kiểm chứng:</strong> Ubuntu 24.04 (proot, ARM64), Node.js 24.22.1, pnpm 10.6.1, Chromium 153 (Playwright).</p>
+<hr>
+<h2>1. Tóm tắt điều hành</h2>
+<p>Bản bàn giao gồm ba phần:</p>
+<ol>
+<li><strong>Hệ thống thiết kế Mobile-First</strong> dùng token ngữ nghĩa, hiệu chuẩn theo Honor Magic 6 (<code>412×915</code> và <code>421×933</code> CSS px), đồng thời giữ nguyên bố cục hai cột trên desktop (<code>≥ 1024px</code>).</li>
+<li><strong>Việt hóa toàn bộ giao diện</strong>: 12 mô-đun ngôn ngữ, <strong>2.990 khóa dịch</strong> cho mỗi ngôn ngữ, khớp cấu trúc tuyệt đối với <code>en-US</code>; bổ sung tiếng Việt cho PWA, extension, tài liệu trong ứng dụng và metadata trang web. Lần chạy đầu tiên mở bằng tiếng Việt; lựa chọn của người dùng trong trình chuyển ngôn ngữ luôn được ưu tiên và ghi nhớ.</li>
+<li><strong>Kiểm chứng thực thi</strong>: build thành công <code>core → ui → web</code>, 92/93 kiểm thử script kho mã (1 bỏ qua theo thiết kế), 32/32 kiểm thử web, 43 bài kiểm thử thành phần liên quan, đo đạc DOM thật trên Chromium ở 5 kích thước màn hình × 9 không gian làm việc, kèm ảnh chụp và nhật ký JSON.</li>
+</ol>
+<p>Trong quá trình kiểm chứng đã phát hiện và sửa <strong>7 nhóm lỗi thực tế</strong> khiến bản trước đó không thể build hoặc chưa Việt hóa trọn vẹn (chi tiết ở mục 6).</p>
+<hr>
+<h2>2. Phạm vi và nguyên tắc thiết kế</h2>
+<h3>2.1. Trong phạm vi</h3>
+<ul>
+<li>Toàn bộ giao diện Vue 3 (<code>packages/ui</code>), vỏ web (<code>packages/web</code>), extension (<code>packages/extension</code>).</li>
+<li>9 không gian làm việc: Tối ưu System Prompt, Tối ưu User Prompt, Biến, Đa tin nhắn, Văn bản sang Ảnh, Ảnh sang Ảnh, Đa hình ảnh, Đấu trường và các màn hình quản lý (mô hình, mẫu, dữ liệu, yêu thích, lịch sử).</li>
+<li>Ngôn ngữ giao diện: <code>vi-VN</code> (mặc định), <code>en-US</code>, <code>zh-CN</code>, <code>zh-TW</code>.</li>
+</ul>
+<h3>2.2. Ngoài phạm vi (giữ nguyên có chủ đích)</h3>
+<ul>
+<li><strong>Mẫu prompt tích hợp trong <code>packages/core</code></strong>: chỉ có <code>en-US</code> và <code>zh-CN</code>. Đây là nội dung prompt gửi cho mô hình, không phải chuỗi giao diện; thêm <code>vi-VN</code> sẽ làm thay đổi hành vi tối ưu và kết quả so sánh.</li>
+<li><strong>Bố cục desktop <code>≥ 1024px</code></strong>: không đổi so với bản gốc.</li>
+<li><strong>Bản quyền, giấy phép, tên thương hiệu</strong> (<code>Prompt Optimizer</code>, <code>Prompt Garden</code>, <code>OpenAI</code>, <code>Gemini</code>…): giữ nguyên.</li>
+</ul>
+<h3>2.3. Nguyên tắc</h3>
+<ul>
+<li>Mobile-First theo nghĩa <strong>thu nhỏ có kiểm soát</strong>: mọi thay đổi bố cục chỉ áp dụng dưới <code>1024px</code>; desktop không bị ảnh hưởng.</li>
+<li>Ưu tiên <strong>khả năng chạm</strong> (≥ 44×44 px), <strong>không tự động zoom</strong> (ô nhập ≥ 16px), <strong>an toàn vùng cắt</strong> (safe-area), <strong>không tràn ngang</strong> ở 360–430px.</li>
+<li>Tiếng Việt có dấu là điều kiện kiểm thử: font stack, chiều cao dòng, nhãn dài và ngắt dòng đều được kiểm tra bằng DOM thật.</li>
+</ul>
+<hr>
+<h2>3. Hệ thống thiết kế Mobile-First</h2>
+<h3>3.1. Điểm ngắt và chế độ bố cục</h3>
+<table>
+<thead>
+<tr>
+<th>Điểm ngắt</th>
+<th>Khoảng</th>
+<th>Bố cục</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xs</code></td>
+<td>&lt; 360px</td>
+<td>Một vùng, thu gọn tối đa</td>
+</tr>
+<tr>
+<td><code>sm</code></td>
+<td>360–639px</td>
+<td>Một vùng, thanh điều hướng dưới (Honor Magic 6 ≈ 412–421px)</td>
+</tr>
+<tr>
+<td><code>md</code></td>
+<td>640–1023px</td>
+<td>Một vùng rộng / máy tính bảng dọc</td>
+</tr>
+<tr>
+<td><code>lg</code></td>
+<td>1024–1279px</td>
+<td>Hai cột desktop</td>
+</tr>
+<tr>
+<td><code>xl</code></td>
+<td>≥ 1280px</td>
+<td>Hai cột rộng</td>
+</tr>
+</tbody>
+</table>
+<p>Chế độ <code>compact</code> bật khi <code>window.innerWidth &lt; 1024</code>, dùng chung một nguồn sự thật với <code>useWorkspaceLayout</code> và <code>useResponsive</code> (đã sửa để kiểu trả về của <code>buttonSize</code> là union <code>small | medium | large</code>, tránh lỗi biên dịch).</p>
+<h3>3.2. Token thiết kế (<code>packages/ui/src/styles/tokens.css</code>, 289 dòng)</h3>
+<ul>
+<li><strong>Bề mặt phân tầng</strong>: <code>body → surface → card → popover</code>, kèm <code>muted</code>, <code>disabled</code>.</li>
+<li><strong>Màu ngữ nghĩa</strong>: chữ (primary/secondary/muted/disabled), accent + 3 trạng thái tương tác, viền, info/success/warning/error.</li>
+<li><strong>6 chủ đề</strong>: <code>light</code>, <code>dark</code>, <code>blue</code>, <code>green</code>, <code>purple</code>, <code>classic</code> qua <code>data-workspace-theme</code>.</li>
+<li><strong>Chữ</strong>: thang 11/12/13/14/16/17/20px; <code>--po-text-input-mobile: 1rem</code> (16px) chống zoom trên iOS/Android; font stack ưu tiên Inter, hệ thống, Noto Sans — hiển thị đúng dấu chồng như <code>ấ</code>, <code>ệ</code>, <code>ử</code>, <code>ẵ</code>.</li>
+<li><strong>Khoảng cách</strong>: thang 4px; <strong>bo góc</strong> 8–18px (sheet 18px trên).</li>
+<li><strong>Chạm</strong>: <code>--po-touch-target: 44px</code>, <code>--po-touch-target-lg: 48px</code>.</li>
+<li><strong>Vùng an toàn</strong>: <code>--po-safe-top/right/bottom/left</code> từ <code>env(safe-area-inset-*)</code> — áp dụng cho thanh trên, thanh dưới, sheet và modal toàn màn hình.</li>
+<li><strong>Lớp z-index</strong>: sticky 20, dropdown 1000, sheet 2000, modal 2100, toast 3000.</li>
+<li><strong>Chuyển động</strong>: 100/175/300ms, easing chuẩn, có <code>prefers-reduced-motion: reduce</code>.</li>
+<li><strong>Tiêu điểm bàn phím</strong>: <code>--po-focus-ring</code> 2px, offset 2px.</li>
+</ul>
+<h3>3.3. CSS mobile (<code>packages/ui/src/styles/compact/</code>, 11 tệp CSS, 2.311 dòng; <code>compact-workspace.css</code> là điểm vào)</h3>
+<ul>
+<li><code>foundation.css</code>: token dùng chung, vùng chạm, focus, giảm chuyển động, font.</li>
+<li><code>workspace.css</code>, <code>prompt.css</code>, <code>input.css</code>, <code>output.css</code>, <code>test-result.css</code>: bố cục hai vùng (nhập ↔ kết quả) trên một màn hình, không mở trang con.</li>
+<li><code>navigation.css</code>: thanh trên dính, thanh chuyển vùng dưới cùng, sheet chức năng/chế độ.</li>
+<li><code>overlay.css</code>: sheet, modal, bàn phím ảo, safe-area.</li>
+<li><code>context.css</code>, <code>image.css</code>, <code>management.css</code>: biến, ảnh, quản lý.</li>
+</ul>
+<p>Các quy tắc dùng <code>max(...)</code>/<code>min(...)</code> với <code>env(safe-area-inset-*)</code>, <code>dvh</code> cho chiều cao thực, <code>container queries</code> cho vùng nội dung và <code>scroll-snap</code> cho Đấu trường.</p>
+<h3>3.4. Hiệu chuẩn Honor Magic 6</h3>
+<ul>
+<li>Độ phân giải vật lý 1264×2800, tỉ lệ ~3.07 → vùng nhìn CSS khoảng <strong>412×915</strong> (thanh điều hướng) đến <strong>421×933</strong> (chế độ tràn viền).</li>
+<li>Đã đo tại cả <code>412×915</code> và <code>421×933</code>, thêm <code>360×669</code>, <code>393×852</code> và desktop <code>1440×900</code>.</li>
+<li>Kết quả: <strong>không tràn ngang</strong> ở mọi tổ hợp (xem mục 7), thanh dưới nằm trong vùng nhìn, ô nhập đạt 16px, nút đạt 44px.</li>
+</ul>
+<hr>
+<h2>4. Việt hóa toàn bộ giao diện</h2>
+<h3>4.1. Cấu trúc ngôn ngữ</h3>
+<p><code>packages/ui/src/i18n/locales/</code> gồm bốn thư mục <code>en-US</code>, <code>zh-CN</code>, <code>zh-TW</code>, <code>vi-VN</code>; mỗi thư mục có 12 tệp:</p>
+<p><code>index.ts</code>, <code>arena.ts</code>, <code>workspace.ts</code>, <code>core.ts</code>, <code>favorites.ts</code>, <code>prompt.ts</code>, <code>models.ts</code>, <code>templates.ts</code>, <code>testing.ts</code>, <code>context.ts</code>, <code>image.ts</code>, <code>errors.ts</code>.</p>
+<ul>
+<li><strong>2.990 khóa</strong> mỗi ngôn ngữ, <strong>0 thiếu, 0 thừa, 0 lệch cấu trúc</strong> so với <code>en-US</code> (kiểm tra tự động).</li>
+<li><code>vi-VN</code> có 3.757 dòng, phủ toàn bộ chuỗi giao diện, thông báo lỗi, nhãn trợ năng, nội dung trống và hướng dẫn trong ứng dụng.</li>
+</ul>
+<h3>4.2. Điểm nối</h3>
+<ul>
+<li><code>plugins/i18n.ts</code>: thêm <code>vi-VN</code> vào <code>SupportedLocale</code>, <code>SUPPORTED_LOCALES</code>, <code>messages</code>, fallback <code>vi-VN → en-US</code>, chuẩn hóa <code>vi</code>, <code>vi-*</code>, <code>vi_*</code>.</li>
+<li><code>LanguageSwitchDropdown.vue</code>: thêm mục <strong>Tiếng Việt</strong> (tên bản ngữ), thứ tự ưu tiên Việt → Anh → Trung giản thể → Trung phồn thể.</li>
+<li><code>docs/compare-help.ts</code>, <code>docs/syntax-guide.ts</code>: bản dịch tiếng Việt đầy đủ cho trợ giúp so sánh và cú pháp mẫu.</li>
+<li><code>packages/web/index.html</code>: <code>lang=&quot;vi&quot;</code>, tiêu đề và mô tả tiếng Việt, <code>viewport-fit=cover</code>.</li>
+<li><code>packages/web/pwa.config.ts</code>: tên ứng dụng, tên ngắn, mô tả, <code>lang: 'vi'</code> cho manifest PWA.</li>
+<li><code>packages/web/src/pwa/messages.ts</code>: bổ sung bộ chuỗi tiếng Việt cho cài đặt, cập nhật, ngoại tuyến, lỗi lưu.</li>
+<li><code>packages/extension/public/_locales/vi/messages.json</code> + <code>packages/extension/index.html</code>: tiếng Việt cho extension.</li>
+<li><code>packages/web/src/main.ts</code>, <code>packages/extension/src/main.ts</code>: <code>document.documentElement.lang</code> ánh xạ đúng <code>vi</code> (trước đây rơi vào <code>en</code>).</li>
+</ul>
+<h3>4.3. Chính sách ngôn ngữ mặc định</h3>
+<ul>
+<li><code>DEFAULT_LOCALE = 'vi-VN'</code>: lần chạy đầu tiên mở bằng tiếng Việt, kể cả khi trình duyệt cấu hình tiếng Anh.</li>
+<li>Người dùng đổi ngôn ngữ trong <strong>Danh mục → Ngôn ngữ</strong>; lựa chọn được lưu vào <code>PREFERRED_LANGUAGE</code> và luôn thắng mặc định.</li>
+<li>Đổi lại chính sách chỉ cần sửa một dòng trong <code>packages/ui/src/plugins/i18n.ts</code> (<code>DEFAULT_LOCALE = 'en-US'</code>) — đã ghi chú ngay tại hằng số.</li>
+</ul>
+<h3>4.4. Quy ước thuật ngữ</h3>
+<p>Giữ nguyên có chủ đích các thuật ngữ kỹ thuật đã quen thuộc với người dùng Việt Nam: <em>prompt</em>, <em>System Prompt</em>, <em>User Prompt</em>, <em>API Key</em>, <em>token</em>, <em>A/B test</em>, tên mô hình và thương hiệu. Phần câu, nhãn, mô tả, thông báo và hướng dẫn đều dịch sang tiếng Việt tự nhiên.</p>
+<hr>
+<h2>5. Kiến trúc kỹ thuật của bản bàn giao</h2>
+<pre><code>packages/
+  core/        dịch vụ LLM, lưu trữ, mẫu prompt (en-US, zh-CN)
+  ui/          thành phần Vue, i18n (4 ngôn ngữ), design system mobile
+  web/         vỏ web + PWA (manifest, service worker, banner cập nhật)
+  extension/   vỏ extension Chrome (đã có _locales/vi)
+  desktop/     vỏ Electron (giữ nguyên)
+  mcp-server/  máy chủ MCP (giữ nguyên)
+</code></pre>
+<ul>
+<li>Không đổi API công khai của <code>core</code>; không đổi tuyến đường router hay khóa lưu trữ.</li>
+<li>Thay đổi giao diện nằm trong SFC và CSS mobile; trên <code>1024px</code> không có quy tắc mới.</li>
+<li>PWA giữ nguyên chiến lược <code>injectManifest</code>, không precache dữ liệu người dùng.</li>
+</ul>
+<hr>
+<h2>6. Lỗi phát hiện và đã sửa trong vòng kiểm chứng này</h2>
+<p>Bản đóng gói trước khi bàn giao <strong>không build được</strong> và còn một số chuỗi chưa Việt hóa. Các lỗi sau đã được sửa và kiểm chứng lại:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Lỗi</th>
+<th>Tệp</th>
+<th>Cách sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>5 thành phần dùng <code>locale.value</code> nhưng không lấy <code>locale</code> từ <code>useI18n</code> → <code>TS2304</code></td>
+<td><code>FavoriteDetailPanel.vue</code>, <code>FavoriteListItem.vue</code>, <code>FavoriteWorkspaceListItem.vue</code>, <code>HistoryDrawer.vue</code>, <code>FavoritePromptAssetVersionList.vue</code></td>
+<td>Thêm <code>locale</code> vào destructuring <code>useI18n()</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Kiểu <code>useI18n</code> do dự án khai báo chỉ có <code>t</code> → <code>BackupRecords.vue</code> báo <code>TS2339</code></td>
+<td><code>src/types/vue-i18n.d.ts</code></td>
+<td>Bổ sung <code>locale: ComputedRef&lt;string&gt;</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>`String(locale</td>
+<td></td>
+<td>'vi-VN')<code>trên ref → chuỗi</code>[object Object]` khi định dạng ngày</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>buttonSize</code> luôn trả <code>'medium'</code> nên so sánh với <code>'small'</code> báo <code>TS2367</code></td>
+<td><code>composables/ui/useResponsive.ts</code></td>
+<td>Khai báo kiểu trả về <code>'small' | 'medium' | 'large'</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Manifest PWA và banner cài đặt/cập nhật vẫn là tiếng Trung; thiếu bản tiếng Việt</td>
+<td><code>web/pwa.config.ts</code>, <code>web/src/pwa/messages.ts</code></td>
+<td>Dịch manifest, thêm bộ chuỗi <code>vi</code> và ánh xạ <code>vi → vi</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>lang</code> của trang bị gán <code>en</code> cho tiếng Việt</td>
+<td><code>web/src/main.ts</code>, <code>extension/src/main.ts</code></td>
+<td>Ánh xạ <code>vi → 'vi'</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Đấu trường: nút chọn mô hình và thanh công cụ kết quả cao 28px, textarea 14px</td>
+<td><code>components/arena-mode/ArenaWorkspace.vue</code></td>
+<td>Thêm quy tắc mobile: ô nhập 16px, nút ≥ 44px, thanh công cụ cho phép xuống dòng</td>
+</tr>
+</tbody>
+</table>
+<p>Ngoài ra:</p>
+<ul>
+<li><code>scripts/check-no-chinese-runtime.mjs</code> trước đây gọi <code>git ls-files</code> nên <strong>không chạy được trên gói mã nguồn đã giải nén</strong> (không có <code>.git</code>). Đã bổ sung chế độ duyệt cây tệp dự phòng, bỏ qua <code>node_modules</code>, <code>dist</code>, <code>.git</code>…</li>
+<li><code>ProviderPillSelect.vue</code> còn nhãn dự phòng <code>更多</code> → đổi thành <code>Thêm</code>.</li>
+<li><code>packages/extension/index.html</code> còn <code>lang=&quot;zh-CN&quot;</code> và thiếu <code>viewport-fit=cover</code> → đổi <code>lang=&quot;vi&quot;</code> + <code>viewport-fit=cover</code>.</li>
+</ul>
+<hr>
+<h2>7. Kết quả kiểm chứng</h2>
+<h3>7.1. Cổng kiểm tra tự động</h3>
+<table>
+<thead>
+<tr>
+<th>Lệnh</th>
+<th>Kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node scripts/check-locale-parity.mjs</code></td>
+<td>✅ Cấu trúc 4 ngôn ngữ khớp nhau</td>
+</tr>
+<tr>
+<td><code>node scripts/check-no-chinese-runtime.mjs</code></td>
+<td>✅ 0 chuỗi tiếng Trung trong mã chạy</td>
+</tr>
+<tr>
+<td><code>node scripts/verify-mobile-design-system.mjs</code></td>
+<td>✅ Token, 44px, 16px, safe-area, vi-VN đạt</td>
+</tr>
+<tr>
+<td><code>node --test</code> trên 10 tệp kiểm thử script kho mã</td>
+<td>✅ 92 đạt, 1 bỏ qua, 0 lỗi</td>
+</tr>
+<tr>
+<td><code>vitest run</code> cho 8 tệp liên quan (i18n, ngôn ngữ, yêu thích, đấu trường, biến)</td>
+<td>✅ 43/43</td>
+</tr>
+<tr>
+<td><code>pnpm -F @prompt-optimizer/web test:unit</code></td>
+<td>✅ 32/32</td>
+</tr>
+<tr>
+<td><code>pnpm build:core &amp;&amp; pnpm build:ui &amp;&amp; pnpm build:web</code></td>
+<td>✅ Thành công</td>
+</tr>
+</tbody>
+</table>
+<h3>7.2. Đo đạc DOM trên Chromium</h3>
+<p>Kịch bản <code>audit/mobile-audit.mjs</code> mở 9 tuyến ở 5 kích thước (36 tổ hợp mobile + 9 tổ hợp desktop), đo:</p>
+<ul>
+<li><code>scrollWidth</code> so với chiều rộng vùng nhìn (tràn ngang);</li>
+<li>sự tồn tại của thanh điều hướng compact;</li>
+<li>số ô nhập có <code>font-size &lt; 16px</code>;</li>
+<li>số mục tương tác có cạnh &lt; 44px;</li>
+<li>phần tử vượt biên;</li>
+<li>sự hiện diện của ký tự tiếng Việt có dấu và <code>lang</code>.</li>
+</ul>
+<p>Kết quả tóm tắt (chi tiết trong <code>audit/mobile-audit.json</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Kích thước</th>
+<th>Tràn ngang</th>
+<th>Ô nhập &lt; 16px</th>
+<th>Nút &lt; 44px (sau sửa)</th>
+<th>Tiếng Việt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>412×915 (Honor Magic 6)</td>
+<td>0</td>
+<td>0</td>
+<td>0 (*)</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>421×933 (Honor Magic 6 tràn viền)</td>
+<td>0</td>
+<td>0</td>
+<td>0 (*)</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>360×669</td>
+<td>0</td>
+<td>0</td>
+<td>0 (*)</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>393×852</td>
+<td>0</td>
+<td>0</td>
+<td>0 (*)</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>1440×900 (desktop)</td>
+<td>0</td>
+<td>—</td>
+<td>— (desktop không áp dụng 44px)</td>
+<td>Có</td>
+</tr>
+</tbody>
+</table>
+<p><code>(*)</code> Ngoại trừ ô nhập ẩn bên trong thành phần select của Naive UI (<code>n-base-selection-input</code>, cao 26px) — đây không phải mục tiêu chạm; vùng chạm thực tế là nút bao ngoài, đã đạt 44px.</p>
+<p>Ảnh chụp tiêu biểu nằm trong <code>audit/shots/</code>:
+<code>honor-magic6-home.png</code>, <code>honor-magic6-basic-user.png</code>, <code>honor-magic6-arena.png</code>, <code>menu-sheet-dark.png</code>, <code>desktop-1440-home.png</code>.</p>
+<h3>7.3. Kiểm tra tương tác mobile</h3>
+<ul>
+<li>Mở <strong>Danh mục</strong>: sheet cao 380px, nằm trọn trong 412×915, không tràn ngang, mọi nút ≥ 44px.</li>
+<li>Mở <strong>Chuyển chế độ</strong>: sheet liệt kê đủ 9 không gian làm việc bằng tiếng Việt.</li>
+<li><strong>Chuyển ngôn ngữ</strong> Việt ↔ Anh: <code>document.documentElement.lang</code> đổi tương ứng, giao diện đổi ngay, lựa chọn được lưu.</li>
+<li><strong>Chủ đề Tối</strong>: đổi màu nền và thuộc tính <code>data-workspace-theme</code>.</li>
+</ul>
+<hr>
+<h2>8. Hướng dẫn build và chạy</h2>
+<pre><code class="language-bash">pnpm install
+pnpm build:core
+pnpm build:ui
+pnpm build:web        # kết quả trong packages/web/dist
+</code></pre>
+<p>Chạy thử bản build:</p>
+<pre><code class="language-bash">pnpm -F @prompt-optimizer/web preview --host 0.0.0.0 --port 4173
+</code></pre>
+<p>Hoặc chạy chế độ phát triển:</p>
+<pre><code class="language-bash">pnpm dev
+</code></pre>
+<p>Yêu cầu: Node.js ≥ 24.22.1, pnpm 10.6.1. Trên máy không có mạng, dùng <code>pnpm install --offline</code> với kho pnpm đã có sẵn.</p>
+<p>Đổi ngôn ngữ mặc định: sửa <code>DEFAULT_LOCALE</code> trong <code>packages/ui/src/plugins/i18n.ts</code>.</p>
+<hr>
+<h2>9. Hạn chế và khuyến nghị</h2>
+<ol>
+<li><strong>Chưa kiểm chứng trên máy thật Honor Magic 6</strong>: số đo lấy từ Chromium 153 với mô phỏng thiết bị (viewport, DPI, cảm ứng). Cần kiểm tra thêm: bàn phím ảo che vùng nhập, <code>env(safe-area-inset-*)</code> thực tế của máy, cử chỉ vuốt và tần số quét 120Hz.</li>
+<li><strong>Hộp thoại/ô nhập tiếng Việt dài</strong>: một số nhãn chọn mô hình bị cắt bằng dấu ba chấm ở 412px (hành vi có sẵn của Naive UI). Không gây tràn ngang, nhưng nên rút ngắn nhãn hoặc thêm tooltip nếu muốn đẹp hơn.</li>
+<li><strong>Đấu trường</strong> dùng cuộn ngang có <code>scroll-snap</code> để so sánh nhiều cột trên điện thoại — là thiết kế có chủ đích, không phải lỗi tràn.</li>
+<li><strong>Mẫu prompt trong <code>core</code></strong> vẫn là <code>en-US</code>/<code>zh-CN</code>; nếu muốn prompt tối ưu bằng tiếng Việt thì cần một dự án riêng vì nó thay đổi nội dung gửi mô hình.</li>
+<li>Chú thích mã nguồn tiếng Trung vẫn còn (không hiển thị cho người dùng); cổng <code>check-no-chinese-runtime</code> chỉ chặn chuỗi chạy.</li>
+</ol>
+<hr>
+<h2>10. Phụ lục — Tệp thay đổi chính</h2>
+<p><strong>Thiết kế &amp; tài liệu</strong>
+<code>DESIGN.md</code>, <code>CLAUDE.md</code>, <code>REVIEW.md</code>, <code>BAO-CAO-KY-THUAT.md</code></p>
+<p><strong>Design system</strong>
+<code>packages/ui/src/styles/tokens.css</code>, <code>packages/ui/src/styles/compact-workspace.css</code>, <code>packages/ui/src/styles/compact/*.css</code> (12 tệp)</p>
+<p><strong>Việt hóa</strong>
+<code>packages/ui/src/i18n/locales/vi-VN/*</code> (12 tệp), <code>packages/ui/src/plugins/i18n.ts</code>, <code>packages/ui/src/components/LanguageSwitchDropdown.vue</code>, <code>packages/ui/src/docs/compare-help.ts</code>, <code>packages/ui/src/docs/syntax-guide.ts</code>, <code>packages/web/index.html</code>, <code>packages/web/pwa.config.ts</code>, <code>packages/web/src/pwa/messages.ts</code>, <code>packages/web/public/config.js</code>, <code>packages/extension/index.html</code>, <code>packages/extension/public/_locales/vi/messages.json</code></p>
+<p><strong>Responsive &amp; sửa lỗi</strong>
+<code>packages/ui/src/composables/ui/useResponsive.ts</code>, <code>packages/ui/src/components/arena-mode/ArenaWorkspace.vue</code>, <code>packages/ui/src/components/FavoriteDetailPanel.vue</code>, <code>FavoriteListItem.vue</code>, <code>FavoriteWorkspaceListItem.vue</code>, <code>HistoryDrawer.vue</code>, <code>favorites/FavoritePromptAssetVersionList.vue</code>, <code>data-manager/BackupRecords.vue</code>, <code>ProviderPillSelect.vue</code>, <code>packages/ui/src/types/vue-i18n.d.ts</code>, <code>packages/web/src/main.ts</code>, <code>packages/extension/src/main.ts</code></p>
+<p><strong>Kiểm chứng</strong>
+<code>scripts/verify-mobile-design-system.mjs</code>, <code>scripts/check-no-chinese-runtime.mjs</code>, <code>packages/ui/tests/unit/plugins/i18n-bootstrap.spec.ts</code>, <code>audit/</code> (kịch bản đo, JSON, ảnh chụp)</p>
+
+</main>
+</body>
+</html>

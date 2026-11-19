@@ -1,0 +1,2444 @@
+[
+  {
+    "viewport": "honor-magic6",
+    "route": "home",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "basic-user",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "basic-system",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "pro-variable",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 13,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "pro-multi",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 10,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "image-text2image",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "image-image2image",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 12,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "image-multi",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 148,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6",
+    "route": "arena",
+    "vw": 412,
+    "scrollWidth": 412,
+    "docHeight": 915,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 24,
+    "smallTargets": [],
+    "smallTargetCount": 0,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [
+      {
+        "tag": "div",
+        "cls": "n-scrollbar-content",
+        "left": 12,
+        "right": 733
+      },
+      {
+        "tag": "div",
+        "cls": "arena-deck",
+        "left": 12,
+        "right": 733
+      },
+      {
+        "tag": "article",
+        "cls": "arena-column",
+        "left": 378,
+        "right": 733
+      },
+      {
+        "tag": "div",
+        "cls": "n-card n-card--bordered arena-model-controls",
+        "left": 378,
+        "right": 733
+      },
+      {
+        "tag": "div",
+        "cls": "n-card-content",
+        "left": 379,
+        "right": 732
+      },
+      {
+        "tag": "div",
+        "cls": "model-controls",
+        "left": 389,
+        "right": 722
+      },
+      {
+        "tag": "div",
+        "cls": "model-selection",
+        "left": 389,
+        "right": 563
+      },
+      {
+        "tag": "button",
+        "cls": "model-selection__picker text-model-selector text-model-selec",
+        "left": 389,
+        "right": 563
+      }
+    ],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "home",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "basic-user",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "basic-system",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "pro-variable",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 13,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "pro-multi",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 10,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "image-text2image",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "image-image2image",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 12,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "image-multi",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 152,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "honor-magic6-expanded",
+    "route": "arena",
+    "vw": 421,
+    "scrollWidth": 421,
+    "docHeight": 933,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 24,
+    "smallTargets": [],
+    "smallTargetCount": 0,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [
+      {
+        "tag": "div",
+        "cls": "n-scrollbar-content",
+        "left": 12,
+        "right": 748
+      },
+      {
+        "tag": "div",
+        "cls": "arena-deck",
+        "left": 12,
+        "right": 748
+      },
+      {
+        "tag": "article",
+        "cls": "arena-column",
+        "left": 386,
+        "right": 748
+      },
+      {
+        "tag": "div",
+        "cls": "n-card n-card--bordered arena-model-controls",
+        "left": 386,
+        "right": 748
+      },
+      {
+        "tag": "div",
+        "cls": "n-card-content",
+        "left": 387,
+        "right": 747
+      },
+      {
+        "tag": "div",
+        "cls": "model-controls",
+        "left": 397,
+        "right": 737
+      },
+      {
+        "tag": "div",
+        "cls": "model-selection",
+        "left": 397,
+        "right": 578
+      },
+      {
+        "tag": "button",
+        "cls": "model-selection__picker text-model-selector text-model-selec",
+        "left": 397,
+        "right": 578
+      }
+    ],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "home",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "basic-user",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "basic-system",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "pro-variable",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 13,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "pro-multi",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 10,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "image-text2image",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "image-image2image",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 12,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "image-multi",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 123,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "small-360",
+    "route": "arena",
+    "vw": 360,
+    "scrollWidth": 360,
+    "docHeight": 669,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 52
+    },
+    "interactiveCount": 24,
+    "smallTargets": [],
+    "smallTargetCount": 0,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [
+      {
+        "tag": "div",
+        "cls": "n-scrollbar-content",
+        "left": 12,
+        "right": 643
+      },
+      {
+        "tag": "div",
+        "cls": "arena-deck arena-deck--compact",
+        "left": 12,
+        "right": 643
+      },
+      {
+        "tag": "article",
+        "cls": "arena-column",
+        "left": 334,
+        "right": 643
+      },
+      {
+        "tag": "div",
+        "cls": "n-card n-card--bordered arena-model-controls",
+        "left": 334,
+        "right": 643
+      },
+      {
+        "tag": "div",
+        "cls": "n-card-content",
+        "left": 335,
+        "right": 642
+      },
+      {
+        "tag": "div",
+        "cls": "model-controls",
+        "left": 345,
+        "right": 632
+      },
+      {
+        "tag": "div",
+        "cls": "model-selection",
+        "left": 345,
+        "right": 632
+      },
+      {
+        "tag": "button",
+        "cls": "model-selection__picker text-model-selector text-model-selec",
+        "left": 345,
+        "right": 632
+      }
+    ],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "home",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "basic-user",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "basic-system",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 2,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "pro-variable",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 13,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "pro-multi",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 10,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "image-text2image",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "image-image2image",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 12,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "image-multi",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 11,
+    "smallTargets": [
+      {
+        "tag": "input",
+        "text": "",
+        "w": 139,
+        "h": 26
+      }
+    ],
+    "smallTargetCount": 1,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "iphone-393",
+    "route": "arena",
+    "vw": 393,
+    "scrollWidth": 393,
+    "docHeight": 852,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 60
+    },
+    "interactiveCount": 24,
+    "smallTargets": [],
+    "smallTargetCount": 0,
+    "inputCount": 1,
+    "sub16Inputs": [],
+    "overflowers": [
+      {
+        "tag": "div",
+        "cls": "n-scrollbar-content",
+        "left": 12,
+        "right": 700
+      },
+      {
+        "tag": "div",
+        "cls": "arena-deck",
+        "left": 12,
+        "right": 700
+      },
+      {
+        "tag": "article",
+        "cls": "arena-column",
+        "left": 362,
+        "right": 700
+      },
+      {
+        "tag": "div",
+        "cls": "n-card n-card--bordered arena-model-controls",
+        "left": 362,
+        "right": 700
+      },
+      {
+        "tag": "div",
+        "cls": "n-card-content",
+        "left": 363,
+        "right": 699
+      },
+      {
+        "tag": "div",
+        "cls": "model-controls",
+        "left": 373,
+        "right": 689
+      },
+      {
+        "tag": "div",
+        "cls": "model-selection",
+        "left": 373,
+        "right": 530
+      },
+      {
+        "tag": "button",
+        "cls": "model-selection__picker text-model-selector text-model-selec",
+        "left": 373,
+        "right": 530
+      }
+    ],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "home",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 56,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "Thư viện yêu thích",
+        "w": 36,
+        "h": 34
+      }
+    ],
+    "smallTargetCount": 53,
+    "inputCount": 13,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 597
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 617
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 601
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "basic-user",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 53,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "Thư viện yêu thích",
+        "w": 36,
+        "h": 34
+      }
+    ],
+    "smallTargetCount": 51,
+    "inputCount": 12,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 597
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 617
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "basic-system",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 56,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "Thư viện yêu thích",
+        "w": 36,
+        "h": 34
+      }
+    ],
+    "smallTargetCount": 53,
+    "inputCount": 13,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 597
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 617
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 601
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "pro-variable",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 58,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "Thư viện yêu thích",
+        "w": 36,
+        "h": 34
+      }
+    ],
+    "smallTargetCount": 58,
+    "inputCount": 10,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "pro-multi",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 46,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "Thư viện yêu thích",
+        "w": 36,
+        "h": 34
+      }
+    ],
+    "smallTargetCount": 46,
+    "inputCount": 10,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 285
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "image-text2image",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 47,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      }
+    ],
+    "smallTargetCount": 47,
+    "inputCount": 11,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "image-image2image",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 46,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      }
+    ],
+    "smallTargetCount": 46,
+    "inputCount": 11,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "image-multi",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 48,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      }
+    ],
+    "smallTargetCount": 47,
+    "inputCount": 12,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "",
+        "font": 14,
+        "w": 226
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 617
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 13,
+        "w": 16
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "desktop-1440",
+    "route": "arena",
+    "vw": 1440,
+    "scrollWidth": 1440,
+    "docHeight": 900,
+    "hasCompactNav": true,
+    "nav": {
+      "top": 0,
+      "height": 0
+    },
+    "interactiveCount": 37,
+    "smallTargets": [
+      {
+        "tag": "button",
+        "text": "Prompt Optimizer",
+        "w": 271,
+        "h": 40
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "input",
+        "text": "",
+        "w": 16,
+        "h": 16
+      },
+      {
+        "tag": "button",
+        "text": "Thư viện yêu thích",
+        "w": 166,
+        "h": 34
+      },
+      {
+        "tag": "button",
+        "text": "Mẫu chức năng",
+        "w": 143,
+        "h": 34
+      },
+      {
+        "tag": "button",
+        "text": "Lịch sử",
+        "w": 85,
+        "h": 34
+      }
+    ],
+    "smallTargetCount": 36,
+    "inputCount": 5,
+    "sub16Inputs": [
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "input",
+        "type": "radio",
+        "font": 14,
+        "w": 16
+      },
+      {
+        "tag": "textarea",
+        "type": "",
+        "font": 14,
+        "w": 1312
+      }
+    ],
+    "overflowers": [],
+    "hasVietnamese": true,
+    "title": "Prompt Optimizer",
+    "lang": "vi",
+    "consoleErrors": []
+  }
+]

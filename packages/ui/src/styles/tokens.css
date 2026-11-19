@@ -1,0 +1,289 @@
+/**
+ * Prompt Optimizer — Mobile-First Design System Tokens (v2.15.2-vi)
+ *
+ * Borrowed Foundations:
+ * 1. Meta Astryx (https://github.com/meta/astryx & https://astryx.atmeta.com/docs/tokens):
+ *    - Layered surface hierarchy: body -> surface -> card -> popover
+ *    - 15-step 4px spacing scale (--po-space-0 to --po-space-12)
+ *    - Geometric type scale (14px base, 4px vertical grid line-height, 16px mobile input floor)
+ *    - 4dp radius scale (--po-radius-sm to --po-radius-sheet)
+ *    - Motion duration & easing curves (--po-duration-fast: 175ms, --po-ease-standard)
+ * 2. GitHub Primer Primitives (https://github.com/primer/primitives/blob/main/DESIGN_TOKENS_GUIDE.md):
+ *    - WCAG AA contrast pairings (>= 4.5:1 normal text, >= 3:1 UI controls)
+ *    - Shadow <-> Z-Index stacking alignment
+ *    - 5 mandatory interactive states & prefers-reduced-motion guard
+ */
+
+:root,
+:root[data-workspace-theme="light"],
+:root.theme-light {
+  /* Layered Surface Hierarchy */
+  --po-color-bg-body: #f5f6f8;
+  --po-color-bg-surface: #ffffff;
+  --po-color-bg-card: #ffffff;
+  --po-color-bg-popover: #ffffff;
+  --po-color-bg-muted: #f4f6f9;
+  --po-color-bg-disabled: #eef1f5;
+
+  /* Typography & Icon Foreground (WCAG AA/AAA) */
+  --po-color-text-primary: #1f2933;
+  --po-color-text-secondary: #4b5563;
+  --po-color-text-muted: #647082;
+  --po-color-text-disabled: #9ca3af;
+  --po-color-text-accent: #374151;
+  --po-color-on-accent: #ffffff;
+
+  /* Primary Accent & Interactive States */
+  --po-color-accent: #4b5563;
+  --po-color-accent-hover: #3f4854;
+  --po-color-accent-pressed: #374151;
+  --po-color-accent-muted: rgba(75, 85, 99, 0.10);
+  --po-color-overlay-hover: rgba(31, 41, 51, 0.06);
+  --po-color-overlay-pressed: rgba(31, 41, 51, 0.11);
+
+  /* Borders & Dividers */
+  --po-color-border: #e5e7eb;
+  --po-color-border-strong: #cfd6e0;
+  --po-color-divider: #eef1f4;
+
+  /* Semantic Status Roles */
+  --po-color-info: #0284c7;
+  --po-color-info-muted: #e0f2fe;
+  --po-color-info-border: #7dd3fc;
+  --po-color-success: #059669;
+  --po-color-success-muted: #dcfce7;
+  --po-color-success-border: #6ee7b7;
+  --po-color-warning: #d97706;
+  --po-color-warning-muted: #fef3c7;
+  --po-color-warning-border: #fcd34d;
+  --po-color-error: #dc2626;
+  --po-color-error-muted: #fee2e2;
+  --po-color-error-border: #fca5a5;
+
+  /* Elevation Shadows */
+  --po-shadow-resting: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --po-shadow-floating-sm: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --po-shadow-floating-md: 0 -4px 24px rgba(15, 23, 42, 0.12);
+  --po-shadow-floating-lg: 0 12px 36px rgba(15, 23, 42, 0.18);
+
+  /* Typography — Vietnamese Diacritic-Safe Stacks */
+  --po-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --po-font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+
+  /* Font Weights */
+  --po-font-weight-normal: 400;
+  --po-font-weight-medium: 500;
+  --po-font-weight-semibold: 600;
+  --po-font-weight-bold: 700;
+
+  /* Geometric Type Scale & 4px Grid Line-Heights */
+  --po-text-2xs-size: 0.6875rem; /* 11px */
+  --po-text-2xs-leading: 1rem;   /* 16px */
+  --po-text-xs-size: 0.75rem;    /* 12px */
+  --po-text-xs-leading: 1rem;    /* 16px */
+  --po-text-sm-size: 0.8125rem;  /* 13px */
+  --po-text-sm-leading: 1.25rem; /* 20px */
+  --po-text-base-size: 0.875rem; /* 14px */
+  --po-text-base-leading: 1.25rem; /* 20px */
+  --po-text-input-mobile: 1rem;  /* 16px — Mandatory iOS/Android no-zoom floor */
+  --po-text-input-leading: 1.5rem; /* 24px */
+  --po-text-lg-size: 1.0625rem;  /* 17px */
+  --po-text-lg-leading: 1.5rem;  /* 24px */
+  --po-text-xl-size: 1.25rem;    /* 20px */
+  --po-text-xl-leading: 1.75rem; /* 28px */
+
+  /* 15-Step 4px Spacing Scale (Astryx) */
+  --po-space-0: 0rem;
+  --po-space-0-5: 0.125rem; /* 2px */
+  --po-space-1: 0.25rem;    /* 4px */
+  --po-space-1-5: 0.375rem; /* 6px */
+  --po-space-2: 0.5rem;     /* 8px */
+  --po-space-2-5: 0.625rem; /* 10px */
+  --po-space-3: 0.75rem;    /* 12px */
+  --po-space-4: 1rem;       /* 16px */
+  --po-space-5: 1.25rem;    /* 20px */
+  --po-space-6: 1.5rem;     /* 24px */
+  --po-space-7: 1.75rem;    /* 28px */
+  --po-space-8: 2rem;       /* 32px */
+  --po-space-9: 2.25rem;    /* 36px */
+  --po-space-10: 2.5rem;    /* 40px */
+  --po-space-12: 3rem;      /* 48px */
+
+  /* 4dp Radius Scale */
+  --po-radius-none: 0px;
+  --po-radius-sm: 8px;
+  --po-radius-md: 10px;
+  --po-radius-lg: 12px;
+  --po-radius-xl: 16px;
+  --po-radius-sheet: 18px 18px 0 0;
+  --po-radius-full: 9999px;
+
+  /* Control Sizes & Touch Targets */
+  --po-size-control-sm: 32px;
+  --po-size-control-md: 38px;
+  --po-touch-target: 44px;
+  --po-touch-target-lg: 48px;
+
+  /* Z-Index Layers (Primer Primitives) */
+  --po-z-default: 1;
+  --po-z-sticky: 20;
+  --po-z-dropdown: 1000;
+  --po-z-sheet: 2000;
+  --po-z-modal: 2100;
+  --po-z-toast: 3000;
+
+  /* Motion & Focus Tokens (Astryx + Primer) */
+  --po-duration-micro: 100ms;
+  --po-duration-fast: 175ms;
+  --po-duration-medium: 300ms;
+  --po-ease-standard: cubic-bezier(0.24, 1, 0.4, 1);
+  --po-ease-exit: cubic-bezier(0.3, 0, 0.6, 0.6);
+  --po-focus-outline-width: 2px;
+  --po-focus-outline-offset: 2px;
+  --po-focus-outline-color: #4f78a8;
+  --po-focus-ring: var(--po-focus-outline-width) solid var(--po-focus-outline-color);
+
+  /* Safe-Area Insets (Honor Magic 6 / iOS / Android Edge-to-Edge) */
+  --po-safe-top: env(safe-area-inset-top, 0px);
+  --po-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --po-safe-left: env(safe-area-inset-left, 0px);
+  --po-safe-right: env(safe-area-inset-right, 0px);
+
+  /* Backward-compatible Bridges for Compact & Tailwind */
+  --compact-paper: var(--po-color-bg-surface);
+  --compact-soft: var(--po-color-bg-muted);
+  --compact-ink: var(--po-color-text-primary);
+  --compact-muted: var(--po-color-text-muted);
+  --compact-border: var(--po-color-border);
+  --compact-accent: var(--po-color-accent);
+
+  --color-primary: var(--po-color-accent);
+  --color-secondary: var(--po-color-text-secondary);
+  --color-background: var(--po-color-bg-body);
+  --color-card: var(--po-color-bg-card);
+  --color-text: var(--po-color-text-primary);
+  --color-border: var(--po-color-border);
+}
+
+/* Dark Theme */
+:root[data-workspace-theme="dark"],
+:root.dark {
+  --po-color-bg-body: #141820;
+  --po-color-bg-surface: #20242c;
+  --po-color-bg-card: #242933;
+  --po-color-bg-popover: #292f39;
+  --po-color-bg-muted: #292f39;
+  --po-color-bg-disabled: #1b1f27;
+
+  --po-color-text-primary: #e6e9ed;
+  --po-color-text-secondary: #c2c8d2;
+  --po-color-text-muted: #a1aab9;
+  --po-color-text-disabled: #687385;
+  --po-color-text-accent: #93c5fd;
+  --po-color-on-accent: #ffffff;
+
+  --po-color-accent: #526f9b;
+  --po-color-accent-hover: #6482b0;
+  --po-color-accent-pressed: #435c82;
+  --po-color-accent-muted: rgba(114, 149, 195, 0.18);
+  --po-color-overlay-hover: rgba(230, 233, 237, 0.08);
+  --po-color-overlay-pressed: rgba(230, 233, 237, 0.14);
+
+  --po-color-border: #3b424e;
+  --po-color-border-strong: #4e5766;
+  --po-color-divider: #2e3440;
+
+  --po-color-error: #f87171;
+  --po-color-error-muted: rgba(248, 113, 113, 0.16);
+  --po-focus-outline-color: #7295c3;
+
+  --po-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --po-shadow-floating-sm: 0 4px 12px rgba(0, 0, 0, 0.36);
+  --po-shadow-floating-md: 0 -4px 24px rgba(0, 0, 0, 0.44);
+  --po-shadow-floating-lg: 0 12px 36px rgba(0, 0, 0, 0.56);
+}
+
+/* Blue Theme (Ocean) */
+:root[data-workspace-theme="blue"],
+:root.theme-blue {
+  --po-color-bg-body: #f0f7ff;
+  --po-color-bg-surface: #ffffff;
+  --po-color-bg-card: #ffffff;
+  --po-color-bg-popover: #ffffff;
+  --po-color-bg-muted: #e8f2ff;
+  --po-color-text-primary: #0f2942;
+  --po-color-text-secondary: #335272;
+  --po-color-text-muted: #5a7696;
+  --po-color-accent: #0284c7;
+  --po-color-accent-hover: #0369a1;
+  --po-color-accent-pressed: #075985;
+  --po-color-accent-muted: rgba(2, 132, 199, 0.12);
+  --po-color-border: #d5e6f7;
+  --po-focus-outline-color: #0284c7;
+}
+
+/* Green Theme (Emerald) */
+:root[data-workspace-theme="green"],
+:root.theme-green {
+  --po-color-bg-body: #f0fdf9;
+  --po-color-bg-surface: #ffffff;
+  --po-color-bg-card: #ffffff;
+  --po-color-bg-popover: #ffffff;
+  --po-color-bg-muted: #e6f9f1;
+  --po-color-text-primary: #063626;
+  --po-color-text-secondary: #265948;
+  --po-color-text-muted: #4b7d6c;
+  --po-color-accent: #059669;
+  --po-color-accent-hover: #047857;
+  --po-color-accent-pressed: #065f46;
+  --po-color-accent-muted: rgba(5, 150, 105, 0.12);
+  --po-color-border: #cceee1;
+  --po-focus-outline-color: #059669;
+}
+
+/* Purple Theme (Royal) */
+:root[data-workspace-theme="purple"],
+:root.theme-purple {
+  --po-color-bg-body: #faf5ff;
+  --po-color-bg-surface: #ffffff;
+  --po-color-bg-card: #ffffff;
+  --po-color-bg-popover: #ffffff;
+  --po-color-bg-muted: #f3e8ff;
+  --po-color-text-primary: #2e1065;
+  --po-color-text-secondary: #533582;
+  --po-color-text-muted: #765c9e;
+  --po-color-accent: #7c3aed;
+  --po-color-accent-hover: #6d28d9;
+  --po-color-accent-pressed: #5b21b6;
+  --po-color-accent-muted: rgba(124, 58, 237, 0.12);
+  --po-color-border: #e5d4f7;
+  --po-focus-outline-color: #7c3aed;
+}
+
+/* Classic Theme (Warm Paper) */
+:root[data-workspace-theme="classic"],
+:root.theme-classic {
+  --po-color-bg-body: #f7f4ee;
+  --po-color-bg-surface: #fcfaf6;
+  --po-color-bg-card: #fcfaf6;
+  --po-color-bg-popover: #fcfaf6;
+  --po-color-bg-muted: #f1ece2;
+  --po-color-text-primary: #2c2621;
+  --po-color-text-secondary: #574e46;
+  --po-color-text-muted: #786e65;
+  --po-color-accent: #6b5b4d;
+  --po-color-accent-hover: #57493d;
+  --po-color-accent-pressed: #45392f;
+  --po-color-accent-muted: rgba(107, 91, 77, 0.12);
+  --po-color-border: #e4ddd2;
+  --po-focus-outline-color: #6b5b4d;
+}
+
+/* Accessibility: Reduced Motion Enforcement */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --po-duration-micro: 0ms;
+    --po-duration-fast: 0ms;
+    --po-duration-medium: 0ms;
+  }
+}

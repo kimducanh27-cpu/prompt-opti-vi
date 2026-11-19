@@ -1,0 +1,404 @@
+/* CompactNavigation and WorkspaceRegionSwitch own app navigation, choices and region controls. */
+
+.compact-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--po-color-border);
+  background: var(--po-color-bg-surface);
+  padding-top: var(--po-safe-top);
+}
+
+.compact-navigation {
+  color: var(--po-color-text-primary);
+  padding: 8px max(12px, var(--po-safe-right)) 8px max(12px, var(--po-safe-left));
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.compact-mode-button {
+  min-height: var(--po-touch-target);
+  border: 0;
+  border-radius: var(--po-radius-md);
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.compact-mode-button strong {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 52vw;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: var(--po-font-weight-semibold);
+}
+
+.compact-menu-row {
+  width: 100%;
+  min-height: var(--po-touch-target-lg);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  border-bottom: 1px solid var(--po-color-border);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  padding: 12px 6px;
+}
+
+.compact-menu-row > span {
+  flex: 1;
+  line-height: 1.45;
+}
+
+.compact-menu-version {
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  font-size: var(--po-text-xs-size);
+  color: var(--po-color-text-muted);
+  padding: 20px 0 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.compact-navigation button:focus-visible,
+.compact-menu-row:focus-visible {
+  outline: var(--po-focus-ring);
+  outline-offset: var(--po-focus-offset);
+}
+
+.compact-navigation > .n-button {
+  min-height: var(--po-touch-target);
+  min-width: var(--po-touch-target);
+}
+
+.compact-menu-row[aria-current="page"] {
+  color: var(--po-color-accent);
+}
+
+.compact-menu-row > .n-icon {
+  flex-shrink: 0;
+  font-size: 19px;
+}
+
+.compact-navigation .workspace-utility-button-column {
+  position: static !important;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.compact-navigation .workspace-utility-button {
+  width: var(--po-touch-target) !important;
+  height: var(--po-touch-target) !important;
+  min-width: var(--po-touch-target) !important;
+  min-height: var(--po-touch-target) !important;
+}
+
+.compact-region-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--po-space-2);
+  padding: 6px max(20px, var(--po-safe-right)) max(8px, var(--po-safe-bottom)) max(20px, var(--po-safe-left));
+  background: var(--po-color-bg-surface);
+  border-top: 1px solid var(--po-color-border);
+  flex-shrink: 0;
+}
+
+.compact-region-switch button {
+  min-height: var(--po-touch-target-lg);
+  border: 0;
+  border-radius: var(--po-radius-lg);
+  background: transparent;
+  color: var(--po-color-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font: inherit;
+  font-size: var(--po-text-xs-size);
+  line-height: 1.35;
+  cursor: pointer;
+  position: relative;
+}
+
+.compact-region-switch button[aria-pressed="true"] {
+  color: var(--po-color-accent, var(--po-color-text-primary));
+  font-weight: var(--po-font-weight-semibold);
+}
+
+.compact-region-switch button:focus-visible {
+  outline: var(--po-focus-ring);
+  outline-offset: var(--po-focus-offset);
+}
+
+.compact-region-switch button > .n-icon {
+  width: 52px;
+  height: 26px;
+  border-radius: var(--po-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact-region-switch button > .n-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.compact-region-switch button[aria-pressed="true"] > .n-icon {
+  background: var(--po-color-bg-muted);
+}
+
+.compact-region-running {
+  position: absolute;
+  top: 7px;
+  left: calc(50% + 15px);
+  width: 6px;
+  height: 6px;
+  border-radius: var(--po-radius-full);
+  background: var(--po-focus-outline-color);
+}
+
+.workspace-compact .compact-main-menu {
+  flex-shrink: 0;
+  min-height: var(--po-touch-target);
+  padding: 0 12px !important;
+  border-radius: var(--po-radius-md);
+  background: var(--po-color-bg-muted);
+  color: var(--po-color-text-primary);
+  font-weight: var(--po-font-weight-semibold);
+}
+
+.workspace-compact .compact-mode-button {
+  flex: 1;
+  justify-content: flex-start;
+  padding: 0 8px;
+  gap: 6px;
+}
+
+.workspace-compact .compact-mode-button strong {
+  max-width: none;
+  min-width: 0;
+  font-size: var(--po-text-base-size);
+  line-height: 1.45;
+  font-weight: var(--po-font-weight-semibold);
+}
+
+.workspace-compact .compact-mode-button .n-icon {
+  flex-shrink: 0;
+  color: var(--po-color-text-muted);
+}
+
+.workspace-compact #compact-workspace-tools {
+  flex-shrink: 0;
+}
+
+.workspace-compact .compact-navigation .workspace-utility-button {
+  width: var(--po-touch-target) !important;
+  height: var(--po-touch-target) !important;
+  min-width: var(--po-touch-target) !important;
+  min-height: var(--po-touch-target) !important;
+  color: var(--po-color-text-muted);
+  background: transparent;
+}
+
+.workspace-compact .compact-navigation .workspace-utility-button .n-icon {
+  font-size: 18px;
+}
+
+.workspace-compact .compact-function-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--po-space-2);
+}
+
+.workspace-compact .compact-function-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1px solid var(--po-color-border);
+  border-radius: var(--po-radius-md);
+  background: var(--po-color-bg-muted);
+  color: inherit;
+  font: inherit;
+  font-size: var(--po-text-base-size);
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-compact .compact-function-tile > .n-icon {
+  flex-shrink: 0;
+  font-size: 19px;
+  color: var(--po-color-text-muted);
+}
+
+.workspace-compact .compact-function-tile > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.workspace-compact .compact-menu-preferences {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--po-space-3);
+  margin-top: var(--po-space-3);
+  padding: var(--po-space-2) 0;
+}
+
+.workspace-compact .compact-menu-preference {
+  display: flex;
+  align-items: center;
+  gap: var(--po-space-2);
+  min-width: 0;
+}
+
+.workspace-compact .compact-menu-preference-label {
+  font-size: var(--po-text-sm-size);
+  color: var(--po-color-text-muted);
+}
+
+.workspace-compact .compact-menu-preferences .n-button {
+  min-height: var(--po-touch-target);
+  min-width: var(--po-touch-target);
+}
+
+.workspace-compact .compact-menu-help {
+  border-top: 1px solid var(--po-color-border);
+}
+
+.workspace-compact .compact-menu-help > summary {
+  min-height: var(--po-touch-target);
+  display: flex;
+  align-items: center;
+  padding: 10px 4px;
+  font-size: var(--po-text-sm-size);
+  color: var(--po-color-text-muted);
+  cursor: pointer;
+}
+
+.workspace-compact .compact-menu-help .compact-menu-row {
+  min-height: var(--po-touch-target);
+  font-size: var(--po-text-sm-size);
+  padding: 8px 4px;
+}
+
+.workspace-compact .compact-menu-help .compact-menu-version {
+  margin-top: 0;
+  padding-top: 12px;
+}
+
+.workspace-compact .compact-mode-group + .compact-mode-group {
+  margin-top: var(--po-space-4);
+}
+
+.workspace-compact .compact-mode-group > h3 {
+  margin: 0 0 8px;
+  font-size: var(--po-text-xs-size);
+  font-weight: var(--po-font-weight-semibold);
+  color: var(--po-color-text-muted);
+}
+
+.workspace-compact .compact-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--po-space-2);
+}
+
+/* Auto-fit 3-item grids so multi-word Vietnamese labels ("Văn bản sang Ảnh") never clip on 360px-421px screens */
+.workspace-compact .compact-mode-grid--three {
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+}
+
+.workspace-compact .compact-mode-choice {
+  min-height: var(--po-touch-target-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: 1px solid var(--po-color-border);
+  border-radius: var(--po-radius-md);
+  font: inherit;
+  font-size: var(--po-text-base-size);
+  line-height: 1.35;
+  color: inherit;
+  background: var(--po-color-bg-surface);
+  cursor: pointer;
+}
+
+.workspace-compact .compact-mode-choice[aria-current="page"] {
+  border-color: var(--po-color-accent);
+  background: var(--po-color-bg-muted);
+  font-weight: var(--po-font-weight-semibold);
+}
+
+.workspace-compact .compact-mode-choice .n-icon {
+  flex-shrink: 0;
+}
+
+.workspace-compact .compact-function-tile:focus-visible,
+.workspace-compact .compact-mode-choice:focus-visible,
+.workspace-compact .compact-menu-help > summary:focus-visible {
+  outline: var(--po-focus-ring);
+  outline-offset: var(--po-focus-offset);
+}
+
+@container mobile-viewport (max-height: 620px) {
+  .compact-region-switch {
+    padding-top: 4px;
+    padding-bottom: max(4px, var(--po-safe-bottom));
+  }
+
+  .compact-region-switch button {
+    flex-direction: row;
+    min-height: var(--po-touch-target);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 740px) {
+  .workspace-compact .compact-navigation {
+    min-height: 52px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 480px) {
+  .workspace-compact .compact-navigation {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 359px) {
+  .workspace-compact .compact-function-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace-compact .compact-menu-preference {
+    gap: 4px;
+  }
+
+  .workspace-compact .compact-menu-preference-label {
+    font-size: 12px;
+  }
+}

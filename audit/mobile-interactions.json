@@ -1,0 +1,17 @@
+{
+  "steps": [],
+  "afterEnglish": {
+    "lang": "en",
+    "nav": "Menu\nUser Prompt Optimization"
+  },
+  "enTrigger": 1,
+  "backToVi": {
+    "lang": "vi"
+  },
+  "theme": {
+    "attr": "dark",
+    "cls": "workspace-compact dark",
+    "bg": "rgb(16, 16, 20)"
+  },
+  "errors": []
+}

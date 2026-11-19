@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "Prompt Optimizer — Trình tối ưu Prompt AI"
+  },
+  "extDesc": {
+    "message": "Công cụ tối ưu hóa Prompt cho Mô hình Ngôn ngữ Lớn (LLM): Tối ưu một chạm, tinh chỉnh đa vòng, theo dõi lịch sử phiên bản và đánh giá A/B. Hỗ trợ OpenAI, Gemini, DeepSeek, xử lý trực tiếp tại trình duyệt đảm bảo an toàn dữ liệu."
+  },
+  "extShortName": {
+    "message": "Prompt Optimizer"
+  }
+}

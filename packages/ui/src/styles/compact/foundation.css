@@ -1,0 +1,101 @@
+/* Shared mobile tokens, viewport budgets and workspace surfaces. Do not add feature-specific descendants here. */
+@import '../tokens.css';
+
+.workspace-compact .main-content-wrapper {
+  overflow: hidden;
+  background: var(--po-color-bg-surface);
+  container: mobile-viewport / size;
+}
+
+.workspace-compact .n-button,
+.workspace-compact button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--po-duration-micro) var(--po-ease-standard),
+    border-color var(--po-duration-micro) var(--po-ease-standard),
+    color var(--po-duration-micro) var(--po-ease-standard),
+    transform var(--po-duration-micro) var(--po-ease-standard);
+}
+
+.workspace-compact .n-button:active:not(:disabled),
+.workspace-compact button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.workspace-compact .n-button:focus-visible,
+.workspace-compact button:focus-visible {
+  outline: var(--po-focus-ring);
+  outline-offset: var(--po-focus-offset);
+}
+
+.compact-two-region {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--po-color-bg-surface);
+  --compact-gap: clamp(6px, 1.5vw, 10px);
+  --compact-editor-max: clamp(82px, 18dvh, 164px);
+  --compact-submit-width: clamp(64px, 16cqi, 88px);
+}
+
+.compact-two-region .n-card {
+  border-radius: var(--po-radius-lg);
+  border-color: var(--po-color-border);
+}
+
+.compact-two-region textarea,
+.compact-two-region input,
+.compact-two-region .n-input__input-el,
+.compact-two-region .n-input__textarea-el {
+  font-size: var(--po-text-input-mobile) !important;
+  line-height: 1.65 !important;
+}
+
+.workspace-compact .n-config-provider {
+  font-family: var(--po-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.compact-two-region .n-button {
+  --n-border-radius: var(--po-radius-md) !important;
+}
+
+.compact-two-region .n-input {
+  --n-border-radius: var(--po-radius-md) !important;
+  --n-color: var(--po-color-bg-muted) !important;
+  --n-border: 1px solid transparent !important;
+  --n-font-size: var(--po-text-input-mobile) !important;
+  --n-line-height-textarea: 1.65 !important;
+}
+
+.compact-two-region .n-base-selection {
+  --n-border-radius: var(--po-radius-md) !important;
+  --n-color: var(--po-color-bg-muted) !important;
+  --n-border: 1px solid transparent !important;
+}
+
+.compact-two-region .n-input:focus-within {
+  --n-color: var(--po-color-bg-surface) !important;
+  --n-border-focus: 1px solid var(--po-color-border-strong) !important;
+}
+
+:root[data-workspace-theme="dark"] .compact-two-region .n-button--primary-type {
+  --n-text-color: var(--po-color-on-accent) !important;
+  --n-text-color-hover: var(--po-color-on-accent) !important;
+  --n-text-color-pressed: var(--po-color-on-accent) !important;
+  --n-text-color-focus: var(--po-color-on-accent) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-compact *,
+  .workspace-compact *::before,
+  .workspace-compact *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
