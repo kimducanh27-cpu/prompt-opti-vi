@@ -283,18 +283,19 @@ const jumpToMainContent = () => {
 .app-frame--compact {
   min-height: 100vh;
   min-height: 100dvh;
-  height: 100vh;
-  height: 100dvh;
-  height: var(--viewport-height, 100dvh);
+  height: auto;
   padding-top: 0;
   padding-bottom: 0;
   padding-left: 0;
   padding-right: 0;
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow: visible;
 }
 
 .app-frame--compact .compact-header {
+  position: sticky;
+  top: 0;
+  z-index: 25;
   padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
 }
 
@@ -313,9 +314,9 @@ const jumpToMainContent = () => {
 }
 
 .app-frame--compact .app-content {
-  padding: 0 0 calc(var(--compact-tab-bar-height) + max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)));
+  padding: 0 0 calc(var(--compact-tab-bar-height) + max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)) + 24px);
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow: visible;
 }
 
 .main-content-wrapper {

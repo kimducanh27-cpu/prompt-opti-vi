@@ -1,6 +1,5 @@
 /* AdaptiveModal and shared overlay primitives. Naive card/dialog slots are the deliberate framework boundary. */
 
-.workspace-compact .compact-viewport-frame,
 .workspace-compact .n-modal-body-wrapper {
   top: var(--compact-viewport-top, 0px) !important;
   bottom: auto !important;

@@ -26,46 +26,131 @@
 @import './compact/image-targets.css';
 
 /* ==========================================================================
- * Honor Magic6 Mobile-First Responsive Tuning
+ * Honor Magic6 Mobile-First Responsive Tuning & Document Flow Architecture
  * ========================================================================== */
 
-/* 1. Full-height containers & 100dvh support with fallbacks to eliminate address bar jitter */
+/* 1. Full viewport support without trapping vertical document scroll */
 @supports (height: 100dvh) {
   :root {
     --viewport-height: 100dvh;
   }
 }
 
-.workspace-compact .compact-viewport-frame {
+/* 2. Document-level scrolling: Allow the HTML document to scroll freely with touch gestures */
+html.workspace-compact {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100dvh !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+html.workspace-compact body {
+  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  height: auto !important;
+  min-height: 100dvh !important;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+.workspace-compact #app,
+.workspace-compact .web-workspace,
+.workspace-compact .n-config-provider {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow: visible !important;
+}
+
+/* 3. Unblock frame & containers: Remove scroll lock and viewport clamps */
+.workspace-compact .compact-viewport-frame,
+.workspace-compact .app-frame,
+.workspace-compact .app-frame--compact {
   min-height: 100vh;
   min-height: 100dvh;
-  height: 100vh;
-  height: 100dvh;
-  height: var(--compact-viewport-height, 100dvh) !important;
-  max-height: 100vh;
-  max-height: 100dvh;
-  max-height: var(--compact-viewport-height, 100dvh) !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
-/* 2. Safe-area insets: Pill camera cutout (top) and Android gesture bar (bottom) */
+.workspace-compact .app-content {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  /* Reserve space for fixed bottom tab bar (58px) + gesture navigation safe-area + clearance */
+  padding-bottom: calc(var(--compact-tab-bar-height, 58px) + max(env(safe-area-inset-bottom, 0px), 16px) + 24px) !important;
+}
+
+.workspace-compact .main-content-wrapper,
+.workspace-compact .compact-two-region {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* 4. Sticky Header with safe-area for pill camera cutout (~92px max compact height) */
 .workspace-compact .compact-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  background: var(--compact-paper, #ffffff) !important;
   padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
+.workspace-compact .compact-navigation {
+  height: 48px !important;
+  min-height: 44px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+.workspace-compact .compact-mode-strip {
+  padding-top: 2px !important;
+  padding-bottom: 6px !important;
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* 5. Fixed Bottom Tab Bar with Android gesture safe area */
 .workspace-compact .compact-tab-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  background: var(--compact-paper, #ffffff) !important;
   padding-bottom: calc(var(--spacing-1-5) + max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px))) !important;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
-/* 3. Quad-curved screen protection: Enforce minimum 16px horizontal boundary padding
+/* 6. Quad-curved screen protection: Enforce minimum 16px horizontal boundary padding
  * Protects buttons and content from distortion and accidental palm rejection on curved edges */
 .workspace-compact .compact-navigation {
   padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
   padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .workspace-compact .compact-mode-strip {
   padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
   padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .workspace-compact .compact-tab-bar {
@@ -90,25 +175,5 @@
 .workspace-compact .test-workspace-toolbar--compact {
   padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
-}
-
-/* 4. Horizontal overflow prevention across 360px–412px viewports */
-.workspace-compact,
-.workspace-compact body,
-.workspace-compact .app-frame,
-.workspace-compact .app-content,
-.workspace-compact .main-content-wrapper,
-.workspace-compact .compact-two-region {
-  max-width: 100vw;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-.workspace-compact .compact-header,
-.workspace-compact .compact-navigation,
-.workspace-compact .compact-mode-strip,
-.workspace-compact .compact-tab-bar {
-  max-width: 100vw;
-  box-sizing: border-box;
 }
 
