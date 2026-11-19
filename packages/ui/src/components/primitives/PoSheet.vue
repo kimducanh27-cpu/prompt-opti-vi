@@ -182,9 +182,8 @@ const onDocumentPointerDown = (event: PointerEvent) => {
   if (!header) return
   const card = header.closest('.po-sheet--compact') as HTMLElement | null
   if (!card) return
-  // S7-4 (M1): a drag starting inside the 300ms enter window would fight
-  // the GSAP enter tween — both write the card's inline transform each
-  // tick (GSAP) / each pointermove (drag). Kill the tween first; the drag
+  // S7-4 (M1): a drag starting inside the enter window would fight
+  // any enter motion — kill motion first; the drag then owns the transform outright.
   // then owns the transform outright. Killing mid-tween skips the tween's
   // clearProps, so also clear the inline opacity here — otherwise a kill
   // at opacity 0.4 would leave the card semi-transparent after the drag

@@ -45,7 +45,6 @@
     "diff": "^8.0.4",
     "dompurify": "^3.4.16",
     "fflate": "^0.8.3",
-    "gsap": "3.15.1",
     "highlight.js": "^11.11.1",
     "markdown-it": "^14.3.3",
     "markdown-it-cjk-friendly": "^3.0.0",

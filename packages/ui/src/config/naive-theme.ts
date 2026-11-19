@@ -194,7 +194,7 @@ interface ThemePalette {
 }
 
 const lightPalette: ThemePalette = {
-  accent: '#1f6bd1',
+  accent: '#0f766e',
   accentHover: '#185cb8',
   accentPressed: '#134c98',
   accentSuppl: '#6caef7',
@@ -272,7 +272,7 @@ const lightPalette: ThemePalette = {
 }
 
 const darkPalette: ThemePalette = {
-  accent: '#6d9cfe',
+  accent: '#2dd4bf',
   accentHover: '#87aefe',
   accentPressed: '#a3c0fe',
   accentSuppl: '#253c5a',

@@ -264,16 +264,38 @@ const jumpToMainContent = () => {
      let the last ~1.4px of content slide under the bar. The +2px makes
      the reserve 58px, covering the real bar with ~0.6px to spare. */
   --compact-tab-bar-height: calc(var(--touch-target-min) + var(--spacing-1-5) + var(--spacing-1-5) + 2px);
-  height: var(--viewport-height);
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  height: var(--viewport-height, 100dvh);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   background: var(--color-background-body);
   color: var(--color-text-primary);
-  padding-top: var(--safe-area-inset-top);
-  padding-right: var(--safe-area-inset-right);
-  padding-bottom: var(--safe-area-inset-bottom);
-  padding-left: var(--safe-area-inset-left);
+  padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  padding-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  padding-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+}
+
+.app-frame--compact {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  height: var(--viewport-height, 100dvh);
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.app-frame--compact .compact-header {
+  padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
 }
 
 /* ---- Main content ----
@@ -291,7 +313,9 @@ const jumpToMainContent = () => {
 }
 
 .app-frame--compact .app-content {
-  padding: 0 0 calc(var(--compact-tab-bar-height) + var(--safe-area-inset-bottom));
+  padding: 0 0 calc(var(--compact-tab-bar-height) + max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)));
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .main-content-wrapper {

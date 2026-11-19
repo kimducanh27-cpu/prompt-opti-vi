@@ -2626,7 +2626,15 @@ onBeforeUnmount(async () => {
     justify-content: center;
     align-items: center;
     gap: 12px;
+    min-height: 100vh;
+    min-height: 100dvh;
     height: 100vh;
+    height: 100dvh;
+    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
     font-size: 1.2rem;
     color: var(--n-text-color);
     background-color: var(--n-body-color, var(--n-color));

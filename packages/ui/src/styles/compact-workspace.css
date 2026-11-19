@@ -24,3 +24,91 @@
 @import './compact/test-targets.css';
 @import './compact/pro-targets.css';
 @import './compact/image-targets.css';
+
+/* ==========================================================================
+ * Honor Magic6 Mobile-First Responsive Tuning
+ * ========================================================================== */
+
+/* 1. Full-height containers & 100dvh support with fallbacks to eliminate address bar jitter */
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
+}
+
+.workspace-compact .compact-viewport-frame {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  height: var(--compact-viewport-height, 100dvh) !important;
+  max-height: 100vh;
+  max-height: 100dvh;
+  max-height: var(--compact-viewport-height, 100dvh) !important;
+}
+
+/* 2. Safe-area insets: Pill camera cutout (top) and Android gesture bar (bottom) */
+.workspace-compact .compact-header {
+  padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+}
+
+.workspace-compact .compact-tab-bar {
+  padding-bottom: calc(var(--spacing-1-5) + max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px))) !important;
+}
+
+/* 3. Quad-curved screen protection: Enforce minimum 16px horizontal boundary padding
+ * Protects buttons and content from distortion and accidental palm rejection on curved edges */
+.workspace-compact .compact-navigation {
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+}
+
+.workspace-compact .compact-mode-strip {
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+}
+
+.workspace-compact .compact-tab-bar {
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+}
+
+.workspace-compact .compact-two-region > .compact-workspace-pane {
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+}
+
+@media (max-width: 359px) {
+  .workspace-compact .compact-two-region > .compact-workspace-pane {
+    padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) !important;
+  }
+}
+
+.workspace-compact .favorites-manager-shell--compact,
+.workspace-compact .arena-workspace,
+.workspace-compact .test-workspace-toolbar--compact {
+  padding-left: max(16px, env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+}
+
+/* 4. Horizontal overflow prevention across 360px–412px viewports */
+.workspace-compact,
+.workspace-compact body,
+.workspace-compact .app-frame,
+.workspace-compact .app-content,
+.workspace-compact .main-content-wrapper,
+.workspace-compact .compact-two-region {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.workspace-compact .compact-header,
+.workspace-compact .compact-navigation,
+.workspace-compact .compact-mode-strip,
+.workspace-compact .compact-tab-bar {
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+

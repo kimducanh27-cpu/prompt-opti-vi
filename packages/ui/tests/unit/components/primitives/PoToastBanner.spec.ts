@@ -58,8 +58,8 @@ describe('PoBanner', () => {
     const close = wrapper.find('.po-banner__close')
     expect(close.attributes('aria-label')).toBe('Dismiss')
     await close.trigger('click')
-    // M2 dismiss fades out first (S7-4): the emit lands in GSAP's
-    // onComplete ~130ms after the click, so wait for the fade.
+    // M2 dismiss fades out first (S7-4): the emit lands in
+    // onComplete after the click, so wait for the fade.
     await new Promise((resolve) => setTimeout(resolve, 300))
     expect(wrapper.emitted('dismiss')).toHaveLength(1)
   })

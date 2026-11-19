@@ -539,7 +539,7 @@ const activeCompareReasonKey = ref<string | null>(null)
 // cached result. The fade target is the `.n-scrollbar` element resolved
 // from the NScrollbar ref: `$el` alone is NOT reliable — Naive returns
 // the slot content when the content fits (not scrollable), so `$el` can
-// be a text node (S7-MOTION-02: GSAP warned 3x and nothing faded).
+// be a text node (S7-MOTION-02: warned 3x and nothing faded).
 // killMotion first so a re-evaluation never stacks tweens.
 const resultScrollRef = ref<{ $el?: Node } | null>(null)
 const resolveResultTarget = (): HTMLElement | null => {

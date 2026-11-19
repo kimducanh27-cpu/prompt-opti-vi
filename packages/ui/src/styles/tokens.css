@@ -66,9 +66,9 @@
   --color-overlay-hover: light-dark(#0000000d, #ffffff0d);
   --color-overlay-pressed: light-dark(#0000001a, #ffffff1a);
   --color-skeleton: light-dark(#f1f1f1, #525252);
-  --color-accent: light-dark(#1f6bd1, #6d9cfe);
+  --color-accent: light-dark(#0f766e, #2dd4bf);
   --color-on-accent: light-dark(#ffffff, #111111);
-  --color-accent-muted: light-dark(#b9d7ff, #253c5a);
+  --color-accent-muted: light-dark(#ccfbf1, #134e4a);
 
   /* Status roles (base + text + muted background, Astryx Neutral §1.2).
    * Warning base is #ffce2f in both modes. Status is never colour-only:
@@ -195,9 +195,9 @@
   --color-overlay-hover: light-dark(#0000000d, #ffffff0d);
   --color-overlay-pressed: light-dark(#0000001a, #ffffff1a);
   --color-skeleton: light-dark(#f1f1f1, #525252);
-  --color-accent: light-dark(#1f6bd1, #6d9cfe);
+  --color-accent: light-dark(#0f766e, #2dd4bf);
   --color-on-accent: light-dark(#ffffff, #111111);
-  --color-accent-muted: light-dark(#b9d7ff, #253c5a);
+  --color-accent-muted: light-dark(#ccfbf1, #134e4a);
   --color-status-info: light-dark(#0074e2, #6d9cfe);
   --color-status-info-text: light-dark(#0067ce, #a1caff);
   --color-status-info-muted: light-dark(#b9d7ff, #88bcff3d);
