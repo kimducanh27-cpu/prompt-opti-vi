@@ -1,0 +1,24 @@
+HUONG DAN - prompt-opti-vi (ban rebuild mobile-first + tieng Viet)
+============================================================
+
+LIVE WEB (da up len GitHub Pages):
+- https://kimducanh27-cpu.github.io/prompt-opti-vi/
+- Mo bang dien thoai cung duoc; vao Model Manager them key DeepSeek (hoac model khac) thi moi toi uu duoc.
+  App khong kem key san.
+
+1) CHAY WEB TREN MAY TINH
+- Cai Node.js 24 (nodejs.org) neu chua co. Sau do cai pnpm: mo terminal chay: npm install -g pnpm
+- Giai nen file zip nay ra, mo terminal/CMD trong thu muc prompt-opti-vi
+- Chay: pnpm install        (lan dau mat vai phut)
+- Chay: pnpm dev            (lan dau no build core + ui, mat vai phut)
+- Mo trinh duyet: http://localhost:18181
+
+2) MA NGUON TREN GITHUB
+- Repo: https://github.com/kimducanh27-cpu/prompt-opti-vi (nhanh main)
+- Ban build tinh de chay GitHub Pages nam o nhanh gh-pages.
+
+3) TU BUILD LAI BAN WEB
+- Build binh thuong: pnpm build  (ket qua trong packages/web/dist)
+- Build de up len GitHub Pages (chay o duong dan con /prompt-opti-vi/):
+  pnpm build:core && pnpm build:ui && pnpm -F @prompt-optimizer/web exec vite build --base=/prompt-opti-vi/
+  Sau do copy noi dung packages/web/dist vao nhanh gh-pages roi push.
