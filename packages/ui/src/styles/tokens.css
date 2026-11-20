@@ -132,12 +132,14 @@
   --po-z-modal: 2100;
   --po-z-toast: 3000;
 
-  /* Motion & Focus Tokens (Astryx + Primer) */
-  --po-duration-micro: 100ms;
-  --po-duration-fast: 175ms;
-  --po-duration-medium: 300ms;
-  --po-ease-standard: cubic-bezier(0.24, 1, 0.4, 1);
-  --po-ease-exit: cubic-bezier(0.3, 0, 0.6, 0.6);
+  /* Motion & Focus Tokens (0-Animation Mode for Honor Magic 6 & Anti-AI-Design) */
+  --po-duration-micro: 0ms;
+  --po-duration-fast: 0ms;
+  --po-duration-medium: 0ms;
+  --po-duration-slow: 0ms;
+  --po-ease-standard: linear;
+  --po-ease-exit: linear;
+  --po-transition-none: none;
   --po-focus-outline-width: 2px;
   --po-focus-outline-offset: 2px;
   --po-focus-outline-color: #4f78a8;
@@ -279,11 +281,27 @@
   --po-focus-outline-color: #6b5b4d;
 }
 
-/* Accessibility: Reduced Motion Enforcement */
+/* Accessibility: Reduced Motion & 0-Animation Hard Enforcement */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --po-duration-micro: 0ms;
     --po-duration-fast: 0ms;
     --po-duration-medium: 0ms;
+    --po-duration-slow: 0ms;
   }
 }
+
+/* ==============================================================================
+ * Global 0-Animation Hard Rule (Honor Magic 6 Zero Jitter & Anti-AI-Design)
+ * ============================================================================== */
+*,
+*::before,
+*::after {
+  animation: none !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition: none !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
