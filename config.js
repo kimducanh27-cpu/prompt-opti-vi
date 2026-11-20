@@ -1,4 +1,4 @@
-// 默认空配置文件
-// 在docker环境下会被替换为实际的环境配置文件
+// Tệp cấu hình rỗng mặc định
+// Trong môi trường Docker, tệp này được thay bằng cấu hình môi trường thực tế
 window.runtime_config = {};
-console.log("使用默认配置"); 
+console.log("Đang dùng cấu hình mặc định"); 
