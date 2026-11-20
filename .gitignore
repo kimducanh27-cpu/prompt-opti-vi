@@ -202,3 +202,10 @@ AGENTS.md
 .codex-run/
 .codex-tmp/
 .trellis/
+
+# ==========================================
+# Worktrees (superpowers using-git-worktrees)
+# ==========================================
+.worktrees/
+worktrees/
+
