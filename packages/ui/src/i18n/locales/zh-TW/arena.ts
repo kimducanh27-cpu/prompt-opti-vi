@@ -17,6 +17,7 @@ export default {
     "invalidSession": "競技場工作階段資料損壞，未覆蓋原資料。",
     "interrupted": "上次請求因頁面重新整理或關閉而中斷，請重新執行。",
     "missingImage": "圖片無法使用，請重新新增或執行。",
+    "imageDeleted": "已刪除參考圖片",
     "incomplete": "請填寫提示詞、連線設定和實際模型。",
     "unavailable": "模型設定或服務無法使用，請檢查設定。",
     "emptyOutput": "模型沒有傳回可顯示的內容。",

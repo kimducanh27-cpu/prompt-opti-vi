@@ -63,6 +63,14 @@ const mountDialog = async (
         }),
       },
       stubs: {
+        // Slice 7: SaveFavoriteDialog's overlay is a PoSheet now.
+        PoSheet: defineComponent({
+          name: 'PoSheet',
+          props: ['show'],
+          setup(props, { slots }) {
+            return () => props.show ? h('section', { class: 'n-modal' }, slots.default?.()) : null
+          },
+        }),
         NModal: defineComponent({
           name: 'NModal',
           props: ['show'],

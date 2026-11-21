@@ -14,7 +14,6 @@
     <NConfigProvider
         :theme="naiveTheme"
         :theme-overrides="themeOverrides"
-        :style="isCompact ? { '--compact-accent': themeOverrides.common?.primaryColor } : undefined"
         :hljs="hljsInstance"
     >
         <div v-if="isInitializing" class="loading-container">
@@ -35,6 +34,7 @@
                         :workspace-path="activeWorkspaceContextPath"
                         :app-version="appVersion"
                         :backup-reminder-due="dataBackupReminderDue"
+                        :favorites-count="favoritesCount"
                         @action="handleMobileAction"
                     />
                 </template>
@@ -148,7 +148,7 @@
                 :candidate-source="saveFavoriteData?.candidateSource"
                 :current-function-mode="routeFunctionMode"
                 :current-optimization-mode="selectedOptimizationMode"
-                @saved="handleSaveFavoriteComplete"
+                @saved="handleSaveFavoriteCompleteAndRefresh"
             />
 
             <!-- 变量管理弹窗 -->
@@ -244,10 +244,13 @@ import {
     nextTick,
 } from "vue";
 import { RouterView } from "vue-router";
-import { setLucideProps } from '@lucide/vue';
-import { APP_ICON_DEFAULTS } from '../../config/icons';
+import { PHOSPHOR_ICON_DEFAULTS } from '../../config/icons';
 
-setLucideProps(APP_ICON_DEFAULTS);
+// Phosphor global defaults (step 7, D2: size 16, weight regular) via
+// provide/inject — every Phosphor icon below this root reads them.
+// Lucide is fully gone (S7-3 grep-0): no setLucideProps anymore.
+provide('size', PHOSPHOR_ICON_DEFAULTS.size);
+provide('weight', PHOSPHOR_ICON_DEFAULTS.weight);
 import { router as routerInstance } from '../../router';
 import {
     DEFAULT_WORKSPACE_PATH,
@@ -795,6 +798,7 @@ const handleMobileAction = (action: string) => {
     else if (action === 'models') openModelManager();
     else if (action === 'variables') handleOpenVariableManager();
     else if (action === 'data') showDataManager.value = true;
+    else if (action === 'tools') showToolManager.value = true;
     else if (action === 'docs') openDocumentationSite();
     else if (action === 'website') openOfficialWebsite();
     else if (action === 'github') openGithubRepo();
@@ -888,7 +892,15 @@ const handleOpenVariableManager = (variableName?: string) => {
 
 // 工具管理器处理函数
 const handleToolManagerConfirm = (tools?: ToolDefinition[]) => {
-    optimizationContextTools.value = tools ?? [];
+    // V-H-03: the standalone Tool Manager previously only updated the
+    // in-memory ref — tools added/edited here vanished on reload (silent
+    // data loss; variables persist, tools did not). Persist exactly like
+    // the ContextEditor save path below (same 300ms-throttled
+    // persistContextUpdate into the context repo, which the boot restore
+    // reads back into optimizationContextTools).
+    const nextTools = tools ?? [];
+    optimizationContextTools.value = nextTools;
+    void persistContextUpdate({ tools: nextTools });
     showToolManager.value = false;
 };
 
@@ -1750,6 +1762,28 @@ const { handleHistoryReuse } = useAppHistoryRestore({
 });
 
 // App 级别收藏管理
+// Slice 6a: favorites count for the CompactNavigation Favorites tab badge
+// (design-system §2.2 — Badge is a count only). No reactive count existed
+// in the app, so this reads the already-wired favoriteManager directly:
+// loaded once services are ready, refreshed after a save and after
+// leaving the Favorites page (deletes happen there). A failed read keeps
+// the last known count (badge hidden while undefined).
+const favoritesCount = ref<number | undefined>(undefined);
+const refreshFavoritesCount = async () => {
+    const manager = services.value?.favoriteManager;
+    if (!manager) return;
+    try {
+        favoritesCount.value = (await manager.getFavorites()).length;
+    } catch (error) {
+        console.error('[PromptOptimizerApp] Failed to load favorites count:', error);
+    }
+};
+watch(isReady, (ready) => {
+    if (ready) void refreshFavoritesCount();
+}, { immediate: true });
+watch(isFavoritesRoute, (isFav, wasFav) => {
+    if (wasFav && !isFav) void refreshFavoritesCount();
+});
 const {
     showFavoriteManager,
     showSaveFavoriteDialog,
@@ -1779,6 +1813,11 @@ const {
     getCurrentOptimizationMode: () => selectedOptimizationMode.value,
     getCurrentImageSubMode: () => routeImageSubMode.value,
 });
+
+const handleSaveFavoriteCompleteAndRefresh = async (favoriteId?: string) => {
+    await handleSaveFavoriteComplete(favoriteId);
+    await refreshFavoritesCount();
+};
 
 const resolveFavoritesReturnPath = () =>
     resolveWorkspacePathFallback(
@@ -2385,11 +2424,30 @@ const prepareForUpdate = createAppUpdatePreparation({
 });
 defineExpose({ prepareForUpdate });
 
+// EU01-07 / EU-F01 / R3B-01 / EU04-03 (shared debounce-flush fix):
+// `beforeunload` fires while the document is still fully alive, so the async
+// IndexedDB chain (navigator.locks → Dexie compareAndSet) gets the whole
+// unload sequence to complete. Work started in `pagehide` runs on a document
+// that is already being discarded — its `setTimeout` hops may never run, which
+// is exactly how a prompt typed <750ms before reload (still inside the compact
+// autosave's debounce window) was lost. `pagehide` stays registered below as
+// the backstop for unloads that skip `beforeunload` (e.g. tab discard).
+const handleBeforeUnload = () => {
+  // Flush the debounced compact autosave NOW (no 750ms wait) for the keys
+  // with pending edits, then flush every session urgently (timer-free path).
+  // Both are fire-and-forget: the browser does not await unload handlers,
+  // but starting here instead of in `pagehide` buys the full unload window.
+  void compactAutosave.flush()
+  sessionManager.saveAllSessions({ urgent: true }).catch(err => {
+    console.error('[PromptOptimizerApp] Async save failed during beforeunload:', err)
+  })
+}
+
 // ⚠️ 具名函数：pagehide 事件处理器（Codex 建议）
 const handlePagehide = () => {
   compactAutosave.cancelPending();
   // 注意：这里不能用 await，因为浏览器不会等异步完成
-  sessionManager.saveAllSessions().catch(err => {
+  sessionManager.saveAllSessions({ urgent: true }).catch(err => {
     console.error('[PromptOptimizerApp] Async save failed during pagehide:', err)
   })
 }
@@ -2398,7 +2456,7 @@ const handlePagehide = () => {
 const handleVisibilityChange = () => {
   if (document.visibilityState === 'hidden') {
     compactAutosave.cancelPending();
-    sessionManager.saveAllSessions().catch(err => {
+    sessionManager.saveAllSessions({ urgent: true }).catch(err => {
       console.error('[PromptOptimizerApp] Save failed during visibilitychange:', err)
     })
   }
@@ -2488,7 +2546,12 @@ onMounted(() => {
 
       // ⚠️ Codex 建议：使用 pagehide 代替 beforeunload（更可靠）
       // pagehide 在页面即将卸载时触发，比 beforeunload 更可靠
+      // EU01-07 / EU-F01 / R3B-01 / EU04-03: beforeunload 另外注册为
+      // first flush — 它在文档仍存活时触发，给异步 IndexedDB 写入留出
+      // 整个卸载窗口；pagehide 仍保留为后备（tab discard 等不触发
+      // beforeunload 的卸载路径）。
       if (typeof window !== 'undefined') {
+        window.addEventListener('beforeunload', handleBeforeUnload)
         window.addEventListener('pagehide', handlePagehide)
 
         // ⚠️ 额外的保险：visibilitychange hidden 时也触发一次保存
@@ -2523,6 +2586,7 @@ onBeforeUnmount(async () => {
 
   // ⚠️ Codex 建议：移除事件监听器，避免内存泄漏
   if (typeof window !== 'undefined') {
+    window.removeEventListener('beforeunload', handleBeforeUnload)
     window.removeEventListener('pagehide', handlePagehide)
     document.removeEventListener('visibilitychange', handleVisibilityChange)
     window.removeEventListener('unhandledrejection', handleUnhandledRejection)

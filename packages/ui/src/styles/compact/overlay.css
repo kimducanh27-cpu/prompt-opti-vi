@@ -9,8 +9,13 @@
 }
 
 .workspace-compact .adaptive-modal-page.n-card {
-  width: 100vw !important;
-  max-width: 100vw !important;
+  /* P-015: was `width: 100vw !important` — on browsers with a classic
+     scrollbar 100vw includes the scrollbar width and can cause horizontal
+     overflow. The card fills Naive's full-viewport modal wrapper, so 100%
+     is the same width minus the scrollbar. No competing width rule exists
+     (Naive sets none on .n-card), so the !important is dropped too. */
+  width: 100%;
+  max-width: 100%;
   height: var(--compact-viewport-height, 100dvh) !important;
   max-height: var(--compact-viewport-height, 100dvh) !important;
   margin: 0 !important;
@@ -88,6 +93,21 @@
   flex-shrink: 0;
 }
 
+/* EU05-01 + EU05-04/R3E-04: the shared confirm dialog's buttons are Naive
+   size="small" (28px) by default and a warning Confirm is white on #ffce2f
+   (1.49:1). useConfirmDialog.ts makes Confirm primary (white on #1f6bd1,
+   5.14:1) and both buttons medium; this floor guarantees the 44px touch
+   target. R3E-04: the dialog close X is 22x22 — same floor. */
+.workspace-compact .n-dialog__action .n-button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.workspace-compact .n-dialog .n-dialog__close {
+  width: 44px;
+  height: 44px;
+}
+
 .workspace-compact .n-modal textarea,
 .workspace-compact .n-modal input {
   font-size: 16px !important;
@@ -121,15 +141,15 @@
 }
 
 .workspace-compact .adaptive-modal-page .n-button {
-  min-height: var(--po-touch-target, 44px);
+  min-height: 40px;
 }
 
 .workspace-compact .adaptive-modal-page .n-button--circle {
-  min-width: var(--po-touch-target, 44px);
+  min-width: 40px;
 }
 
 .workspace-compact .adaptive-modal-page .n-base-selection {
-  --n-height: var(--po-touch-target, 44px) !important;
+  --n-height: 40px !important;
 }
 
 .workspace-compact .adaptive-modal-sheet.n-card {
@@ -138,12 +158,20 @@
   left: 0;
   right: 0;
   margin: 0 auto !important;
-  width: min(100vw, 520px) !important;
-  max-width: 100vw !important;
-  max-height: calc(var(--compact-viewport-height, 100dvh) - 16px) !important;
+  /* P-015 + R3Y-02: was `min(100vw, 520px) !important` / `100vw !important`
+     — same 100vw overflow hazard; the sheet is absolutely positioned with
+     left/right 0 inside the full-viewport mask, so 100% is the viewport
+     width minus the scrollbar. No competing width rule; !important dropped. */
+  width: min(100%, 520px);
+  max-width: 100%;
+  max-height: calc(var(--compact-viewport-height, 100dvh) * 0.9) !important;
+  /* Slice 10: design-system §2.4 caps sheets at 90dvh. The old
+     `100dvh - 16px` left only a 16px slit at the top (measured 899px on a
+     915px viewport) and beat PoSheet's 90dvh rule via !important. */
   display: flex;
   flex-direction: column;
-  border-radius: 18px 18px 0 0;
+  /* UIUX-L04: design-system §1.3 — page/sheet radius 28px (top). */
+  border-radius: 28px 28px 0 0;
   color: var(--compact-ink);
   background: var(--compact-paper);
 }
@@ -160,8 +188,10 @@
 }
 
 .workspace-compact .adaptive-modal-sheet > .n-card-header .n-base-close {
-  width: var(--po-touch-target, 44px);
-  height: var(--po-touch-target, 44px);
+  /* Slice 10: design-system §1.4/§2.4 — 44px close target on sheets
+     (was 40px; --touch-target-min is 44px in tokens.css). */
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
 }
 
 .workspace-compact .adaptive-modal-sheet > .n-card-content {

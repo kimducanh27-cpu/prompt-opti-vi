@@ -34,6 +34,8 @@
         trigger="click"
         placement="bottom-end"
         :options="dropdownOptions"
+        :menu-props="dropdownMenuProps"
+        :node-props="dropdownNodeProps"
         :to="embedded ? false : undefined"
         @select="handleAddOption"
       >
@@ -119,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { Plus as UiPlus } from '@lucide/vue'
+import { PhPlus as UiPlus } from '@phosphor-icons/vue'
 import { computed, ref, reactive } from 'vue'
 import { createReusableTemplate } from '@vueuse/core'
 
@@ -142,6 +144,7 @@ import {
 import { isSafeCustomKey, parseCustomValue, type UnifiedParameterDefinition } from '@prompt-optimizer/core'
 import ModelParameterEditor from './ModelParameterEditor.vue'
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },

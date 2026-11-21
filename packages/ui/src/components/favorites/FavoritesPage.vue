@@ -30,7 +30,7 @@
 import { computed, inject, onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NIcon } from 'naive-ui'
-import { Undo2 as ArrowBackUp } from '@lucide/vue'
+import { PhArrowUUpLeft as ArrowBackUp } from '@phosphor-icons/vue'
 import type { FavoritePrompt } from '@prompt-optimizer/core'
 
 import FavoriteLibraryWorkspace from '../FavoriteLibraryWorkspace.vue'

@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { X as UiX } from '@lucide/vue'
+import { PhX as UiX } from '@phosphor-icons/vue'
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 
 import { EditorView, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, keymap, placeholder as cmPlaceholder } from "@codemirror/view";
@@ -592,6 +592,14 @@ onMounted(() => {
         doc: props.modelValue,
         extensions: [
             highlightSpecialChars(),
+            // EU02-06: 关掉浏览器原生拼写检查 —— CodeMirror 的 contenteditable
+            // 默认会被拼写检查，{{variable}} 占位符全被标红下划线，看起来像报错。
+            // 只关这个输入框（变量输入的载体），不改其它 NInput / 编辑器。
+            EditorView.contentAttributes.of({
+                spellcheck: 'false',
+                autocorrect: 'off',
+                autocapitalize: 'off',
+            }),
             history(),
             foldGutter(),
             drawSelection(),

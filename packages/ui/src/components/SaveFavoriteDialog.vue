@@ -1,39 +1,37 @@
 <template>
-  <NModal
+  <!-- Slice 7: PoSheet — mobile bottom sheet (max 90dvh), desktop card ≤720px
+       (was min(92vw, 1040px)). -->
+  <PoSheet
     :show="show"
-    preset="card"
     :title="dialogTitle"
-    :style="{ width: 'min(92vw, 1040px)' }"
     :mask-closable="true"
-    content-style="padding: 0;"
     @update:show="handleClose"
   >
     <FavoritePanelShell surface="dialog" mode="save-target">
       <template #toolbar>
         <NSpace vertical :size="10">
           <NButtonGroup size="small">
-            <NButton
-              size="small"
-              :type="targetMode === 'create' ? 'primary' : 'default'"
-              :secondary="targetMode !== 'create'"
+            <PoButton
+              size="sm"
+              :variant="targetMode === 'create' ? 'primary' : 'secondary'"
               @click="targetMode = 'create'"
             >
               {{ t('favorites.dialog.saveTarget.create') }}
-            </NButton>
-            <NButton
-              size="small"
-              :type="targetMode === 'update' ? 'primary' : 'default'"
-              :secondary="targetMode !== 'update'"
+            </PoButton>
+            <PoButton
+              size="sm"
+              :variant="targetMode === 'update' ? 'primary' : 'secondary'"
               @click="targetMode = 'update'"
             >
               {{ t('favorites.dialog.saveTarget.update') }}
-            </NButton>
+            </PoButton>
           </NButtonGroup>
           <NSelect
             v-if="targetMode === 'update'"
             v-model:value="selectedFavoriteId"
             :options="favoriteOptions"
             :placeholder="t('favorites.dialog.saveTarget.targetPlaceholder')"
+            :input-props="{ 'aria-label': t('favorites.dialog.saveTarget.targetPlaceholder') }"
             size="small"
             filterable
           />
@@ -61,14 +59,15 @@
         @saved="handleSaved"
       />
     </FavoritePanelShell>
-  </NModal>
+  </PoSheet>
 </template>
 
 <script setup lang="ts">
-import NModal from "./common/AdaptiveModal.vue"
+import PoSheet from "./primitives/PoSheet.vue"
+import PoButton from "./primitives/PoButton.vue"
 import { computed, inject, ref, watch, type Ref } from 'vue'
 
-import { NAlert, NButton, NButtonGroup,  NSelect, NSpace } from 'naive-ui'
+import { NAlert, NButtonGroup,  NSelect, NSpace } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import type { FavoritePrompt } from '@prompt-optimizer/core'
 

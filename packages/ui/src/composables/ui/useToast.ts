@@ -1,9 +1,25 @@
+import { ref } from 'vue'
 import type { MessageOptions, MessageReactive } from 'naive-ui'
 
 export interface Toast {
   id: number
   message: string
   type: 'success' | 'error' | 'info' | 'warning'
+}
+
+// A11Y-M07: Naive NMessage renders toasts with no live region (role/aria-live
+// null), so screen readers never hear them (WCAG 4.1.3). Mirror every toast
+// into a reactive announcement that Toast.vue renders into visually-hidden
+// role="status" / role="alert" regions.
+export interface ToastAnnouncement {
+  text: string
+  type: Toast['type']
+  seq: number
+}
+const toastAnnouncement = ref<ToastAnnouncement>({ text: '', type: 'info', seq: 0 })
+let toastAnnouncementSeq = 0
+export function useToastAnnouncement() {
+  return toastAnnouncement
 }
 
 // 全局消息API实例 - 在NMessageProvider上下文中初始化
@@ -42,6 +58,11 @@ export function useToast() {
       keepAliveOnHover: true,
       ...(typeof options === 'number' ? { duration: options } : options || {})
     }
+
+    // A11Y-M07: announce every toast to screen readers, even on the
+    // window.$message fallback path below (no message API set).
+    toastAnnouncementSeq += 1
+    toastAnnouncement.value = { text: content, type, seq: toastAnnouncementSeq }
 
     if (!message) {
       if (typeof window !== 'undefined') {

@@ -15,6 +15,7 @@ const messages = {
     "templates": "功能提示词",
     "history": "历史记录",
     "close": "关闭",
+    "skipToMainContent": "跳到主要内容",
     "test": "测试",
     "enable": "启用",
     "disable": "禁用",
@@ -34,6 +35,7 @@ const messages = {
     "collapse": "收起",
     "hide": "隐藏",
     "clear": "清空",
+    "loadMore": "加载更多",
     "workspaceTools": "工作区工具",
     "promptGarden": {
       "title": "Prompt Garden",
@@ -112,6 +114,7 @@ const messages = {
     "warning": "警告",
     "info": "信息",
     "download": "下载",
+    "undo": "撤销",
     "deleteConfirmation": "你确定要删除吗？",
     "editingDisabledDuringStream": "内容生成期间无法编辑",
     "markdown": "渲染",
@@ -162,6 +165,7 @@ const messages = {
     "templates": "功能提示词",
     "dataManager": "数据管理",
     "favorites": "收藏夹",
+    "favoritesShort": "收藏",
     "advancedMode": "高级模式",
     "variableManager": "变量管理",
     "about": "关于",
@@ -200,10 +204,7 @@ const messages = {
     "title": "主题设置",
     "light": "日间",
     "dark": "夜间",
-    "blue": "蓝色",
-    "classic": "米杏",
-    "green": "绿色",
-    "purple": "紫色"
+    "auto": "跟随系统"
   },
   "toast": {
     "error": {
@@ -259,7 +260,6 @@ const messages = {
       "chainAutoRestored": "已从历史记录自动恢复优化链",
       "imageHistoryRestored": "图像历史记录已恢复",
       "conversationRestored": "已从历史记录恢复完整会话",
-      "imageFavoriteLoaded": "收藏的图像提示词已加载",
       "favoriteLoaded": "已将提示词加载到输入框",
       "promptGardenImportSuccess": "已从 Prompt Garden 导入",
       "localEditSaved": "已保存为新版本",
@@ -295,7 +295,6 @@ const messages = {
       "templateSelected": "选择模板",
       "optimizationModeAutoSwitched": "已自动切换到{mode}提示词优化模式",
       "switchedToImageMode": "已自动切换到图像模式",
-      "switchedToFunctionMode": "已自动切换到{mode}模式",
       "multiTurnOptimizationPrompt": "多轮对话优化（{count}条消息）"
     }
   },

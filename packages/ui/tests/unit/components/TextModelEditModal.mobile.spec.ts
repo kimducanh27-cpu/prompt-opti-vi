@@ -25,7 +25,7 @@ const Input = defineComponent({
 const Button = defineComponent({ props: ['disabled', 'loading'], template: '<button :disabled="disabled || loading"><slot/></button>' })
 const Select = defineComponent({ props: ['value', 'options'], emits: ['update:value'], template: '<select :value="value"><slot/></select>' })
 const editorStubs = {
-  AdaptiveModal: Container, NModal: Container, NForm: Container, NFormItem: FormItem,
+  PoSheet: Container, AdaptiveModal: Container, NModal: Container, NForm: Container, NFormItem: FormItem,
   NInput: Input, NInputNumber: Input, NButton: Button, NSelect: Select, ProviderPillSelect: Select,
   NSpace: Container, NFlex: Container, NCheckbox: true, NText: Container, NTag: Container,
   NH4: Container, NDivider: true, NAlert: Container, NSpin: true, NProgress: true,
@@ -273,7 +273,7 @@ describe('text model editor real modal header', () => {
       await flushPromises()
       const card = target.querySelector('.n-card')
       expect(card).not.toBeNull()
-      expect(card?.classList.contains('text-model-editor--compact')).toBe(true)
+      expect(card?.classList.contains('po-sheet--compact')).toBe(true)
       const back = card?.querySelector<HTMLButtonElement>('.n-card-header .mobile-text-model-heading button')
       expect(back).not.toBeNull()
       expect(back?.getAttribute('aria-label')).toBe('Close')

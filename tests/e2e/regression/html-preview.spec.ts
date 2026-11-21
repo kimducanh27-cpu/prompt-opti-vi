@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureTestRegionVisible } from '../helpers/common'
 
 test.use({ actionTimeout: 10000 })
 test.describe.configure({ timeout: 60000 })
@@ -186,7 +187,7 @@ test('moves the preview into fullscreen and destroys it when output changes', as
 test('uses the same preview entry in the mobile view menu', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 })
   await seedOutput(page, html)
-  await page.getByTestId('workspace-region-test').click()
+  await ensureTestRegionVisible(page)
   const output = page.locator('.variant-result-card .output-display-core').first()
   await output.getByTestId('output-view-menu').click()
   await page.locator('.n-dropdown-option').filter({ hasText: /^(Preview|预览|預覽)$/ }).click()

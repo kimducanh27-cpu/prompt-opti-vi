@@ -79,7 +79,7 @@ describe('AppHeaderActions about menu layout hooks', () => {
           ThemeToggleUI: true,
           LanguageSwitchDropdown: true,
           UpdaterIcon: true,
-          ActionButtonUI: true,
+          PoButton: true,
         },
       },
     })
@@ -123,21 +123,21 @@ describe('AppHeaderActions about menu layout hooks', () => {
           ThemeToggleUI: true,
           LanguageSwitchDropdown: true,
           UpdaterIcon: true,
-          ActionButtonUI: defineComponent({
-            name: 'ActionButtonUI',
-            props: ['text', 'type'],
+          PoButton: defineComponent({
+            name: 'PoButton',
+            props: ['variant'],
             emits: ['click'],
-            setup(props, { emit, attrs }) {
+            setup(props, { emit, attrs, slots }) {
               return () =>
                 h(
                   'button',
                   {
                     ...attrs,
                     class: attrs.class,
-                    'data-type': props.type,
+                    'data-variant': props.variant,
                     onClick: () => emit('click'),
                   },
-                  props.text,
+                  slots.default?.(),
                 )
             },
           }),
@@ -153,7 +153,7 @@ describe('AppHeaderActions about menu layout hooks', () => {
     expect(pageGroup.text()).toContain('Favorite Library')
     expect(modalGroup.text()).not.toContain('Favorite Library')
     const favoritesAction = pageGroup.find('[data-testid="header-favorites-page-action"]')
-    expect(favoritesAction.attributes('data-type')).toBe('primary')
+    expect(favoritesAction.attributes('data-variant')).toBe('primary')
     expect(favoritesAction.attributes('aria-current')).toBe('page')
     expect(favoritesAction.attributes('title')).toBe('favorites.page.title')
 
@@ -189,20 +189,21 @@ describe('AppHeaderActions about menu layout hooks', () => {
           ThemeToggleUI: true,
           LanguageSwitchDropdown: true,
           UpdaterIcon: true,
-          ActionButtonUI: defineComponent({
-            name: 'ActionButtonUI',
-            props: ['text', 'type'],
+          PoButton: defineComponent({
+            name: 'PoButton',
+            props: ['variant'],
             emits: ['click'],
-            setup(props, { emit, attrs }) {
+            setup(props, { emit, attrs, slots }) {
               return () =>
                 h(
                   'button',
                   {
                     ...attrs,
-                    'data-type': props.type,
+                    class: attrs.class,
+                    'data-variant': props.variant,
                     onClick: () => emit('click'),
                   },
-                  props.text,
+                  slots.default?.(),
                 )
             },
           }),
@@ -213,7 +214,10 @@ describe('AppHeaderActions about menu layout hooks', () => {
     const dataManagerAction = wrapper.findAll('button').find((button) => button.text() === 'Data Manager')
 
     expect(wrapper.find('.n-badge-stub[data-show="true"]').exists()).toBe(true)
-    expect(dataManagerAction?.attributes('data-type')).toBe('warning')
+    // PoButton has no warning variant: the stale-backup state is the
+    // backup-reminder-due class plus the badge dot, never colour alone.
+    expect(dataManagerAction?.attributes('data-variant')).toBe('secondary')
+    expect(dataManagerAction?.classes()).toContain('backup-reminder-due')
     expect(dataManagerAction?.attributes('title')).toBe('No data export in over 10 days. Export a local copy.')
 
     await dataManagerAction!.trigger('click')

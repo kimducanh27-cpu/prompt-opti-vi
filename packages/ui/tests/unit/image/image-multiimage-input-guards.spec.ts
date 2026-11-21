@@ -89,7 +89,7 @@ describe('image multiimage input UI guards', () => {
     const source = readWorkspaceSource()
 
     expect(source).toMatch(/toast\.success\(t\('toast\.success\.optimizeSuccess'\)\)/)
-    expect(source).toMatch(/toast\.error\(getI18nErrorMessage\(error, t\('toast\.error\.optimizeFailed'\)\)\)/)
+    expect(source).toMatch(/toast\.error\(getUserFacingErrorMessage\(error, t\('toast\.error\.optimizeFailed'\)\)\)/)
     expect(source).not.toMatch(/已生成多图优化提示词/)
     expect(source).not.toMatch(/toast\.error\(error instanceof Error \? error\.message : '优化失败'\)/)
   })

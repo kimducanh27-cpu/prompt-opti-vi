@@ -71,6 +71,15 @@ const naiveStubs = {
     props: ['show', 'title', 'preset', 'style', 'size', 'bordered', 'segmented'],
     emits: ['update:show'],
   },
+  // Slice 7: DataManager's sheets are PoSheet now. The stub renders the
+  // default + action slots; the width style falls through from PoSheet
+  // (min(720px, calc(100vw - 32px))) onto the root div.
+  PoSheet: {
+    name: 'PoSheet',
+    template: '<div v-if="show" class="n-modal"><slot /><slot name="action" /></div>',
+    props: ['show', 'title', 'maskClosable', 'closable'],
+    emits: ['update:show'],
+  },
   NSpace: {
     name: 'NSpace',
     template: '<div class="n-space"><slot /></div>',
@@ -813,11 +822,9 @@ describe('DataManager storage breakdown', () => {
     await wrapper.get('.n-collapse-item__header-main').trigger('click')
     await flushPromises()
 
-    const modal = wrapper.find('.n-modal')
     const text = wrapper.text()
-    expect(modal.attributes('style')).toContain('width: calc(100vw - 32px);')
-    expect(modal.attributes('style')).toContain('max-width: 960px;')
-    expect(modal.attributes('style')).toContain('max-height: 90vh;')
+    // Slice 7: the 720px desktop cap lives in the PoSheet primitive (its
+    // maxWidth default) — there is no inline style on the stub to assert.
     expect(wrapper.findAll('.storage-stat-card')).toHaveLength(4)
     expect(wrapper.get('[data-testid="device-storage-total"]').attributes('aria-label')).toContain(
       'used',
@@ -830,7 +837,7 @@ describe('DataManager storage breakdown', () => {
     expect(text).toContain('saved workspace drafts and test results')
     expect(text).not.toContain('current workspace sessions are not included')
     expect(text).toContain('2 images')
-    expect(text).toContain('1 images')
+    expect(text).toContain('1 image')
     expect(text).not.toContain('上下文集合')
     expect(text).not.toContain('导出上下文集合')
     expect(text).not.toContain('导入上下文集合')
@@ -1649,6 +1656,10 @@ describe('DataManager storage breakdown', () => {
     expect(wrapper.find('[data-testid="restore-confirmation"]').exists()).toBe(false)
     await wrapper.get('[data-testid="remote-import-code-export"]').trigger('click')
     expect(wrapper.find('[data-testid="restore-confirmation"]').exists()).toBe(false)
+    // Slice 7: the code view is a sheet page now — the main sheet hides while
+    // it is open, so go back (Esc closes just the code view) before browsing.
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await flushPromises()
     await wrapper.get('[data-testid="record-restore"]').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-testid="restore-confirmation"]').exists()).toBe(true)

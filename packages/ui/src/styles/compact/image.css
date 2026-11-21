@@ -1,42 +1,7 @@
 /* Image workspace controls, references and generated results own this module. NSpace item-class hooks identify intentional item wrappers. */
 
-.compact-two-region .image-input-controls {
-  display: grid !important;
-  align-items: end;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr) var(--compact-submit-width) !important;
-  gap: var(--compact-gap) !important;
-}
-
-.compact-two-region .image-input-controls .image-input-control {
-  grid-column: auto !important;
-  min-width: 0;
-}
-
-.compact-two-region .image-input-controls .image-input-submit-actions,
-.compact-two-region .image-input-controls .image-input-submit-item {
-  width: 100%;
-}
-
-.compact-two-region .image-input-controls .image-input-label {
-  font-size: 12px !important;
-  color: var(--compact-muted);
-  display: none;
-}
-
-.compact-two-region .image-input-controls .n-space {
-  min-width: 0 !important;
-  max-width: 100%;
-  gap: 0 !important;
-}
-
-.compact-two-region .image-input-controls .image-input-field-item,
-.compact-two-region .image-input-controls .n-select {
-  min-width: 0 !important;
-  max-width: 100%;
-}
-
 .compact-two-region .reference-action-toolbar .n-button {
-  min-height: var(--po-touch-target, 44px);
+  min-height: 36px;
 }
 
 .compact-two-region.image-multiimage-workspace .image-card-list {
@@ -75,16 +40,16 @@
 }
 
 .compact-two-region .image-card__reorder .n-button {
-  width: var(--po-touch-target, 44px);
-  min-width: var(--po-touch-target, 44px);
-  height: var(--po-touch-target, 44px);
+  width: 32px;
+  min-width: 32px;
+  height: 36px;
   padding: 0;
   font-size: 20px;
 }
 
 .compact-two-region .image-card__remove {
-  min-width: var(--po-touch-target, 44px);
-  min-height: var(--po-touch-target, 44px);
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .compact-two-region.image-multiimage-workspace .image-card__preview-wrap {
@@ -149,24 +114,6 @@
   overflow-wrap: anywhere;
 }
 
-.compact-two-region .image-input-controls .image-input-submit {
-  grid-column: auto !important;
-}
-
-.compact-two-region .image-input-controls .image-input-submit .n-button {
-  min-height: var(--po-touch-target, 44px);
-  border-radius: 8px;
-  font-size: 13px;
-  height: var(--po-touch-target, 44px);
-  padding: 0 6px;
-  width: 100%;
-}
-
-.compact-two-region .image-input-controls .n-base-selection {
-  --n-height: var(--po-touch-target, 44px) !important;
-  --n-font-size: 13px !important;
-}
-
 .compact-two-region[data-mode="image-text2image"] .workspace-input-panel .cm-scroller {
   min-height: 56px;
   max-height: 136px;
@@ -179,8 +126,8 @@
 }
 
 .compact-two-region .image-result-utility .n-button {
-  min-width: var(--po-touch-target, 44px);
-  min-height: var(--po-touch-target, 44px);
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .compact-two-region .image-result-content .n-image {
@@ -198,18 +145,6 @@
   object-fit: contain;
 }
 
-.compact-two-region .image-input-controls .image-input-field-item:has(> .image-input-label) {
-  display: none;
-}
-
-.compact-two-region .image-input-controls .n-button--loading .n-base-loading {
-  position: absolute;
-}
-
-.compact-two-region .image-input-controls .n-button--loading .n-button__content {
-  visibility: hidden;
-}
-
 .compact-two-region .image-reference-row {
   flex-direction: row !important;
   align-items: center !important;
@@ -217,8 +152,8 @@
 }
 
 .compact-two-region .image-reference-row .n-button {
-  min-height: var(--po-touch-target, 44px);
-  height: var(--po-touch-target, 44px);
+  min-height: 36px;
+  height: 36px;
 }
 
 .compact-two-region .image-reference-row .thumbnail-container .n-image img {
@@ -262,9 +197,3 @@
 
 }
 
-@container mobile-pane (min-width: 560px) {
-  .compact-two-region .image-input-controls {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 80px !important;
-  }
-
-}

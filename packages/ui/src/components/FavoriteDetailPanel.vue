@@ -40,7 +40,7 @@
             </template>
             {{ t('favorites.manager.card.useNow') }}
           </NButton>
-          <NDropdown v-if="isCompact" trigger="click" :options="mobileActionOptions" @select="handleMobileAction">
+          <NDropdown v-if="isCompact" trigger="click" :options="mobileActionOptions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="handleMobileAction">
             <NButton secondary data-testid="favorite-detail-more" :aria-label="t('common.actions')">
               <template #icon><NIcon :size="16"><DotsVertical /></NIcon></template>
             </NButton>
@@ -482,13 +482,14 @@ import {
   NTag,
   NText,
 } from 'naive-ui'
-import { ArrowLeft, EllipsisVertical as DotsVertical, Copy, SquarePen as Edit, Play as PlayerPlay, Share, Trash2 as Trash } from '@lucide/vue'
+import { PhArrowLeft as ArrowLeft, PhDotsThreeVertical as DotsVertical, PhCopy as Copy, PhPencilSimple as Edit, PhPlay as PlayerPlay, PhShareNetwork as Share, PhTrash as Trash } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoriteCategory, FavoritePrompt, PromptContentVersion } from '@prompt-optimizer/core'
 
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
 import type { AppServices } from '../types/services'
 import { parseFavoriteMediaMetadata } from '../utils/favorite-media'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 import { normalizeFavoriteFunctionMode } from '../utils/favorite-mode'
 import {
   getEmbeddedFavoritePromptAsset,
@@ -528,7 +529,7 @@ const emit = defineEmits<{
   'favorite-updated': [favoriteId: string]
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const { isCompact } = useWorkspaceLayout()
 const metadataExpanded = ref(false)
 const mobileActionOptions = computed(() => [
@@ -802,7 +803,7 @@ const formatDate = (timestamp: number) => {
 
   if (days === 1) return t('favorites.manager.time.yesterday')
   if (days < 7) return t('favorites.manager.time.daysAgo', { days })
-  return date.toLocaleDateString(String(locale.value || 'vi-VN'))
+  return date.toLocaleDateString()
 }
 
 const handleFavoriteUpdated = (favoriteId: string) => {

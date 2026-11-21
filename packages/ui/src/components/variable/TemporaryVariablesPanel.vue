@@ -41,6 +41,8 @@
 
                 <NDropdown
                     :options="headerActionOptions"
+                    :menu-props="dropdownMenuProps"
+                    :node-props="dropdownNodeProps"
                     @select="handleHeaderActionSelect"
                 >
                     <NButton
@@ -182,6 +184,8 @@
 
                         <NDropdown
                             :options="getVariableActionOptions(varName)"
+                            :menu-props="dropdownMenuProps"
+                            :node-props="dropdownNodeProps"
                             @select="(key) => handleVariableActionSelect(varName, key)"
                         >
                             <NButton
@@ -283,14 +287,16 @@ import {
     NText,
     NDropdown,
     NFlex,
-    useDialog,
     type DropdownOption,
 } from 'naive-ui'
 
-import { Maximize2 as ArrowsMaximize, EllipsisVertical as DotsVertical } from '@lucide/vue'
+import { useConfirmDialog } from '../../composables/ui/useConfirmDialog'
+
+import { PhArrowsOut as ArrowsMaximize, PhDotsThreeVertical as DotsVertical } from '@phosphor-icons/vue'
 
 import FullscreenDialog from '../FullscreenDialog.vue'
 import type { TestVariableManager } from '../../composables/variable/useTestVariableManager'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 interface Props {
     manager: TestVariableManager
@@ -300,24 +306,31 @@ interface Props {
     // Optional actions
     showGenerateValues?: boolean
     isGenerating?: boolean
+    // EU02-03 leftover (M-G): opt-in "Variable Manager" entry in the header
+    // ⋮ menu (same pattern as WorkspaceUtilityMenu's showVariableManager).
+    // Off by default — the image workspaces use this panel too and do not
+    // wire the emit, so the option must not appear there.
+    showVariableManager?: boolean
 }
 
 type VariableActionKey = 'rename' | 'save-global' | 'delete' | 'generate'
-type HeaderActionKey = 'clear-all' | 'generate-values'
+type HeaderActionKey = 'clear-all' | 'generate-values' | 'variable-manager'
 
 const props = withDefaults(defineProps<Props>(), {
     disabled: false,
     compact: false,
     showGenerateValues: false,
     isGenerating: false,
+    showVariableManager: false,
 })
 
 const emit = defineEmits<{
     (e: 'generate-values', variableName?: string): void
+    (e: 'open-variable-manager'): void
 }>()
 
 const { t } = useI18n()
-const dialog = useDialog()
+const confirmDialog = useConfirmDialog()
 
 const {
     showAddVariableDialog,
@@ -348,6 +361,14 @@ const fullscreenEditorValue = ref('')
 const displayVariables = computed(() => sortedVariables.value)
 
 const headerActionOptions = computed<DropdownOption[]>(() => [
+    // EU02-03 leftover (M-G): Variable Manager entry, before Clear (same
+    // placement as WorkspaceUtilityMenu). Not gated on the variable count —
+    // the manager edits global/predefined variables too.
+    ...(props.showVariableManager ? [{
+        key: 'variable-manager',
+        label: t('nav.variableManager'),
+        disabled: props.disabled,
+    }] : []),
     ...(props.compact && props.showGenerateValues ? [{
         key: 'generate-values',
         label: t('test.variableValueGeneration.generateButton'),
@@ -507,22 +528,29 @@ const handleVariableActionSelect = (varName: string, actionKey: string | number)
     }
 }
 
-const showClearAllConfirm = () => {
-    dialog.warning({
+const showClearAllConfirm = async () => {
+    // Route through the shared confirm dialog (EU05-01/R3E-04): its Confirm
+    // is primary (white on #1f6bd1 = 5.14:1). A direct dialog.warning()
+    // renders Confirm as type="warning" — white text on #ffce2f (1.49:1).
+    const confirmed = await confirmDialog.warning({
         title: t('common.warning'),
         content: t('test.variables.clearAllConfirm', { count: displayVariables.value.length }),
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
-        onPositiveClick: () => {
-            cancelVariableNameEdit()
-            handleClearAllVariables()
-        },
     })
+    if (!confirmed) return
+    cancelVariableNameEdit()
+    handleClearAllVariables()
 }
 
 const handleHeaderActionSelect = (actionKey: string | number) => {
     const action = String(actionKey) as HeaderActionKey
-    if (props.disabled || displayVariables.value.length === 0) return
+    if (props.disabled) return
+    if (action === 'variable-manager') {
+        emit('open-variable-manager')
+        return
+    }
+    if (displayVariables.value.length === 0) return
     if (action === 'generate-values' && props.compact && props.showGenerateValues && !props.isGenerating) {
         emit('generate-values')
     } else if (action === 'clear-all') {

@@ -71,6 +71,17 @@ describe('ModelManager', () => {
           services: mockServices
         },
         stubs: {
+          // Slice 7: ModelManager's overlay is a PoSheet now.
+          PoSheet: {
+            template: '<div class="stub-modal"><slot /><slot name="header-extra" /><slot name="action" /></div>',
+            props: ['show'],
+            emits: ['update:show']
+          },
+          'po-sheet': {
+            template: '<div class="stub-modal"><slot /><slot name="header-extra" /><slot name="action" /></div>',
+            props: ['show'],
+            emits: ['update:show']
+          },
           NModal: {
             template: '<div class="stub-modal"><slot /><slot name="header-extra" /><slot name="action" /></div>',
             props: ['show'],

@@ -5,7 +5,23 @@ import { expect, type Page } from '@playwright/test'
  */
 export async function waitForAppReady(page: Page): Promise<void> {
   await expect(page.locator('.loading-container')).toHaveCount(0, { timeout: 15000 })
-  await expect(page.locator('#app, [id="app"], main')).toBeAttached()
+  // Scoped to #app only (Slice 7): the app shell renders both <div id="app">
+  // (the Vue mount point) and <main class="app-content"> (MainLayout), so the
+  // old '#app, [id="app"], main' selector matched 2 elements and tripped
+  // Playwright strict mode in every spec that waits for app readiness.
+  await expect(page.locator('#app')).toBeAttached()
+}
+
+/**
+ * Reveal the test pane on compact layouts (Slices 6a–6b).
+ *
+ * All seven workspaces stack the test pane in the page scroll, so there
+ * is no Optimize/Test region switch and the pane is already visible. The
+ * test-config toggle is the stable compact marker: wait for it.
+ */
+export async function ensureTestRegionVisible(page: Page): Promise<void> {
+  const testToggle = page.getByTestId('test-config-toggle')
+  await expect(testToggle).toBeVisible()
 }
 
 /**

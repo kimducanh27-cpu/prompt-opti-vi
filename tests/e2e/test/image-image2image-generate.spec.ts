@@ -6,8 +6,13 @@ import * as path from 'path'
 const MODE = 'image-image2image' as const
 
 async function openSelectAndWaitForVisibleOptions(page: any, select: any) {
-  const visibleMenu = page.locator('.swc-select-menu').last()
-  const visibleOptions = visibleMenu.locator('.n-base-select-option')
+  // PF3-01: every select in this spec — the text-model TextModelSelector and
+  // the two image-model ImageModelSelectors — is a thin wrapper around
+  // ModelSelector, whose menu is an NPopover (.text-model-menu /
+  // .text-model-menu__choice). None of them renders a SelectWithConfig menu
+  // (.swc-select-menu), so waiting for that class could never succeed.
+  const visibleMenu = page.locator('.text-model-menu:visible').last()
+  const visibleOptions = visibleMenu.locator('.text-model-menu__choice:not(:disabled)')
 
   const ensureOpen = async () => {
     await select.click()
@@ -29,7 +34,7 @@ async function openSelectAndWaitForVisibleOptions(page: any, select: any) {
 }
 
 async function selectOption(page: any, select: any, matcher?: RegExp) {
-  // Naive UI 下拉选项存在动画/重渲染，直接 click 可能卡在“not stable / not visible”重试直到 test 超时。
+  // ModelSelector 菜单存在动画/重渲染，直接 click 可能卡在“not stable / not visible”重试直到 test 超时。
   // 这里做两次尝试：失败则收起下拉并重开；第二次使用 force click。
   for (let attempt = 0; attempt < 2; attempt++) {
     const options = await openSelectAndWaitForVisibleOptions(page, select)

@@ -1,14 +1,11 @@
 <template>
-  <NModal
+  <!-- Slice 7: PoSheet — mobile bottom sheet (max 90dvh, drag-to-close),
+       desktop card ≤720px. The compact header slot below is the Back/close
+       control; closing the sheet returns to the model list page. -->
+  <PoSheet
     :show="show"
-    compact-class="text-model-editor--compact"
     :closable="!isCompact"
-    preset="card"
-    :style="{ width: '90vw', maxWidth: '1000px' }"
     :title="isCompact ? undefined : modalTitle"
-    size="large"
-    :bordered="false"
-    :segmented="true"
     @update:show="handleUpdateShow"
   >
     <template v-if="isCompact" #header>
@@ -51,6 +48,7 @@
               :options="mobileProviderOptions"
               :loading="isLoadingProviders"
               :aria-label="t('modelManager.provider.label')"
+              :input-props="{ 'aria-label': t('modelManager.provider.label') }"
               filterable
               @update:value="onMobileProviderChange"
               @update:show="providerMenu.onUpdateShow"
@@ -356,13 +354,13 @@
         </NSpace>
       </NSpace>
     </template>
-  </NModal>
+  </PoSheet>
 </template>
 
 <script setup lang="ts">
 import ModelIdSelector from './ModelIdSelector.vue'
-import { ChevronLeft as UiChevronLeft, ChevronRight as UiChevronRight, RefreshCw as UiRefreshCw, Link as UiLink } from '@lucide/vue'
-import NModal from "./common/AdaptiveModal.vue"
+import { PhCaretLeft as UiChevronLeft, PhCaretRight as UiChevronRight, PhArrowClockwise as UiRefreshCw, PhLink as UiLink } from '@phosphor-icons/vue'
+import PoSheet from './primitives/PoSheet.vue'
 import ModelNetworkStatus from './ModelNetworkStatus.vue'
 import { computed, inject, nextTick, h, ref, watch } from 'vue'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
@@ -387,8 +385,7 @@ import {
   NTag,
   NSpin,
   NAlert,
-  NProgress,
-  useDialog
+  NProgress
 } from 'naive-ui'
 import ModelAdvancedSection from './ModelAdvancedSection.vue'
 import ProviderPillSelect from './ProviderPillSelect.vue'
@@ -416,7 +413,6 @@ const providerMenu = useCompactSelectMenu(isCompact, computed(() => show))
 const headersExpanded = ref(false)
 const submitError = ref('')
 const toast = useToast()
-const dialog = useDialog()
 const manager = inject<TextModelManager>('textModelManager')
 if (!manager) {
   throw new Error('Text model manager not provided')
@@ -636,17 +632,18 @@ const handleTestFormConnection = async () => {
     const provider = manager.selectedProvider.value
     if (provider?.corsRestricted) {
       const providerName = getProviderDisplayName(provider, t, 'Unknown Provider')
-      dialog.warning({
+      // Route through the shared confirm dialog (EU05-01/R3E-04): its
+      // Confirm is primary (white on #1f6bd1 = 5.14:1). A direct
+      // dialog.warning() renders Confirm as type="warning" — white text on
+      // #ffce2f (1.49:1). The dialog closes on click before runTest starts,
+      // so the test still runs without blocking the close.
+      const confirmed = await confirmDialog.warning({
         title: t('modelManager.corsRestrictedTag'),
         content: () => h('div', { style: 'white-space: pre-line;' }, t('modelManager.corsRestrictedConfirm', { provider: providerName })),
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
-        // Don't block dialog close while the async test runs.
-        onPositiveClick: () => {
-          void runTest()
-        }
       })
-      return
+      if (!confirmed) return
     }
   }
   await runTest()
@@ -748,7 +745,7 @@ const onMobileProviderChange = (providerId: string) => {
   display: contents;
 }
 
-:global(.workspace-compact .text-model-editor--compact.adaptive-modal-page > .n-card-header) {
+:global(.workspace-compact .po-sheet--compact.adaptive-modal-sheet > .n-card-header) {
   padding-top: 6px;
   padding-bottom: 6px;
 }

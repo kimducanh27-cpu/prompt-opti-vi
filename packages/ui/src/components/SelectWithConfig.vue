@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { Settings2 } from '@lucide/vue'
+import { PhSlidersHorizontal as Settings2 } from '@phosphor-icons/vue'
 import { computed, h, ref, useAttrs, useId, toValue, type ComputedRef, type Ref, type StyleValue } from 'vue'
 
 import { useI18n } from 'vue-i18n'
@@ -198,7 +198,22 @@ const forwardedAttrs = computed(() => {
   const resolvedFilter: SelectFilter = hasCustomFilter && typeof customFilter === 'function'
     ? (customFilter as SelectFilter)
     : (internalFilter as unknown as SelectFilter)
- 
+
+  // R3C-08: Naive's filterable NSelect renders an internal type-ahead input
+  // (`input.n-base-selection-input`, tabindex -1) with no accessible name —
+  // the a11y sweep on #/basic/user flags it as the one nameless input.
+  // Name it with the select's own label (aria-label attr, else
+  // placeholder) via NSelect's `input-props`, which Naive spreads onto
+  // that input (Selection.mjs: the input is rendered as
+  // `h('input', Object.assign({}, this.inputProps, {...}))`, and the
+  // hardcoded attrs after the spread do not set aria-label, so this
+  // survives). The input stays focusable by the select's own logic
+  // (patternInputRef.focus() on open) — naming it changes nothing about
+  // focus or filtering; `aria-hidden` was rejected for that reason (it
+  // would hide the live typing surface from screen readers).
+  const inputLabel = (attrs['aria-label'] as string | undefined) ?? (attrs.placeholder as string | undefined)
+  const callerInputProps = ((attrs['input-props'] ?? attrs.inputProps) as Record<string, unknown> | undefined) ?? {}
+
   return {
     filterable: true,
     multiple: normalizedMultiple,
@@ -206,6 +221,7 @@ const forwardedAttrs = computed(() => {
     style: { minWidth: '160px', ...(rootStyle as Record<string, unknown> || {}) },
     menuProps: normalizedMenuProps,
     ...rest,
+    inputProps: { ...callerInputProps, ...(inputLabel ? { 'aria-label': inputLabel } : {}) },
     ...(menuViewport.layout.value ? { placement: menuViewport.layout.value.placement } : {}),
     filter: resolvedFilter
   }
@@ -223,6 +239,12 @@ const emitConfig = () => emit('config')
 </script>
 
 <style scoped>
+/* M-C (EU03-03): design-system §1.2 — selects minimum 16px. The compact CSS
+   already forces 16px on .n-base-selection in the optimize row, but desktop
+   (and any non-compact use) still renders Naive's 14px default. Setting the
+   var on .n-base-selection overrides the inherited theme value for the
+   trigger only; the teleported menu is not a descendant, so it is unaffected. */
+.swc-select :deep(.n-base-selection) { --n-font-size: 16px; }
 .swc-opt {
   display: flex;
   flex-direction: column;

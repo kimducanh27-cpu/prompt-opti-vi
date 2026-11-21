@@ -2,6 +2,8 @@
   <NDropdown
     trigger="click"
     :options="evaluationOptions"
+    :menu-props="dropdownMenuProps"
+    :node-props="dropdownNodeProps"
     @select="handleSelect"
   >
     <NButton
@@ -19,11 +21,12 @@
 </template>
 
 <script setup lang="ts">
-import { ChartNoAxesColumnIncreasing as ChartIcon } from '@lucide/vue'
+import { PhChartBar as ChartIcon } from '@phosphor-icons/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NDropdown, NButton, NIcon, type DropdownOption } from 'naive-ui'
 import type { EvaluationType } from '@prompt-optimizer/core'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 // Props
 const props = defineProps<{

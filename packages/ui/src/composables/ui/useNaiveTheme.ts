@@ -49,19 +49,15 @@ export function useNaiveTheme() {
     return changeTheme(nextThemeId)
   }
   
-  // 切换到特定类型的主题
+  // 切换到特定类型的主题 (Slice 3: only light/dark remain; 'auto'
+  // resolves to one of them via the OS preference)
   const switchToLightTheme = () => changeTheme('light')
   const switchToDarkTheme = () => changeTheme('dark')
-  const switchToBlueTheme = () => changeTheme('blue')
-  const switchToGreenTheme = () => changeTheme('green')
-  const switchToPurpleTheme = () => changeTheme('purple')
-  
+  const switchToAutoTheme = () => changeTheme('auto')
+
   // 检查当前是否为特定主题
   const isLightTheme = computed(() => themeId.value === 'light')
   const isDarkThemeActive = computed(() => themeId.value === 'dark')
-  const isBlueTheme = computed(() => themeId.value === 'blue')
-  const isGreenTheme = computed(() => themeId.value === 'green')
-  const isPurpleTheme = computed(() => themeId.value === 'purple')
   
   // 初始化主题
   const initTheme = () => {
@@ -81,18 +77,13 @@ export function useNaiveTheme() {
     // 主题检查
     isLightTheme,
     isDarkThemeActive,
-    isBlueTheme,
-    isGreenTheme,
-    isPurpleTheme,
-    
+
     // 主题切换方法
     changeTheme,
     switchToNextTheme,
     switchToLightTheme,
     switchToDarkTheme,
-    switchToBlueTheme,
-    switchToGreenTheme,
-    switchToPurpleTheme,
+    switchToAutoTheme,
     
     // 工具方法
     initTheme,

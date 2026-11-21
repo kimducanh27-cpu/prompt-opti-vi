@@ -69,7 +69,12 @@ export function useConversationOptimization(
   optimizationMode: Ref<OptimizationMode>,
   selectedOptimizeModel: Ref<string>,
   selectedTemplate: Ref<Template | null>,
-  selectedIterateTemplate: Ref<Template | null>
+  selectedIterateTemplate: Ref<Template | null>,
+  // EU02-03 (same class as pro-variable): the merged variable values so
+  // Optimize can pass them to core instead of an empty object. Read lazily
+  // at optimize time — the workspace's computed may be declared after this
+  // composable is created.
+  getVariables?: () => Record<string, string>
 ) {
   const toast = useToast()
   const { t } = useI18n()
@@ -444,12 +449,16 @@ export function useConversationOptimization(
     const stream = outputChannel.begin()
     try {
       // 构建消息优化请求，使用专门的 MessageOptimizationRequest 接口
+      // EU02-03: pass the defined variable values through (was `variables: {}` —
+      // "暂时为空"). Core reads them via `request.variables` into the template
+      // context (optimizeMessageStream → customVariables). Built-in templates
+      // keep the `{{...}}` placeholders verbatim by design.
       const request: MessageOptimizationRequest = {
         selectedMessageId: selectedMessageId.value,
         messages: conversationMessages.value,
         modelKey: selectedOptimizeModel.value,
         templateId: selectedTemplate.value.id, // 使用用户选择的模板
-        variables: {}, // 自定义变量（暂时为空）
+        variables: getVariables?.() ?? {},
       }
 
       // 调用流式消息优化 API（使用新的 optimizeMessageStream）
@@ -714,7 +723,10 @@ export function useConversationOptimization(
         {
           messages: conversationMessages.value,
           selectedMessageId: selectedMessageId.value,
-          variables: {}, // 暂无变量支持
+          // EU02-03 leftover (M-G): same variables class as Optimize —
+          // was a hardcoded empty object; the merged values now flow to
+          // the iterate template as customVariables.
+          variables: getVariables?.() ?? {},
           tools: [] // 暂无工具支持
         },
       )

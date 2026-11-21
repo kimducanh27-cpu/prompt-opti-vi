@@ -1,21 +1,29 @@
 <template>
   <div
+    ref="listRootRef"
     class="favorites-manager-shell"
     :class="{ 'favorites-manager-shell--page': isPageLayout, 'favorites-manager-shell--compact': isMobile }"
   >
     <div class="favorites-manager-toolbar">
       <NSpace vertical :size="isMobile ? 8 : 16">
+        <!-- Slice 8: search + category/tag filters live in ONE row. On desktop
+             the wrapper is display:contents, so the two rows lay out exactly
+             as before; on mobile it wraps (search on line 1, toggle + ⋮ +
+             Add on line 2) so every control stays visible without swiping. -->
+        <div class="favorites-manager-toolbar-search-controls">
         <div class="favorites-manager-toolbar-row favorites-manager-toolbar-row--search">
           <div v-if="$slots['toolbar-leading']" class="favorites-manager-toolbar-leading">
             <slot name="toolbar-leading" />
           </div>
 
           <NInput
+            ref="searchInputRef"
             v-model:value="searchKeyword"
             :placeholder="t('favorites.manager.searchPlaceholder')"
             clearable
             class="favorites-manager-search"
             @update:value="handleSearch"
+            @focus="handleSearchFocus"
           >
             <template #prefix>
               <NIcon :size="16"><Search /></NIcon>
@@ -28,7 +36,12 @@
         </div>
 
         <div class="favorites-manager-toolbar-row favorites-manager-toolbar-row--controls">
-          <NSpace v-show="!isMobile || filtersExpanded" :size="12" align="center" wrap class="favorites-manager-filters">
+          <!-- M-C (EU05-02): no :wrap binding — NSpace applies flex-wrap as an
+               inline style, so the old :wrap="!isMobile" (nowrap on mobile)
+               could not be overridden by any stylesheet rule and squeezed the
+               tag select to 38px at 360px. Default wrap=true lets the two
+               selects share the row 50/50 (see compact CSS below). -->
+          <NSpace v-show="!isMobile || filtersExpanded" :size="12" align="center" class="favorites-manager-filters">
             <CategoryTreeSelect
               v-model="selectedCategory"
               :placeholder="t('favorites.manager.allCategories')"
@@ -41,6 +54,7 @@
               v-model:value="selectedTags"
               :options="tagOptions"
               :placeholder="t('favorites.manager.allTags')"
+              :input-props="{ 'aria-label': t('favorites.manager.allTags') }"
               multiple
               clearable
               filterable
@@ -58,6 +72,8 @@
             <NDropdown
               :trigger="isMobile ? 'click' : 'hover'"
               :options="actionMenuOptions"
+              :menu-props="dropdownMenuProps"
+              :node-props="dropdownNodeProps"
               @select="handleActionMenuSelect"
             >
               <NButton secondary data-testid="favorites-manager-actions">
@@ -81,6 +97,7 @@
               <span class="button-text">{{ t('favorites.manager.add') }}</span>
             </NButton>
           </NSpace>
+        </div>
         </div>
 
         <div class="favorites-manager-toolbar-row favorites-manager-toolbar-row--discovery">
@@ -225,6 +242,7 @@
       @favorite-updated="handleFavoriteDetailUpdated"
       @saved="handleEditorSaved"
       @imported="handleImportCompleted"
+      @after-leave="handleAssetPanelAfterLeave"
     />
 
     <FavoriteShareExportDialog
@@ -268,20 +286,22 @@ import {
   NSpace,
   NText,
 } from 'naive-ui'
-import { EllipsisVertical as DotsVertical, Download, Folder, Plus, Search, Tags, Trash2 as Trash, Upload } from '@lucide/vue'
+import { PhDotsThreeVertical as DotsVertical, PhDownload as Download, PhFolder as Folder, PhPlus as Plus, PhMagnifyingGlass as Search, PhTag as Tags, PhTrash as Trash, PhUpload as Upload } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoriteCategory, FavoritePrompt } from '@prompt-optimizer/core'
 
 import { useFavoriteInitializer } from '../composables/storage/useFavoriteInitializer'
+import { useListReveal } from '../composables/ui/useListReveal'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
 import { useToast } from '../composables/ui/useToast'
 import type { AppServices } from '../types/services'
-import { getI18nErrorMessage } from '../utils/error'
+import { getUserFacingErrorMessage } from '../utils/error'
 import {
   FAVORITE_UPDATED_EVENT,
   getFavoriteUpdatedEventDetail,
 } from '../utils/favorite-events'
 import { normalizeFavoriteFunctionMode, type NormalizedFavoriteFunctionMode } from '../utils/favorite-mode'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 import { createFavoriteResourcePackage } from '../utils/favorite-resource-package'
 import CategoryManager from './CategoryManager.vue'
 import NModal from './common/AdaptiveModal.vue'
@@ -526,6 +546,15 @@ const paginatedFavorites = computed(() => {
 
 const paginatedFavoriteIdSignature = computed(() => paginatedFavorites.value.map((favorite) => favorite.id).join('|'))
 
+// M5 (step 7): rows stagger in once, on first mount with content — never
+// on scroll, pagination, or filter change. The row roots carry no bound
+// inline :style, so revealList's clearProps cannot strip anything.
+const listRootRef = ref<HTMLElement | null>(null)
+useListReveal(
+  () => [...(listRootRef.value?.querySelectorAll('.favorite-workspace-list-item') ?? [])],
+  () => paginatedFavorites.value.length > 0,
+)
+
 const showPagination = computed(() => filteredFavorites.value.length > pageSize.value)
 
 const tagOptions = computed(() => {
@@ -693,7 +722,7 @@ const getCategoryWithDescendants = (categoryId: string): string[] => {
 
 const buildErrorMessage = (summary: string, error: unknown) => {
   const fallback = t('common.error')
-  const detail = getI18nErrorMessage(error, fallback)
+  const detail = getUserFacingErrorMessage(error, fallback)
   return detail === fallback ? summary : `${summary}: ${detail}`
 }
 
@@ -879,6 +908,35 @@ const handlePopularTagToggle = (tag: string) => {
 
 const handleSearch = () => {
   currentPage.value = 1
+}
+
+// EU05-03: typing in the search while the detail sheet is open loses the
+// text — the sheet is a modal (NModal) whose focus trap pulls focus back
+// inside the sheet the moment the input is focused, so the keystrokes never
+// land (a real tap hits the mask and closes the sheet instead, which is
+// why this only bites programmatic/keyboard focus). Fix: focusing the
+// search dismisses the sheet, and once the sheet is fully closed
+// (after-leave, trap released) focus returns to the search input.
+const searchInputRef = ref<InstanceType<typeof NInput> | null>(null)
+const pendingSearchFocus = ref(false)
+
+const handleSearchFocus = () => {
+  if (!assetPanelVisible.value) return
+  pendingSearchFocus.value = true
+  assetPanelVisible.value = false
+}
+
+const handleAssetPanelAfterLeave = () => {
+  if (!pendingSearchFocus.value) return
+  pendingSearchFocus.value = false
+  // EU05-03 (fix 2): the refocus must be deferred past Naive's focus-trap
+  // teardown — the trap restores focus to the sheet opener (the list item)
+  // after after-leave fires, so a synchronous focus() here loses. A short
+  // macrotask delay lets the trap finish first; the search input is the
+  // only sensible focus target at that point (the user just tapped it).
+  window.setTimeout(() => {
+    searchInputRef.value?.focus()
+  }, 50)
 }
 
 const handleCopyFavorite = async (favorite: FavoritePrompt) => {
@@ -1380,6 +1438,96 @@ onBeforeUnmount(() => {
   }
   .favorites-manager-shell--compact .favorites-manager-empty {
     min-height: 160px;
+  }
+  .favorites-manager-shell--compact.favorites-manager-shell--page {
+    height: auto;
+    padding: 0;
+  }
+}
+/* Slice 8: search + filters share ONE row. Desktop: the wrapper is
+   display:contents, so the two rows lay out exactly as before. Mobile
+   (compact): the wrapper wraps — search on line 1, actions on line 2 —
+   so the ⋮ button is never pushed off-screen (see favorites-fix-11). */
+.favorites-manager-toolbar-search-controls {
+  display: contents;
+}
+@media (max-width: 1023px) {
+  /* Belt-and-braces: the grid is 1 column on mobile even if the compact
+     class is absent — the 320px minmax must never force 2 columns. */
+  .favorites-manager-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+  }
+  .favorites-manager-shell--compact .favorites-manager-toolbar-search-controls {
+    /* Fix (favorites-fix-11): the row used to be ONE horizontally scrolling
+       strip (nowrap + overflow-x:auto). At <=412px search (200px basis) +
+       the "Category / Tags" toggle already filled the 370px content width,
+       so the ⋮ actions button and Add were pushed off-screen with no scroll
+       cue — unreachable by touch. Wrap instead: search takes line 1 full
+       width, toggle + ⋮ + Add sit on line 2, all visible without swiping. */
+    display: flex;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 8px;
+    align-items: center;
+  }
+  .favorites-manager-shell--compact .favorites-manager-toolbar-search-controls > .favorites-manager-toolbar-row {
+    display: contents;
+  }
+  .favorites-manager-shell--compact .favorites-manager-search {
+    flex: 1 0 200px;
+    min-width: 0;
+  }
+  /* M-C (EU05-02): the tag filter was squeezed to 38px at 360px — only the
+     chevron showed, "All Tags" unreadable. The nowrap row + fixed 200px
+     widths overflowed the ~340px row, so the tag select collapsed. Let the
+     two selects share the row 50/50 (same as the ≤767px rule) and wrap if
+     narrower, so each select keeps its label readable. */
+  .favorites-manager-shell--compact .favorites-manager-filters {
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .favorites-manager-shell--compact .favorites-manager-filters :deep(> div) {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+  }
+  .favorites-manager-shell--compact .favorites-manager-tag-select {
+    width: 100%;
+    min-width: 0;
+  }
+  /* V-C-FIX (EU05-02 residual): at 360px the category tree-select measured
+     180px and its border crossed the tag field by ~10px. The cause is the
+     inline min-width: 180px from CategoryTreeSelect's default style prop
+     (CategoryTreeSelect.vue) — inline beats every stylesheet rule, so the
+     50/50 flex basis could not shrink it. Override the inline min-width
+     (!important beats inline) so the control honors its flex share. The
+     label only needs ~136px at 14px, so "All Categories" still reads in
+     full at 158px (and would still fit even at 16px, ~150px). Desktop is
+     untouched (compact scope only); at 412px the basis is 184px, so the
+     control just grows 4px. */
+  .favorites-manager-shell--compact .favorites-manager-filters :deep(.n-tree-select) {
+    min-width: 0 !important;
+  }
+  .favorites-manager-shell--compact .favorites-manager-actions {
+    flex: 0 0 auto;
+    order: 0;
+  }
+  /* Fix (favorites-fix-12): the ⋮ actions button measured 46x36px — below
+     the design system's 44px minimum touch target. Floor it to 44x44px
+     on compact/mobile only; width was already 46px, so this only adds
+     height. Scoped to this button so the wrap fix above is untouched. */
+  .favorites-manager-shell--compact .favorites-manager-actions :deep([data-testid="favorites-manager-actions"]) {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+  .favorites-manager-shell--compact .favorites-manager-tag-cloud {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .favorites-manager-shell--compact .favorites-manager-tag-cloud :deep(.n-button) {
+    flex: none;
   }
   .favorites-manager-shell--compact.favorites-manager-shell--page {
     height: auto;

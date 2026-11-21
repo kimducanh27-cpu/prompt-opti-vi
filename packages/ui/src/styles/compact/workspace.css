@@ -3,7 +3,7 @@
 .compact-two-region > .compact-workspace-pane {
   flex: 1;
   min-height: 0;
-  padding: 0 max(16px, var(--po-safe-right)) 8px max(16px, var(--po-safe-left));
+  padding: 0 16px 8px;
   padding-top: 0;
   container: mobile-pane / inline-size;
 }
@@ -37,7 +37,7 @@
 }
 
 .compact-two-region .optimize-original-scroll {
-  gap: var(--po-space-3);
+  gap: 12px;
 }
 
 .compact-two-region .optimize-original-scroll > .n-card:not(.compact-original-card) {
@@ -54,17 +54,20 @@
 }
 
 .compact-two-region .optimize-original-scroll > .n-card:not(.compact-original-card) .n-button--block {
-  min-height: var(--po-touch-target);
+  min-height: 44px;
+}
+
+.compact-two-region .optimize-original-scroll > .n-card .n-base-selection {
+  --n-height: 44px !important;
 }
 
 .compact-two-region .optimize-original-scroll .n-base-selection {
-  --n-height: var(--po-touch-target) !important;
-  font-size: var(--po-text-sm-size);
+  --n-height: 36px !important;
+  font-size: 16px;
 }
 
 .compact-two-region .compact-original-card .compact-action-menu-trigger {
-  min-height: var(--po-touch-target);
-  font-size: var(--po-text-xs-size);
+  font-size: 12px;
 }
 
 .compact-two-region .optimize-original-scroll > .compact-original-card {
@@ -85,9 +88,10 @@
 
 @media (max-width: 359px) {
   .compact-two-region > .compact-workspace-pane {
-    padding-left: max(10px, var(--po-safe-left));
-    padding-right: max(10px, var(--po-safe-right));
+    padding-left: 10px;
+    padding-right: 10px;
   }
+
 }
 
 @container mobile-viewport (max-height: 620px) {
@@ -98,4 +102,5 @@
   .compact-two-region .optimize-original-scroll {
     gap: 6px;
   }
+
 }

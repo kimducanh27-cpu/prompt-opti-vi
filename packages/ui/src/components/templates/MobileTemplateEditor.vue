@@ -35,7 +35,7 @@
         <section v-for="(message, index) in form.messages" :key="index" class="mobile-template-message">
           <div class="mobile-template-message-heading">
             <NSelect :value="message.role" :disabled="saving" :options="roleOptions" :aria-label="t('templateManager.messageTemplates')" @update:value="updateMessage(index, { role: $event })" />
-            <NDropdown trigger="click" :options="messageActions(index)" @select="key => onMessageAction(key, index)">
+            <NDropdown trigger="click" :options="messageActions(index)" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="key => onMessageAction(key, index)">
               <NButton quaternary :disabled="saving" :aria-label="t('common.actions')">···</NButton>
             </NDropdown>
           </div>
@@ -65,6 +65,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NDropdown, NInput, NSelect } from 'naive-ui'
 import type { MessageTemplate } from '@prompt-optimizer/core'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 interface TemplateDraft {
   name: string

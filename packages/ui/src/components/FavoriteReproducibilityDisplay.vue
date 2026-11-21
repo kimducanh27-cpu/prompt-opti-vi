@@ -36,35 +36,10 @@
 
       <section v-if="showVariables && reproducibility.variables.length > 0" class="favorite-reproducibility-display__section">
         <NText v-if="showSectionHeadings" strong>{{ t('favorites.manager.preview.reproducibility.variables') }}</NText>
-        <div class="favorite-reproducibility-display__table-scroll">
-          <NTable size="small" striped :single-line="false">
-            <thead>
-              <tr>
-                <th>{{ t('favorites.manager.preview.reproducibility.variableName') }}</th>
-                <th>{{ t('favorites.manager.preview.reproducibility.variableDefault') }}</th>
-                <th>{{ t('favorites.manager.preview.reproducibility.variableRequired') }}</th>
-                <th>{{ t('favorites.manager.preview.reproducibility.variableDescription') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="variable in reproducibility.variables"
-                :key="variable.name"
-              >
-                <td>{{ variable.name }}</td>
-                <td>{{ variable.defaultValue || '-' }}</td>
-                <td>
-                  {{
-                    variable.required
-                      ? t('favorites.manager.preview.reproducibility.requiredYes')
-                      : t('favorites.manager.preview.reproducibility.requiredNo')
-                  }}
-                </td>
-                <td>{{ variable.description || '-' }}</td>
-              </tr>
-            </tbody>
-          </NTable>
-        </div>
+        <!-- Slice 8: PoTable — NDataTable on desktop, labelled stacked rows
+             on mobile. The old NTable + 560px min-width + sideways scroll
+             are gone. -->
+        <PoTable :columns="variableColumns" :rows="variableRows" row-key="name" />
       </section>
 
       <section v-if="showExamples && reproducibility.examples.length > 0" class="favorite-reproducibility-display__section">
@@ -113,14 +88,14 @@
                     <NText>{{ example.outputText }}</NText>
                   </div>
                   <div
-                    v-if="getExampleImageSources(index, 'images', example).length > 0"
+                    v-if="exampleViews[index].imageSources.length > 0"
                     class="favorite-reproducibility-display__image-block"
                   >
                     <NText strong>{{ t('favorites.manager.preview.reproducibility.images') }}</NText>
                     <AppPreviewImageGroup>
                       <div class="favorite-reproducibility-display__image-grid">
                         <AppPreviewImage
-                          v-for="(source, imageIndex) in getExampleImageSources(index, 'images', example)"
+                          v-for="(source, imageIndex) in exampleViews[index].imageSources"
                           :key="`example-${index}-image-${imageIndex}-${source.slice(0, 24)}`"
                           :src="source"
                           :alt="t('favorites.dialog.imageAlt', { index: imageIndex + 1 })"
@@ -134,12 +109,12 @@
 
                 <div class="favorite-reproducibility-display__example-context">
                   <div
-                    v-if="getParameterEntries(example).length > 0"
+                    v-if="exampleViews[index].parameterEntries.length > 0"
                     class="favorite-reproducibility-display__parameter-list"
                   >
                     <NText strong>{{ t('favorites.manager.preview.reproducibility.parameters') }}</NText>
                     <div
-                      v-for="[parameterKey, parameterValue] in getParameterEntries(example)"
+                      v-for="[parameterKey, parameterValue] in exampleViews[index].parameterEntries"
                       :key="parameterKey"
                       class="favorite-reproducibility-display__parameter-row"
                     >
@@ -159,14 +134,14 @@
                     <NText depth="3">{{ example.messages.length }}</NText>
                   </div>
                   <div
-                    v-if="getExampleImageSources(index, 'inputImages', example).length > 0"
+                    v-if="exampleViews[index].inputImageSources.length > 0"
                     class="favorite-reproducibility-display__image-block"
                   >
                     <NText strong>{{ t('favorites.manager.preview.reproducibility.inputImages') }}</NText>
                     <AppPreviewImageGroup>
                       <div class="favorite-reproducibility-display__image-grid favorite-reproducibility-display__image-grid--compact">
                         <AppPreviewImage
-                          v-for="(source, imageIndex) in getExampleImageSources(index, 'inputImages', example)"
+                          v-for="(source, imageIndex) in exampleViews[index].inputImageSources"
                           :key="`example-${index}-input-image-${imageIndex}-${source.slice(0, 24)}`"
                           :src="source"
                           :alt="t('favorites.dialog.imageAlt', { index: imageIndex + 1 })"
@@ -193,11 +168,10 @@ import {
   NEmpty,
   NIcon,
   NSpace,
-  NTable,
   NTag,
   NText,
 } from 'naive-ui'
-import { Play as PlayerPlay } from '@lucide/vue'
+import { PhPlay as PlayerPlay } from '@phosphor-icons/vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -205,8 +179,10 @@ import type {
   FavoriteReproducibility,
   FavoriteReproducibilityExample,
 } from '../utils/favorite-reproducibility'
+import { isAllowedExternalImageUrl } from '../utils/favorite-media'
 import AppPreviewImage from './media/AppPreviewImage.vue'
 import AppPreviewImageGroup from './media/AppPreviewImageGroup.vue'
+import PoTable, { type PoTableColumn, type PoTableRow } from './primitives/PoTable.vue'
 
 type FavoriteReproducibilityExamplePreviews = {
   images: Array<{ assetId: string; source: string }>
@@ -248,13 +224,50 @@ const getExampleImageSources = (
 ) => {
   const resolvedSources = props.examplePreviews?.[index]?.[field] || []
   return dedupeStrings([
-    ...(example[field] || []),
+    // SEC-001: only the metadata-supplied URL strings are validated here
+    // (allowlist https: + blob:; `data:` stays banned). App-resolved
+    // preview sources pass through untouched — they are app-generated
+    // `data:` URLs from resolveAssetIdToDataUrl and must NOT be blocked.
+    ...(example[field] || []).filter(isAllowedExternalImageUrl),
     ...resolvedSources.map((item) => item.source),
   ])
 }
 
 const getParameterEntries = (example: FavoriteReproducibilityExample) =>
   Object.entries(example.parameters || {})
+
+// P-013: the per-example derived data (image sources + parameter entries) was
+// computed by calling methods from the template — each one ran twice per
+// example (once in `v-if`, once in `v-for`) on EVERY render. Now it is a
+// single cached computed, parallel to `reproducibility.examples` (same index).
+const exampleViews = computed(() =>
+  props.reproducibility.examples.map((example, index) => ({
+    imageSources: getExampleImageSources(index, 'images', example),
+    inputImageSources: getExampleImageSources(index, 'inputImages', example),
+    parameterEntries: getParameterEntries(example),
+  })),
+)
+
+// Slice 8: the variables table, as PoTable data — same columns/values as
+// the old NTable, so the desktop table is unchanged and the mobile
+// stacked rows carry the same labels.
+const variableColumns = computed<PoTableColumn[]>(() => [
+  { key: 'name', title: t('favorites.manager.preview.reproducibility.variableName') },
+  { key: 'defaultValue', title: t('favorites.manager.preview.reproducibility.variableDefault') },
+  { key: 'required', title: t('favorites.manager.preview.reproducibility.variableRequired') },
+  { key: 'description', title: t('favorites.manager.preview.reproducibility.variableDescription') },
+])
+
+const variableRows = computed<PoTableRow[]>(() =>
+  props.reproducibility.variables.map((variable) => ({
+    name: variable.name,
+    defaultValue: variable.defaultValue || '-',
+    required: variable.required
+      ? t('favorites.manager.preview.reproducibility.requiredYes')
+      : t('favorites.manager.preview.reproducibility.requiredNo'),
+    description: variable.description || '-',
+  })),
+)
 </script>
 
 <style scoped>
@@ -267,22 +280,6 @@ const getParameterEntries = (example: FavoriteReproducibilityExample) =>
   min-width: 0;
   flex-direction: column;
   gap: 8px;
-}
-
-.favorite-reproducibility-display__table-scroll {
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.favorite-reproducibility-display__table-scroll :deep(table) {
-  min-width: 560px;
-}
-
-.favorite-reproducibility-display__table-scroll :deep(th),
-.favorite-reproducibility-display__table-scroll :deep(td) {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  vertical-align: top;
 }
 
 .favorite-reproducibility-display :deep(.n-card) {

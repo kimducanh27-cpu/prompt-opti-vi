@@ -9,7 +9,8 @@ const messages = {
     "cleared": "歷史紀錄已清空",
     "chainDeleted": "歷史紀錄已刪除",
     "useThisVersion": "使用此版本",
-    "noHistory": "暫無歷史紀錄"
+    "noHistory": "暫無歷史紀錄",
+    "actionsFor": "{title}的操作"
   },
   "test": {
     "config": {

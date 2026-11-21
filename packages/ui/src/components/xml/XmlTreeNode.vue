@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NButton, NIcon } from 'naive-ui'
-import { ChevronRight } from '@lucide/vue'
+import { PhCaretRight as ChevronRight } from '@phosphor-icons/vue'
 import type { XmlNodeModel } from '../../types/xml-renderer'
 
 defineOptions({

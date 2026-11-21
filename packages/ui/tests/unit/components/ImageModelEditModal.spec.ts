@@ -15,7 +15,7 @@ vi.mock('../../../src/composables/ui/useConfirmDialog', () => ({ useConfirmDialo
 vi.mock('naive-ui', async original => ({ ...await original<typeof import('naive-ui')>(), useDialog: () => ({ warning: vi.fn() }) }))
 vi.mock('../../../src/composables/ui/useToast', () => ({ useToast: () => ({ success: vi.fn(), error: vi.fn() }) }))
 const stubs = {
-  AdaptiveModal: { name: 'AdaptiveModal', props: ['show'], template: '<section><slot name="header" /><slot /><slot name="action" /></section>' },
+  PoSheet: { name: 'PoSheet', props: ['show'], template: '<section><slot name="header" /><slot /><slot name="action" /></section>' },
   NSpace: { template: '<div><slot /></div>' },
   NForm: { template: '<div><slot /></div>' }, NFormItem: { template: '<div><slot /></div>' },
   NInput: true, NInputNumber: true, NCheckbox: true, NSelect: true, NDivider: true,
@@ -36,7 +36,7 @@ const createWrapper = async (compact = true) => {
   return wrapper
 }
 const close = async (wrapper: ReturnType<typeof shallowMount>) => {
-  wrapper.findComponent({ name: 'AdaptiveModal' }).vm.$emit('update:show', false)
+  wrapper.findComponent({ name: 'PoSheet' }).vm.$emit('update:show', false)
   await flushPromises()
 }
 const save = async (wrapper: ReturnType<typeof shallowMount>) => {
@@ -159,7 +159,7 @@ describe('mobile image model editor draft lifecycle', () => {
     })
     const wrapper = shallowMount(ImageModelEditModal, {
       props: { show: false, configId: 'image-a' },
-      global: { renderStubDefaultSlot: true, stubs: { ...stubs, AdaptiveModal: CardModal, Card: false } },
+      global: { renderStubDefaultSlot: true, stubs: { ...stubs, PoSheet: CardModal, Card: false } },
     })
     await wrapper.setProps({ show: true })
     await flushPromises()

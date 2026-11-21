@@ -108,7 +108,7 @@ import {
 } from 'naive-ui';
 import { useToast } from '../composables/ui/useToast';
 import { getI18nErrorMessage } from '../utils/error';
-import { Star, Sparkles as Stars } from '@lucide/vue'
+import { PhStar as Star, PhSparkle as Stars } from '@phosphor-icons/vue'
 import type { FavoriteCategory } from '@prompt-optimizer/core';
 import type { AppServices } from '../types/services';
 

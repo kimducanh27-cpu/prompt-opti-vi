@@ -9,7 +9,8 @@ const messages = {
     "cleared": "History cleared",
     "chainDeleted": "History record deleted",
     "useThisVersion": "Use This Version",
-    "noHistory": "No history records"
+    "noHistory": "No history records",
+    "actionsFor": "Actions for {title}"
   },
   "test": {
     "config": {
@@ -115,7 +116,7 @@ const messages = {
       "saveToGlobal": "Save to Global Variables",
       "savedToGlobal": "Saved to Global Variables",
       "emptyValueWarning": "Empty value, cannot save",
-      "tempCount": "{count} temporary variables",
+      "tempCount": "{count} temporary variable | {count} temporary variables",
       "addVariable": "Add Variable",
       "nameRequired": "Variable name is required",
       "addSuccess": "Variable added successfully",
@@ -140,7 +141,7 @@ const messages = {
       "batchApply": "Batch Apply ({count})",
       "noVariablesToGenerate": "No variables need values",
       "generateFailed": "Variable value generation failed",
-      "applySuccess": "Successfully applied {count} variable values",
+      "applySuccess": "Successfully applied {count} variable value | Successfully applied {count} variable values",
       "noPrompt": "Please enter or generate an optimized prompt first",
       "noMissingVariables": "All variables are already filled",
       "serviceNotReady": "Variable value generation service not ready",
@@ -237,7 +238,7 @@ const messages = {
       "expiredManualTag": "Needs reconfirmation",
       "expiredManualSummary": "{count} older manual settings are no longer valid, so the system fell back to the current suggestion.",
       "workspaceChangedTag": "Needs reconfirmation",
-      "workspaceChangedSummary": "{count} workspace role settings need review because the workspace prompt changed.",
+      "workspaceChangedSummary": "{count} workspace role setting needs review because the workspace prompt changed. | {count} workspace role settings need review because the workspace prompt changed.",
       "keepAuto": "Keep system suggestion",
       "keepAutoWithRole": "Keep system suggestion (current: {role})",
       "useInferred": "Use System Suggestion",
@@ -581,7 +582,7 @@ const messages = {
       "noVariables": "No extractable variables identified",
       "extractFailed": "Auto extraction failed",
       "staleResult": "The prompt or variables have changed. Please extract again.",
-      "createSuccess": "Successfully created {count} variables",
+      "createSuccess": "Successfully created {count} variable | Successfully created {count} variables",
       "summary": "Summary",
       "workspaceNotReady": "Unable to access workspace state",
       "noPromptContent": "Please enter prompt content first",

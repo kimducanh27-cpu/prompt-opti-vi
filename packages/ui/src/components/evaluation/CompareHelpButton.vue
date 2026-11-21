@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { CircleHelp as UiCircleHelp } from '@lucide/vue'
+import { PhQuestion as UiCircleHelp } from '@phosphor-icons/vue'
 import { computed, ref, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NIcon, NModal, NTooltip } from 'naive-ui'
@@ -75,9 +75,6 @@ const normalizedLocale = computed<keyof typeof compareHelpContent>(() => {
   const raw = String(locale.value || 'zh-CN')
   if (raw in compareHelpContent) {
     return raw as keyof typeof compareHelpContent
-  }
-  if (raw.startsWith('vi')) {
-    return 'vi-VN'
   }
   if (raw.startsWith('zh-TW') || raw.startsWith('zh-HK')) {
     return 'zh-TW'

@@ -17,6 +17,7 @@ export default {
     "invalidSession": "竞技场会话数据损坏，未覆盖原数据。",
     "interrupted": "上次请求因页面刷新或关闭而中断，请重新运行。",
     "missingImage": "图片不可用，请重新添加或运行。",
+    "imageDeleted": "已删除参考图片",
     "incomplete": "请填写提示词、连接配置和实际模型。",
     "unavailable": "模型配置或服务不可用，请检查设置。",
     "emptyOutput": "模型没有返回可展示的内容。",

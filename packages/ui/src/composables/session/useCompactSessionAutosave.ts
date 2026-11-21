@@ -33,6 +33,21 @@ export function useCompactSessionAutosave<Key>(options: {
     waitingForIdle = false
     generation++
   }
+  /**
+   * EU01-07 / EU-F01 / R3B-01 / EU04-03 (shared debounce-flush fix): start the
+   * pending save NOW instead of waiting out the 750ms debounce / 5s maxWait.
+   * Called from the `beforeunload` handler, which fires while the document is
+   * still fully alive — the async IndexedDB chain (navigator.locks → Dexie
+   * compareAndSet) gets the whole unload sequence to complete, unlike work
+   * started in `pagehide`, when the document is already being discarded and
+   * `setTimeout` hops may never run. No-op when nothing is pending or the
+   * autosave is disabled (desktop relies on `saveAllSessions({ urgent: true })`).
+   */
+  const flush = () => {
+    if (!pending.size) return Promise.resolve()
+    clearTimers()
+    return save()
+  }
   const canRun = () => !disposed && options.enabled.value && !options.busy.value
   const save = async () => {
     clearTimers()
@@ -95,5 +110,5 @@ export function useCompactSessionAutosave<Key>(options: {
     unsubscribe?.()
     cancelPending()
   })
-  return { cancelPending }
+  return { cancelPending, flush }
 }

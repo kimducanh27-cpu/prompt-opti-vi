@@ -138,6 +138,14 @@ export function useContextManagement(options: ContextManagementOptions) {
     if (!contextRepo.value || !currentContextId.value) return;
 
     // 清除之前的定时器
+    // NOTE (V-DIFF-FIX N-2): this is OVERWRITE semantics, not merging —
+    // a second persistContextUpdate() call within the 300ms window
+    // silently DROPS the earlier patch; only the latest patch is
+    // written. Safe in practice because the callers rely on a 300ms
+    // quiet window: Tool Manager confirm (handleToolManagerConfirm) and
+    // ContextEditor save — nothing else persists within 300ms of either.
+    // A patch-merging debounce is separate shared-infra work, not done
+    // here; do not assume two rapid calls both land.
     if (persistContextUpdateTimer) {
       clearTimeout(persistContextUpdateTimer);
     }

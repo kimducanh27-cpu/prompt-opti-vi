@@ -24,7 +24,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NTooltip } from 'naive-ui'
-import { SlidersHorizontal, CircleAlert } from '@lucide/vue'
+import { PhSlidersHorizontal as SlidersHorizontal, PhWarningCircle as CircleAlert } from '@phosphor-icons/vue'
 import { buildCompareRoleTooltipCopy, getCompareRoleLabel, type CompareRoleUiEntry } from './compare-ui'
 const props = defineProps<{
   entries: (CompareRoleUiEntry & { id: string; label: string })[]

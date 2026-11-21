@@ -17,6 +17,7 @@ const messages = {
     "templates": "Templates",
     "history": "History",
     "close": "Close",
+    "skipToMainContent": "Skip to main content",
     "test": "Test",
     "enable": "Enable",
     "disable": "Disable",
@@ -36,6 +37,7 @@ const messages = {
     "collapse": "Collapse",
     "hide": "Hide",
     "clear": "Clear",
+    "loadMore": "Load more",
     "workspaceTools": "Workspace Tools",
     "promptGarden": {
       "title": "Prompt Garden",
@@ -59,7 +61,7 @@ const messages = {
       "loadMore": "Load more",
       "loadFailed": "Could not load prompts",
       "noResults": "No prompts found",
-      "itemCount": "{count} prompts",
+      "itemCount": "{count} prompt | {count} prompts",
       "openGarden": "Browse Garden",
       "inspirationTrigger": "Inspiration",
       "inspirationStartTitle": "Start with inspiration",
@@ -112,6 +114,7 @@ const messages = {
     "warning": "Warning",
     "info": "Info",
     "download": "Download",
+    "undo": "Undo",
     "deleteConfirmation": "Are you sure you want to delete this?",
     "editingDisabledDuringStream": "Editing is disabled while content is being generated",
     "markdown": "Render",
@@ -162,6 +165,7 @@ const messages = {
     "templates": "Templates",
     "dataManager": "Data Manager",
     "favorites": "Favorite Library",
+    "favoritesShort": "Saved",
     "advancedMode": "Advanced Mode",
     "variableManager": "Variable Manager",
     "about": "About",
@@ -200,10 +204,7 @@ const messages = {
     "title": "Theme Settings",
     "light": "Light",
     "dark": "Dark",
-    "blue": "Blue",
-    "classic": "Beige",
-    "green": "Green",
-    "purple": "Purple"
+    "auto": "Auto (System)"
   },
   "toast": {
     "error": {
@@ -259,7 +260,6 @@ const messages = {
       "chainAutoRestored": "Optimization chain automatically restored from history",
       "imageHistoryRestored": "Image history restored",
       "conversationRestored": "Complete conversation restored from history",
-      "imageFavoriteLoaded": "Favorite image prompt loaded",
       "favoriteLoaded": "Prompt loaded to input",
       "promptGardenImportSuccess": "Imported from Prompt Garden",
       "localEditSaved": "Saved as a new version",
@@ -295,8 +295,7 @@ const messages = {
       "templateSelected": "Template selected",
       "optimizationModeAutoSwitched": "Automatically switched to {mode} prompt optimization mode",
       "switchedToImageMode": "Automatically switched to image mode",
-      "switchedToFunctionMode": "Automatically switched to {mode} mode",
-      "multiTurnOptimizationPrompt": "Multi-turn conversation optimization ({count} messages)"
+      "multiTurnOptimizationPrompt": "Multi-turn conversation optimization ({count} message) | Multi-turn conversation optimization ({count} messages)"
     }
   },
   "log": {

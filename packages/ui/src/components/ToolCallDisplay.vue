@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { Settings as UiSettings } from '@lucide/vue'
+import { PhGear as UiSettings } from '@phosphor-icons/vue'
 import { computed, ref, watch } from 'vue'
 
 import { useI18n } from 'vue-i18n'

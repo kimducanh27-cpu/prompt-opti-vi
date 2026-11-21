@@ -7,7 +7,7 @@
 | `foundation.css` | `MainLayout`、`useWorkspaceLayout` 的主题 token、可用视口及公共控件表面 |
 | `overlay.css` | `AdaptiveModal` 与公共 dialog/page/picker/sheet 容器，不承接业务表单布局 |
 | `workspace.css` | `OptimizeWorkspaceLayout` 和七工作区 shell 的 pane、源稿/结果卡片及公共阅读间距 |
-| `navigation.css` | `CompactNavigation`、`WorkspaceRegionSwitch` 的导航和两区选择 |
+| `navigation.css` | `CompactNavigation` 的导航 |
 | `input.css` | `InputPanel` 和共享编辑器的字段、标题、提交区与文本排版 |
 | `prompt.css` | `PromptPanel` 的标题、版本、继续优化和差异比较；工作区折叠摘要 |
 | `output.css` | `OutputDisplayCore` 的工具栏、正文和流式高度 |

@@ -40,7 +40,7 @@
 import { ref, computed, watch, inject, type Ref } from 'vue'
 
 import { NTreeSelect, NButton, NIcon, NModal, type TreeSelectOption } from 'naive-ui';
-import { Folder } from '@lucide/vue'
+import { PhFolder as Folder } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n';
 import CategoryManager from './CategoryManager.vue';
 import type { FavoriteCategory } from '@prompt-optimizer/core';

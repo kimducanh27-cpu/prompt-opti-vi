@@ -17,6 +17,7 @@
             size="small"
             @click="openFullscreen"
             :title="t('common.expand')"
+            :aria-label="t('common.expand')"
             ghost
             round
           >
@@ -31,6 +32,7 @@
 
       <!-- 输入区域 -->
       <NInput
+        class="test-input-section__editor"
         :value="modelValue"
         @update:value="$emit('update:modelValue', $event)"
         type="textarea"
@@ -54,6 +56,7 @@
     <!-- 全屏弹窗 -->
     <FullscreenDialog v-if="enableFullscreen" v-model="isFullscreen" :title="label">
       <NInput
+        class="test-input-section__fullscreen-editor"
         v-model:value="fullscreenValue"
         type="textarea"
         :placeholder="placeholder"
@@ -67,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { Maximize2 as UiMaximize2 } from '@lucide/vue'
+import { PhArrowsOut as UiMaximize2 } from '@phosphor-icons/vue'
 import { computed } from 'vue'
 
 import { useI18n } from 'vue-i18n'
@@ -143,5 +146,24 @@ const { isFullscreen, fullscreenValue, openFullscreen } = useFullscreen(
   flex-shrink: 0;
   align-items: center;
   gap: 4px;
+}
+
+/* R3A-02 (same class as InputPanel): Naive's `show-count` word count is
+   absolutely positioned over the textarea's bottom-right corner and covers
+   the last line of text. Reserve a 32px strip at the bottom of the editable
+   area (count zone is ~27.5px from the box bottom, measured live); the mirror
+   gets the same padding because it drives the autosize height.
+   V-F follow-up: the bare `:deep(.n-input__textarea-el)` rule is (0,2,0) and
+   LOSES to Naive's own `.n-input.n-input--textarea .n-input__textarea-el`
+   (0,3,0) — live padding-bottom measured 6px, not 32px. Qualify with the
+   component's own class (same pattern as InputPanel's
+   `.input-panel-primary-editor :deep(...)`) so the rule is (0,3,0) and wins.
+   Both editors are qualified — the fullscreen one already measured 32px and
+   must not regress when the unqualified rule goes away. */
+.test-input-section__editor :deep(.n-input__textarea-el),
+.test-input-section__editor :deep(.n-input__textarea-mirror),
+.test-input-section__fullscreen-editor :deep(.n-input__textarea-el),
+.test-input-section__fullscreen-editor :deep(.n-input__textarea-mirror) {
+  padding-bottom: 32px;
 }
 </style>

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { ensureTestRegionVisible } from '../helpers/common'
 
 test.use({ actionTimeout: 10000 })
 
@@ -15,7 +16,7 @@ interface SavedWorkspace {
 }
 
 async function openTestRegion(page: Page) {
-  await page.getByTestId('workspace-region-test').click()
+  await ensureTestRegionVisible(page)
   const toggle = page.getByTestId('test-config-toggle')
   if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click()
 }

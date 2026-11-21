@@ -1,6 +1,8 @@
 <template>
   <NDropdown
     :options="dropdownOptions"
+    :menu-props="dropdownMenuProps"
+    :node-props="dropdownNodeProps"
     @select="handleLanguageSelect"
     placement="bottom-end"
     trigger="click"
@@ -8,28 +10,29 @@
     <NButton 
       quaternary 
       size="small"
-      class="language-switch-trigger flex items-center justify-center"
+      class="flex items-center justify-center"
       :title="currentLanguageLabel"
       :aria-label="currentLanguageLabel"
     >
       <template #icon>
-        <UiLanguages class="language-icon" :size="20" />
+        <UiLanguages class="language-icon"  :size="20" />
       </template>
     </NButton>
   </NDropdown>
 </template>
 
 <script setup lang="ts">
-import { Languages as UiLanguages } from '@lucide/vue'
+import { PhTranslate as UiLanguages } from '@phosphor-icons/vue'
 import { computed, inject, type Ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import { NButton, NDropdown, type DropdownOption } from 'naive-ui'
-import { i18n, SUPPORTED_LOCALES, type SupportedLocale } from '../plugins/i18n'
+import { i18n, type SupportedLocale } from '../plugins/i18n'
 import { UI_SETTINGS_KEYS } from '@prompt-optimizer/core'
 import { useGlobalSettings } from '../stores/settings/useGlobalSettings'
 import { usePreferences } from '../composables/storage/usePreferenceManager'
 import type { AppServices } from '../types/services'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 
 // 服务注入
 const services = inject<Ref<AppServices | null>>('services')!
@@ -45,16 +48,6 @@ interface LanguageOption {
 
 const availableLanguages = computed<LanguageOption[]>(() => [
   {
-    key: 'vi-VN',
-    label: t('settings.languageSwitcher.languages.vi-VN'),
-    locale: 'vi-VN'
-  },
-  {
-    key: 'en-US',
-    label: t('settings.languageSwitcher.languages.en-US'),
-    locale: 'en-US'
-  },
-  {
     key: 'zh-CN',
     label: t('settings.languageSwitcher.languages.zh-CN'),
     locale: 'zh-CN'
@@ -63,6 +56,16 @@ const availableLanguages = computed<LanguageOption[]>(() => [
     key: 'zh-TW',
     label: t('settings.languageSwitcher.languages.zh-TW'),
     locale: 'zh-TW'
+  },
+  {
+    key: 'en-US',
+    label: t('settings.languageSwitcher.languages.en-US'),
+    locale: 'en-US'
+  },
+  {
+    key: 'vi-VN',
+    label: t('settings.languageSwitcher.languages.vi-VN'),
+    locale: 'vi-VN'
   }
 ])
 
@@ -85,7 +88,7 @@ const dropdownOptions = computed<DropdownOption[]>(() => {
 })
 
 const isSupportedLocale = (value: unknown): value is SupportedLocale =>
-  typeof value === 'string' && SUPPORTED_LOCALES.includes(value as SupportedLocale)
+  value === 'zh-CN' || value === 'zh-TW' || value === 'en-US' || value === 'vi-VN'
 
 // 处理语言选择
 const handleLanguageSelect = async (key: string) => {

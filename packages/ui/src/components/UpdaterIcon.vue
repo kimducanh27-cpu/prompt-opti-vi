@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCw as UiRefreshCw } from '@lucide/vue'
+import { PhArrowClockwise as UiRefreshCw } from '@phosphor-icons/vue'
 import { ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'

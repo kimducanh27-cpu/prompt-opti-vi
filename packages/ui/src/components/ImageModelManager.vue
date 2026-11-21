@@ -3,16 +3,16 @@
     <!-- 空状态 -->
     <NEmpty v-if="configs.length === 0" :description="t('image.model.empty')">
       <template #extra>
-        <NButton type="primary" @click="openAddModal">{{ t('image.model.addFirst') }}</NButton>
+        <PoButton variant="primary" @click="openAddModal">{{ t('image.model.addFirst') }}</PoButton>
       </template>
     </NEmpty>
 
     <!-- Presentation changes do not recreate the manager or its test results. -->
-    <div v-else-if="isCompact" class="image-model-mobile-list">
+    <div v-else-if="isCompact" ref="mobileListRef" class="image-model-mobile-list">
       <NInput v-model:value="searchQuery" :placeholder="t('common.search')" :aria-label="t('common.search')" clearable />
       <NEmpty v-if="filteredConfigs.length === 0" :description="t('common.noContent')" />
       <MobileModelRow
-        v-for="config in filteredConfigs"
+        v-for="config in visibleMobileConfigs"
         :key="config.id"
         :title="config.name || config.id"
         :subtitle="`${providerDisplayName(config)} · ${config.model?.name || config.modelId}`"
@@ -47,81 +47,40 @@
           </div>
         </template>
       </MobileModelRow>
+      <!-- P-010: "Load more" for the paginated mobile list. -->
+      <PoButton v-if="hasMoreConfigs" variant="secondary" style="width: 100%; margin-top: 8px" @click="loadMoreConfigs">
+        {{ t('common.loadMore') }}
+      </PoButton>
     </div>
 
-    <!-- Desktop model list retains its existing presentation. -->
-    <NSpace v-else vertical :size="12" class="image-model-stack">
-      <NCard
-        v-for="config in configs"
+    <!-- Slice 7: dense list as PoRow (design-system §2.4) instead of one Card
+         per config. Title + meta carry the old header/tags as text; the test
+         button, result thumbnail and the same four actions live in the row's
+         action slot. The compact list already uses MobileModelRow. -->
+    <div v-else ref="desktopListRef" class="image-model-stack">
+      <PoRow
+        v-for="config in visibleDesktopConfigs"
         :key="config.id"
-        size="small"
-        hoverable
         class="image-model-card"
-        :style="{
-          opacity: config.enabled ? 1 : 0.6
-        }"
+        :class="{ 'image-model-card--disabled': !config.enabled }"
+        :title="config.name || config.id"
+        :meta="imageModelMeta(config)"
+        :chevron="false"
       >
-        <template #header>
-          <NSpace justify="space-between" align="center">
-            <NSpace vertical :size="4" class="image-model-heading">
-              <!-- 配置名称行 -->
-              <NSpace align="center" :size="8">
-                <NText strong>{{ config.name || config.id }}</NText>
-                <NTag
-                  v-if="!config.enabled"
-                  type="warning"
-                  size="small"
-                  round
-                  :bordered="false"
-                >
-                  {{ t('modelManager.disabled') }}
-                </NTag>
-              </NSpace>
-              <!-- 标签行：Provider、Model、能力标签合并 -->
-              <NSpace :size="6" class="image-model-tags">
-                <NTag size="small" type="default" round :bordered="false">
-                  {{ providerDisplayName(config) }}
-                </NTag>
-                <NTag size="small" type="info" round :bordered="false">
-                  {{ config.model?.name || config.modelId }}
-                </NTag>
-                <NTag
-                  v-if="config.provider?.corsRestricted && !isElectronEnv"
-                  size="small"
-                  type="error"
-                  round
-                  :bordered="false"
-                >
-                  {{ t('modelManager.corsRestrictedTag') }}
-                </NTag>
-                <!-- 能力标签移到这里 -->
-                <NTag v-if="config.model?.capabilities?.text2image" size="small" type="success" round :bordered="false">
-                  {{ t('image.capability.text2image') }}
-                </NTag>
-                <NTag v-if="config.model?.capabilities?.image2image" size="small" type="info" round :bordered="false">
-                  {{ t('image.capability.image2image') }}
-                </NTag>
-              </NSpace>
-            </NSpace>
-          </NSpace>
-        </template>
-        
-        <template #header-extra>
-          <NSpace @click.stop :size="4" class="image-model-actions">
-            <NButton
-              @click="testConnection(config.id)"
-              size="small"
-              quaternary
+        <template #action>
+          <NSpace :size="4" class="image-model-actions">
+            <PoButton
+              icon-only
+              variant="ghost"
+              :aria-label="t('modelManager.testConnection')"
               :disabled="isTestingConnectionFor(config.id)"
               :loading="isTestingConnectionFor(config.id)"
+              @click="testConnection(config.id)"
             >
               <template #icon>
                 <UiLink />
               </template>
-              <span class="hidden md:inline">{{ t('modelManager.testConnection') }}</span>
-            </NButton>
-
-            <!-- 测试结果缩略图 -->
+            </PoButton>
             <AppPreviewImage
               v-if="testResults[config.id]?.success && testResults[config.id]?.image"
               :src="getPreviewImageSrc(config.id) || ''"
@@ -132,69 +91,70 @@
               :preview-disabled="false"
               :alt="t('image.connection.testImagePreview')"
             />
-
-            <NButton
+            <PoButton
+              icon-only
+              variant="ghost"
+              :aria-label="t('modelManager.editModel')"
               @click="editConfig(config.id)"
-              size="small"
-              quaternary
             >
               <template #icon>
                 <UiSquarePen />
               </template>
-              <span class="hidden md:inline">{{ t('modelManager.editModel') }}</span>
-            </NButton>
-
-            <NButton
+            </PoButton>
+            <PoButton
+              icon-only
+              variant="ghost"
+              :aria-label="t('modelManager.cloneModel')"
               @click="cloneConfig(config.id)"
-              size="small"
-              quaternary
             >
               <template #icon>
                 <UiCopy />
               </template>
-              <span class="hidden md:inline">{{ t('modelManager.cloneModel') }}</span>
-            </NButton>
-
-            <NButton
+            </PoButton>
+            <PoButton
+              icon-only
+              variant="ghost"
+              :aria-label="config.enabled ? t('common.disable') : t('common.enable')"
               @click="toggleConfig(config)"
-              size="small"
-              :type="config.enabled ? 'warning' : 'success'"
-              quaternary
             >
               <template #icon>
                 <UiPowerOff v-if="config.enabled" />
                 <UiPower v-else />
               </template>
-              <span class="hidden md:inline">{{ config.enabled ? t('common.disable') : t('common.enable') }}</span>
-            </NButton>
-
-            <NButton
+            </PoButton>
+            <PoButton
+              icon-only
+              variant="destructive"
+              :aria-label="t('common.delete')"
               @click="deleteConfig(config.id)"
-              size="small"
-              type="error"
-              quaternary
             >
               <template #icon>
                 <UiTrash2 />
               </template>
-              <span class="hidden md:inline">{{ t('common.delete') }}</span>
-            </NButton>
+            </PoButton>
           </NSpace>
         </template>
-      </NCard>
-    </NSpace>
+      </PoRow>
+      <!-- P-010: "Load more" for the paginated desktop list. -->
+      <PoButton v-if="hasMoreConfigs" variant="secondary" style="width: 100%; margin-top: 8px" @click="loadMoreConfigs">
+        {{ t('common.loadMore') }}
+      </PoButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Link as UiLink, SquarePen as UiSquarePen, Copy as UiCopy, PowerOff as UiPowerOff, Power as UiPower, Trash2 as UiTrash2 } from '@lucide/vue'
-import { ref, onMounted, inject, h, computed } from 'vue'
+import { PhLink as UiLink, PhPencilSimple as UiSquarePen, PhCopy as UiCopy, PhPower as UiPowerOff, PhPower as UiPower, PhTrash as UiTrash2 } from '@phosphor-icons/vue'
+import { ref, onMounted, inject, h, computed, watch } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import {
-  NSpace, NCard, NText, NTag, NButton, NEmpty, NInput, useDialog
+  NSpace, NText, NTag, NEmpty, NInput
 } from 'naive-ui'
+import PoRow from './primitives/PoRow.vue'
+import PoButton from './primitives/PoButton.vue'
 import { useImageModelManager } from '../composables/model/useImageModelManager'
+import { useListReveal } from '../composables/ui/useListReveal'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
 import { useToast } from '../composables/ui/useToast'
 import { getI18nErrorMessage } from '../utils/error'
@@ -207,7 +167,6 @@ import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
 const { t } = useI18n()
 const { isCompact } = useWorkspaceLayout()
 const toast = useToast()
-const dialog = useDialog()
 const confirmDialog = useConfirmDialog()
 const isElectronEnv = isRunningInElectron()
 
@@ -245,6 +204,22 @@ const isTestingConnectionFor = (configId: string) => !!testingConnections.value[
 const providerDisplayName = (config: { provider?: { id?: string; name?: string }; providerId?: string }) =>
   getProviderDisplayName(config.provider || { id: config.providerId }, t)
 
+// Slice 7: the row's single meta line carries the old tag row as text.
+const imageModelMeta = (config: {
+  provider?: { id?: string; name?: string; corsRestricted?: boolean }
+  providerId?: string
+  model?: { name?: string; capabilities?: { text2image?: boolean; image2image?: boolean } }
+  modelId?: string
+  enabled: boolean
+}) => [
+  providerDisplayName(config),
+  config.model?.name || config.modelId,
+  config.model?.capabilities?.text2image ? t('image.capability.text2image') : '',
+  config.model?.capabilities?.image2image ? t('image.capability.image2image') : '',
+  config.provider?.corsRestricted && !isElectronEnv ? t('modelManager.corsRestrictedTag') : '',
+  config.enabled ? '' : t('modelManager.disabled'),
+].filter(Boolean).join(' · ')
+
 const searchQuery = ref('')
 const filteredConfigs = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
@@ -252,6 +227,33 @@ const filteredConfigs = computed(() => {
   return configs.value.filter(config => [config.name, config.id, config.modelId, config.model?.name, providerDisplayName(config)]
     .some(value => value?.toLocaleLowerCase().includes(query)))
 })
+
+// P-010: paginate both lists (20 per page + "Load more") instead of
+// rendering every config. Resets on search change and when the underlying
+// list changes length (load/add/delete).
+const MODEL_PAGE_SIZE = 20
+const visibleConfigCount = ref(MODEL_PAGE_SIZE)
+const visibleMobileConfigs = computed(() => filteredConfigs.value.slice(0, visibleConfigCount.value))
+const visibleDesktopConfigs = computed(() => configs.value.slice(0, visibleConfigCount.value))
+
+// M5 (step 7): rows stagger in once, on first mount with content — never
+// on scroll, "Load more", or search re-filter. Mobile rows are
+// MobileModelRow (article.mobile-model-row); desktop rows are PoRow
+// (.image-model-card). Neither row root binds inline :style, so
+// revealList's clearProps cannot strip anything.
+const mobileListRef = ref<HTMLElement | null>(null)
+const desktopListRef = ref<HTMLElement | null>(null)
+useListReveal(
+  () => [
+    ...(mobileListRef.value?.querySelectorAll('.mobile-model-row') ?? []),
+    ...(desktopListRef.value?.querySelectorAll('.image-model-card') ?? []),
+  ],
+  () => visibleMobileConfigs.value.length > 0 || visibleDesktopConfigs.value.length > 0,
+)
+const hasMoreConfigs = computed(() => (isCompact.value ? filteredConfigs.value.length : configs.value.length) > visibleConfigCount.value)
+const loadMoreConfigs = () => { visibleConfigCount.value += MODEL_PAGE_SIZE }
+watch(searchQuery, () => { visibleConfigCount.value = MODEL_PAGE_SIZE })
+watch(() => configs.value.length, () => { visibleConfigCount.value = MODEL_PAGE_SIZE })
 
 const mobileActions = (config: { enabled: boolean }) => [
   { key: 'clone', label: t('modelManager.cloneModel') },
@@ -377,17 +379,18 @@ const testConnection = async (configId: string) => {
 
   if (!isRunningInElectron()) {
     if (config?.provider?.corsRestricted) {
-      dialog.warning({
+      // Route through the shared confirm dialog (EU05-01/R3E-04): its
+      // Confirm is primary (white on #1f6bd1 = 5.14:1). A direct
+      // dialog.warning() renders Confirm as type="warning" — white text on
+      // #ffce2f (1.49:1). The dialog closes on click before runTest starts,
+      // so the test still runs without blocking the close.
+      const confirmed = await confirmDialog.warning({
         title: t('modelManager.corsRestrictedTag'),
         content: () => h('div', { style: 'white-space: pre-line;' }, t('modelManager.corsRestrictedConfirm', { provider: providerDisplayName(config) })),
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
-        // Don't block dialog close while the async test runs.
-        onPositiveClick: () => {
-          void runTest()
-        }
       })
-      return
+      if (!confirmed) return
     }
   }
 
@@ -452,7 +455,8 @@ defineExpose({
 
 .image-model-mobile-list {
   display: grid;
-  gap: 10px;
+  /* M04 (M-G): gap 0 so the PoRow dividers sit directly above the next row. */
+  gap: 0;
 }
 
 .image-model-mobile-capabilities,
@@ -472,25 +476,8 @@ defineExpose({
   width: 100%;
 }
 
-.image-model-card {
-   border-radius: 16px;
-}
-
-.image-model-card :deep(.n-card-header) {
-  padding-bottom: 10px;
-}
-
-.image-model-card :deep(.n-card__content) {
-  padding-top: 0;
-}
-
-.image-model-heading,
-.image-model-tags {
-  max-width: 100%;
-}
-
-.image-model-tags {
-  flex-wrap: wrap;
+.image-model-card--disabled {
+  opacity: 0.6;
 }
 
 .image-model-actions {

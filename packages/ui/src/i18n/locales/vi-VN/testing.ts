@@ -1,23 +1,24 @@
 const messages = {
   "history": {
     "title": "Lịch sử",
-    "iterationNote": "Ghi chú tinh chỉnh",
+    "iterationNote": "Ghi chú lặp lại",
     "optimizedPrompt": "Prompt đã tối ưu",
-    "searchPlaceholder": "Tìm kiếm lịch sử...",
-    "confirmClear": "Bạn có chắc chắn muốn xóa toàn bộ bản ghi lịch sử không? Thao tác này không thể hoàn tác.",
-    "confirmDeleteChain": "Bạn có chắc chắn muốn xóa chuỗi lịch sử này không? Thao tác này không thể hoàn tác.",
-    "cleared": "Đã xóa toàn bộ lịch sử",
+    "searchPlaceholder": "Tìm trong lịch sử...",
+    "confirmClear": "Bạn có chắc muốn xóa toàn bộ lịch sử? Hành động này không thể hoàn tác.",
+    "confirmDeleteChain": "Bạn có chắc muốn xóa bản ghi lịch sử này? Hành động này không thể hoàn tác.",
+    "cleared": "Đã xóa lịch sử",
     "chainDeleted": "Đã xóa bản ghi lịch sử",
     "useThisVersion": "Dùng phiên bản này",
-    "noHistory": "Chưa có bản ghi lịch sử nào"
+    "noHistory": "Chưa có lịch sử",
+    "actionsFor": "Hành động cho {title}"
   },
   "test": {
     "config": {
-      "target": "Mục tiêu",
+      "target": "Đối tượng",
       "unassigned": "Chưa gán"
     },
     "title": "Kiểm thử",
-    "areaTitle": "Vùng kiểm thử",
+    "areaTitle": "Khu vực kiểm thử",
     "content": "Nội dung kiểm thử",
     "placeholder": "Nhập nội dung cần kiểm thử...",
     "modes": {
@@ -31,35 +32,35 @@ const messages = {
     },
     "image": {
       "attach": "Đính kèm ảnh kiểm thử",
-      "replace": "Đổi ảnh kiểm thử",
-      "remove": "Gỡ ảnh kiểm thử",
-      "previewAlt": "Ảnh kiểm thử đính kèm",
-      "unsupportedFormat": "Chỉ hỗ trợ định dạng ảnh PNG hoặc JPEG",
-      "tooLarge": "Dung lượng ảnh không được vượt quá 5 MiB",
-      "readFailed": "Không thể đọc ảnh đã chọn",
-      "visionHint": "Mô hình được chọn phải hỗ trợ đầu vào hình ảnh (Vision)",
+      "replace": "Thay ảnh kiểm thử",
+      "remove": "Xóa ảnh kiểm thử",
+      "previewAlt": "Ảnh kiểm thử đã đính kèm",
+      "unsupportedFormat": "Chỉ hỗ trợ ảnh PNG hoặc JPEG",
+      "tooLarge": "Ảnh không được vượt quá 5 MiB",
+      "readFailed": "Không đọc được ảnh đã chọn",
+      "visionHint": "Model đã chọn phải hỗ trợ nhập ảnh",
       "evaluationLabel": "Ảnh kiểm thử"
     },
-    "model": "Mô hình kiểm thử",
+    "model": "Model kiểm thử",
     "startTest": "Kiểm thử",
-    "startCompare": "So sánh",
-    "testing": "Đang thử...",
+    "startCompare": "Kiểm thử",
+    "testing": "Đang kiểm thử...",
     "toggleCompare": {
       "enable": "Bật so sánh",
       "disable": "Tắt so sánh"
     },
     "compareMode": "Chế độ so sánh",
     "layout": {
-      "columns": "Số cột",
-      "workspace": "Không gian làm việc",
-      "previous": "Bản trước",
-      "original": "Bản gốc",
+      "columns": "Cột",
+      "workspace": "Workspace",
+      "previous": "Trước đó",
+      "original": "Gốc",
       "previousHelp": {
         "dynamic": "",
-        "currentBase": "Không gian làm việc có chỉnh sửa chưa lưu, nên mục này dùng phiên bản đã lưu gần nhất.",
-        "earlierSaved": "Không gian làm việc đã được lưu, nên mục này dùng phiên bản ngay trước đó.",
-        "originalFallback": "Chưa có phiên bản trước đó nên mục này dùng prompt gốc.",
-        "sameAsWorkspace": "Hiện trùng khớp với không gian làm việc nên bước so sánh sẽ coi đây là lượt chạy kiểm tra lại (retest)."
+        "currentBase": "Workspace đang có thay đổi chưa lưu nên dùng phiên bản đã lưu hiện tại.",
+        "earlierSaved": "Workspace đã lưu nên dùng phiên bản trước đó.",
+        "originalFallback": "Chưa có phiên bản trước đó nên dùng prompt gốc.",
+        "sameAsWorkspace": "Hiện đang giống workspace nên so sánh sẽ xem đây như một lần chạy lại."
       },
       "latest": "Mới nhất",
       "runAll": "Chạy tất cả",
@@ -71,7 +72,7 @@ const messages = {
     "compareResultA": "Kết quả A",
     "compareResultB": "Kết quả B",
     "testResult": "Kết quả kiểm thử",
-    "userPromptTest": "Kiểm thử User Prompt",
+    "userPromptTest": "Kiểm thử Prompt người dùng",
     "advanced": {
       "startTest": "Kiểm thử",
       "result": "Kết quả kiểm thử",
@@ -80,22 +81,22 @@ const messages = {
     },
     "error": {
       "failed": "Kiểm thử thất bại",
-      "noModel": "Vui lòng chọn mô hình kiểm thử trước",
+      "noModel": "Vui lòng chọn model kiểm thử trước",
       "noTestContent": "Vui lòng nhập nội dung kiểm thử",
-      "noWorkspacePrompt": "Không gian làm việc đang trống. Vui lòng nhập hoặc tạo một prompt trước",
+      "noWorkspacePrompt": "Workspace đang trống. Vui lòng nhập hoặc tạo prompt trong workspace trước",
       "noOriginalPrompt": "Vui lòng nhập prompt gốc trước",
-      "noOptimizedPrompt": "Vui lòng tạo prompt tối ưu trước",
-      "missingVariables": "Biến còn thiếu hoặc đang trống: {vars}",
-      "forbiddenTemplateSyntax": "Không hỗ trợ cú pháp Mustache không thoát (như ba dấu ngoặc nhọn {{{ }}} hoặc thẻ &). Vui lòng dùng cú pháp biến thông thường.",
+      "noOptimizedPrompt": "Vui lòng tạo prompt đã tối ưu trước",
+      "missingVariables": "Thiếu hoặc trống biến: {vars}",
+      "forbiddenTemplateSyntax": "Không hỗ trợ cú pháp Mustache chưa escape (ví dụ dấu ngoặc nhọn ba hoặc thẻ &). Vui lòng dùng placeholder biến thông thường.",
       "originalTestFailed": "Kiểm thử prompt gốc thất bại",
-      "optimizedTestFailed": "Kiểm thử prompt tối ưu thất bại",
-      "saveToGlobalFailed": "Lưu biến {name} vào biến toàn cục thất bại"
+      "optimizedTestFailed": "Kiểm thử prompt đã tối ưu thất bại",
+      "saveToGlobalFailed": "Không lưu được biến {name} vào biến toàn cục"
     },
     "enableMarkdown": "Bật hiển thị Markdown",
     "disableMarkdown": "Tắt hiển thị Markdown",
     "thinking": "Quá trình suy luận",
     "variables": {
-      "detected": "Biến phát hiện được",
+      "detected": "Biến đã phát hiện",
       "manageVariables": "Quản lý biến",
       "viewPreview": "Xem trước",
       "title": "Biến",
@@ -106,48 +107,48 @@ const messages = {
       "overridesGlobal": "Ghi đè biến toàn cục",
       "noVariables": "Không phát hiện biến nào",
       "previewTitle": "Kết quả xem trước",
-      "firstRound": "Vòng 1 (Biến tích hợp sẵn)",
+      "firstRound": "Vòng 1 (Biến có sẵn)",
       "secondRound": "Vòng 2 (Biến tùy chỉnh)",
-      "builtinVars": "Biến tích hợp",
+      "builtinVars": "Biến có sẵn",
       "customVars": "Biến tùy chỉnh",
-      "finalPreview": "Bản xem trước cuối cùng",
+      "finalPreview": "Xem trước cuối cùng",
       "missingVars": "Biến còn thiếu",
       "saveToGlobal": "Lưu vào biến toàn cục",
       "savedToGlobal": "Đã lưu vào biến toàn cục",
-      "emptyValueWarning": "Giá trị đang trống, không thể lưu",
+      "emptyValueWarning": "Giá trị trống, không thể lưu",
       "tempCount": "{count} biến tạm thời",
       "addVariable": "Thêm biến",
       "nameRequired": "Tên biến là bắt buộc",
       "addSuccess": "Đã thêm biến thành công",
-      "clearAllConfirm": "Xóa toàn bộ biến tạm thời ({count})?",
+      "clearAllConfirm": "Xóa tất cả biến tạm thời ({count})?",
       "renameSuccess": "Đã đổi tên biến từ {oldName} thành {newName}",
       "renameNotSupported": "Chế độ xem này không hỗ trợ đổi tên biến",
       "deleteSuccess": "Đã xóa biến {name}",
-      "clearSuccess": "Đã xóa toàn bộ biến tạm thời",
+      "clearSuccess": "Đã xóa tất cả biến tạm thời",
       "delete": "Xóa biến này",
-      "fullscreenEdit": "Chỉnh sửa giá trị toàn màn hình"
+      "fullscreenEdit": "Sửa giá trị ở chế độ toàn màn hình"
     },
     "variableValueGeneration": {
-      "generateButton": "Tự động điền giá trị biến",
-      "generating": "Đang sinh giá trị thông minh...",
-      "dialogTitle": "Xem trước giá trị biến được sinh tự động",
+      "generateButton": "Điền giá trị biến thông minh",
+      "generating": "Đang tạo thông minh...",
+      "dialogTitle": "Xem trước giá trị biến đã tạo",
       "variableName": "Tên biến",
-      "generatedValue": "Giá trị đề xuất",
+      "generatedValue": "Giá trị đã tạo",
       "valuePlaceholder": "Nhập giá trị biến",
-      "reason": "Lý do đề xuất",
+      "reason": "Lý do tạo",
       "confidence": "Độ tin cậy",
       "selected": "Đã chọn",
       "batchApply": "Áp dụng hàng loạt ({count})",
-      "noVariablesToGenerate": "Không có biến nào cần sinh giá trị",
-      "generateFailed": "Sinh giá trị biến thất bại",
+      "noVariablesToGenerate": "Không có biến nào cần điền giá trị",
+      "generateFailed": "Tạo giá trị biến thất bại",
       "applySuccess": "Đã áp dụng thành công {count} giá trị biến",
-      "noPrompt": "Vui lòng nhập hoặc tạo prompt tối ưu trước",
-      "noMissingVariables": "Tất cả các biến đã có giá trị",
-      "serviceNotReady": "Dịch vụ sinh giá trị biến chưa sẵn sàng",
-      "noValues": "Không có giá trị biến nào được sinh ra"
+      "noPrompt": "Vui lòng nhập hoặc tạo prompt đã tối ưu trước",
+      "noMissingVariables": "Mọi biến đã được điền đủ",
+      "serviceNotReady": "Dịch vụ tạo giá trị biến chưa sẵn sàng",
+      "noValues": "Chưa tạo được giá trị biến nào"
     },
     "invalidVariables": "Dữ liệu biến không hợp lệ",
-    "getVariablesFailed": "Không thể lấy danh sách biến"
+    "getVariablesFailed": "Không lấy được biến"
   },
   "evaluation": {
     "button": "Đánh giá",
@@ -156,39 +157,39 @@ const messages = {
     "compareEvaluate": "So sánh",
     "loading": "Đang đánh giá...",
     "analyzing": "Đang phân tích...",
-    "overallScore": "Điểm tổng",
+    "overallScore": "Tổng thể",
     "dimensions": "Điểm theo tiêu chí",
-    "issues": "Vấn đề phát hiện",
-    "improvements": "Đề xuất cải thiện",
-    "applyToIterate": "Tinh chỉnh",
+    "issues": "Vấn đề",
+    "improvements": "Cải tiến",
+    "applyToIterate": "Lặp lại",
     "rewriteFromEvaluation": "Viết lại",
-    "rewriteSkipped": "Kết quả đánh giá khuyến nghị giữ nguyên prompt hiện tại nên bước viết lại được bỏ qua.",
-    "applySuccess": "Đang áp dụng cải thiện...",
-    "noResult": "Chưa có kết quả đánh giá. Nhấn nút Đánh giá để bắt đầu.",
+    "rewriteSkipped": "Đánh giá khuyên giữ nguyên prompt hiện tại nên đã bỏ qua bước viết lại.",
+    "applySuccess": "Đang áp dụng cải tiến...",
+    "noResult": "Chưa có kết quả đánh giá. Nhấn nút đánh giá để bắt đầu.",
     "viewDetails": "Xem chi tiết",
     "feedbackAnalyze": "Trọng tâm",
-    "feedbackTitle": "Trọng tâm phân tích",
-    "optional": "Tùy chọn",
-    "feedbackPlaceholder": "Mô tả điểm bạn muốn tập trung kiểm tra. Hệ thống sẽ ưu tiên ghi chú của bạn.",
+    "feedbackTitle": "Trọng tâm",
+    "optional": "Không bắt buộc",
+    "feedbackPlaceholder": "Mô tả điều cần tập trung. Phân tích sẽ ưu tiên ghi chú của bạn.",
     "feedbackHint": "Esc để hủy · Ctrl/⌘+Enter để gửi",
-    "feedbackSubmit": "Gửi & Phân tích",
+    "feedbackSubmit": "Gửi & phân tích",
     "focus": "Trọng tâm",
-    "focusTitle": "Trọng tâm đánh giá",
-    "focusPlaceholder": "Tùy chọn: Bạn muốn bước đánh giá tập trung vào khía cạnh nào? (VD: cấu trúc đầu ra, ràng buộc còn thiếu, độ dài ví dụ)",
-    "focusHint": "Để trống nếu muốn chạy đánh giá thông minh mặc định.",
+    "focusTitle": "Trọng tâm",
+    "focusPlaceholder": "Không bắt buộc: đánh giá nên tập trung vào điều gì? (ví dụ cấu trúc đầu ra, ràng buộc còn thiếu, độ dài ví dụ)",
+    "focusHint": "Để trống để chạy đánh giá thông minh mặc định.",
     "stale": {
-      "default": "Kết quả này dựa trên nội dung cũ. Hãy chạy đánh giá lại nếu cần.",
-      "promptOnly": "Prompt đã thay đổi. Hãy chạy phân tích lại nếu cần.",
-      "promptIterate": "Prompt hoặc yêu cầu tinh chỉnh đã thay đổi. Hãy chạy phân tích lại nếu cần.",
-      "result": "Thiết lập kiểm thử hoặc không gian làm việc đã thay đổi. Hãy chạy đánh giá lại nếu cần.",
-      "compare": "Thiết lập kiểm thử hoặc không gian làm việc đã thay đổi. Hãy chạy so sánh lại nếu cần."
+      "default": "Kết quả này dựa trên nội dung cũ. Chạy lại đánh giá nếu cần.",
+      "promptOnly": "Prompt đã thay đổi. Chạy lại phân tích nếu cần.",
+      "promptIterate": "Prompt hoặc yêu cầu lặp lại đã thay đổi. Chạy lại phân tích nếu cần.",
+      "result": "Thiết lập kiểm thử hoặc workspace đã thay đổi. Chạy lại đánh giá nếu cần.",
+      "compare": "Thiết lập kiểm thử hoặc workspace đã thay đổi. Chạy lại so sánh nếu cần."
     },
     "title": {
       "default": "Kết quả đánh giá",
       "result": "Đánh giá kết quả",
       "compare": "Đánh giá so sánh",
       "promptOnly": "Phân tích chất lượng Prompt",
-      "promptIterate": "Phân tích tinh chỉnh lặp"
+      "promptIterate": "Phân tích lần lặp"
     },
     "type": {
       "result": "Đánh giá kết quả này",
@@ -197,226 +198,226 @@ const messages = {
     "compareConfig": {
       "button": "Cài đặt so sánh",
       "dialogTitle": "Cài đặt so sánh",
-      "helper": "Xác nhận vai trò của từng cột kiểm thử. Nếu gợi ý tự động của hệ thống đã đúng, bạn có thể xác nhận ngay.",
-      "helperSummary": "Hãy chọn Mục tiêu tối ưu trước. Phiên bản trước sẽ tự động bám theo không gian làm việc hiện tại.",
-      "summaryTitle": "Kế hoạch so sánh lượt này",
+      "helper": "Xác nhận vai trò của từng cột kiểm thử. Nếu gợi ý của hệ thống đúng, bạn có thể xác nhận ngay.",
+      "helperSummary": "Chọn mục tiêu tối ưu trước. Phiên bản trước đó sẽ bám theo workspace hiện tại một cách tự động.",
+      "summaryTitle": "Kế hoạch so sánh này",
       "currentTargetLabel": "Mục tiêu tối ưu hiện tại",
       "currentTargetMissing": "Chưa chọn",
       "summaryUnassigned": "Chưa gán",
-      "summaryUnused": "Không dùng trong lượt này",
-      "summaryNeedTarget": "Bắt buộc chọn Mục tiêu tối ưu",
+      "summaryUnused": "Không dùng trong vòng này",
+      "summaryNeedTarget": "Cần có mục tiêu tối ưu",
       "summaryAssigned": "Sẵn sàng",
       "summaryRequired": "Bắt buộc",
-      "summaryOptional": "Tùy chọn",
-      "summaryStructured": "So sánh thông minh sẽ đánh giá xem mục tiêu tối ưu có tiến bộ hơn bản trước không, có thể học hỏi gì từ cột Mẫu chuẩn (Teacher) và kết luận có ổn định không.",
-      "summaryGeneric": "Thiết lập này phù hợp với so sánh tiêu chuẩn hơn và sẽ không đi vào luồng chấm điểm từng cặp chuyên sâu.",
-      "summaryPairs": "Các cặp so sánh chính: {pairs}",
+      "summaryOptional": "Không bắt buộc",
+      "summaryStructured": "So sánh thông minh sẽ đánh giá xem mục tiêu tối ưu có cải thiện không, có học được gì từ mẫu tham chiếu không, và kết luận có ổn định không.",
+      "summaryGeneric": "Thiết lập này phù hợp hơn với so sánh chuẩn và sẽ không vào so sánh thông minh từng cặp.",
+      "summaryPairs": "Nhóm so sánh chính: {pairs}",
       "summaryHints": {
-        "target": "Chọn cột mà bạn thực sự muốn cải thiện trong vòng này.",
-        "baseline": "Thường là phiên bản ngay trước không gian làm việc hiện tại, dùng để kiểm chứng mức độ tiến bộ thực tế.",
-        "reference": "Thường là cột dùng mô hình mạnh hơn hoặc có kết quả ổn định hơn để làm Mẫu chuẩn (Teacher).",
-        "replica": "Dùng để kiểm tra độ ổn định của kết luận. Nếu bản trước trùng nội dung với không gian làm việc, nó sẽ đóng vai trò chạy kiểm tra lại (Retest).",
-        "referenceBaseline": "Chỉ dùng khi bạn muốn kiểm tra thêm liệu thay đổi prompt có mang lại hiệu quả tương tự trên mô hình Mẫu chuẩn hay không."
+        "target": "Chọn cột bạn thực sự đang muốn cải thiện trong vòng này.",
+        "baseline": "Thường là phiên bản ngay trước workspace hiện tại, dùng để kiểm chứng tiến bộ thực sự.",
+        "reference": "Thường là cột mạnh hơn hoặc ổn định hơn, đóng vai trò mẫu tham chiếu.",
+        "replica": "Dùng để kiểm tra kết luận có ổn định không. Nếu phiên bản trước đó giống workspace, nó có thể xuất hiện ở đây.",
+        "referenceBaseline": "Chỉ dùng khi bạn cũng muốn kiểm tra thay đổi có hiệu quả ở phía mẫu tham chiếu không."
       },
       "assignedHints": {
-        "baselineDynamic": "Được tự động xác định từ không gian làm việc hiện tại.",
-        "replicaFromPrevious": "Trùng nội dung với không gian làm việc hiện tại nên được tính là lượt chạy kiểm tra lại (Retest)."
+        "baselineDynamic": "Được xác định tự động từ workspace hiện tại.",
+        "replicaFromPrevious": "Nội dung giống workspace hiện tại nên được xem như một lần chạy lại."
       },
-      "requireTarget": "Phát hiện nhiều cột dùng chung không gian làm việc. Vui lòng chọn rõ cột nào là Mục tiêu tối ưu.",
-      "targetRequired": "Vui lòng chọn một Mục tiêu tối ưu trước.",
+      "requireTarget": "Đã phát hiện nhiều lần kiểm thử workspace. Vui lòng chọn cột nào là mục tiêu tối ưu.",
+      "targetRequired": "Vui lòng chọn mục tiêu tối ưu trước.",
       "targetNeededShort": "Chọn mục tiêu tối ưu",
-      "reviewNeededShort": "Cần xác nhận lại",
+      "reviewNeededShort": "Vui lòng xác nhận lại",
       "autoDetected": "Gợi ý hệ thống",
       "manualAssigned": "Thủ công",
       "selectRolePlaceholder": "Chọn vai trò",
       "restoreSuggested": "Khôi phục gợi ý",
       "suggestedRoleTag": "Gợi ý hệ thống: {role}",
-      "unassignedTag": "Chưa rõ vai trò",
-      "unresolvedHint": "Cột này chưa được gán vai trò rõ ràng nên sẽ không tham gia luồng so sánh cặp chuyên sâu.",
-      "unresolvedFallbackSummary": "Các cột {entries} chưa rõ vai trò nên lượt chạy này sẽ chuyển về chế độ so sánh tiêu chuẩn.",
+      "unassignedTag": "Chưa rõ",
+      "unresolvedHint": "Cột này chưa được gán rõ ràng nên sẽ không vào luồng so sánh thông minh chính.",
+      "unresolvedFallbackSummary": "Các cột {entries} chưa được gán rõ ràng nên lần chạy này sẽ dùng so sánh chuẩn.",
       "expiredManualTag": "Cần xác nhận lại",
-      "expiredManualSummary": "{count} thiết lập thủ công trước đó không còn hợp lệ nên hệ thống đã quay về gợi ý hiện tại.",
+      "expiredManualSummary": "{count} cài đặt thủ công cũ không còn hợp lệ nên hệ thống đã quay về gợi ý hiện tại.",
       "workspaceChangedTag": "Cần xác nhận lại",
-      "workspaceChangedSummary": "{count} vai trò cột cần kiểm tra lại vì nội dung prompt trong không gian làm việc đã thay đổi.",
+      "workspaceChangedSummary": "{count} cài đặt vai trò workspace cần xem lại vì prompt workspace đã thay đổi.",
       "keepAuto": "Giữ gợi ý hệ thống",
       "keepAutoWithRole": "Giữ gợi ý hệ thống (hiện tại: {role})",
       "useInferred": "Dùng gợi ý hệ thống",
-      "clearManual": "Xóa các thiết lập thủ công",
-      "slotSectionTitle": "Thiết lập từng cột",
-      "slotSectionSummary": "Hệ thống đã điền sẵn gợi ý cho từng cột. Bạn chỉ cần đổi khi thấy chưa đúng ý.",
+      "clearManual": "Xóa ghi đè thủ công",
+      "slotSectionTitle": "Cài đặt từng cột",
+      "slotSectionSummary": "Hệ thống đã điền gợi ý cho từng cột. Chỉ thay đổi khi thấy chưa đúng.",
       "currentRoleLabel": "Vai trò hiện tại",
       "rolePickerLabel": "Vai trò của cột này",
-      "suggestedRoleLabel": "Gợi ý của hệ thống",
-      "workspaceChangedInline": "Prompt phía sau cột này đã thay đổi. Vui lòng xác nhận lại vai trò.",
-      "planStructuredSummaryDynamic": "Lượt đánh giá này sẽ xoay quanh Mục tiêu tối ưu hiện tại và kiểm tra xem {focuses}.",
-      "planGenericSummary": "Các cột kiểm thử hiện tại chưa tạo thành bộ so sánh cặp ổn định nên sẽ chạy ở chế độ so sánh tiêu chuẩn.",
+      "suggestedRoleLabel": "Gợi ý hệ thống",
+      "workspaceChangedInline": "Prompt workspace đằng sau cột này đã thay đổi. Vui lòng xác nhận lại vai trò.",
+      "planStructuredSummaryDynamic": "Lần chạy này sẽ tập trung vào mục tiêu tối ưu hiện tại và xem xét {focuses}.",
+      "planGenericSummary": "Các cột kiểm thử hiện tại chưa tạo được thiết lập so sánh thông minh ổn định nên lần chạy này sẽ dùng so sánh chuẩn.",
       "structuredFocusJoiner": ", ",
       "structuredFocusFinalJoiner": " và ",
       "structuredFocus": {
-        "targetBaseline": "nó có cải thiện hơn so với Bản cơ sở (Baseline) hay không",
-        "targetReference": "còn khoảng cách nào so với Mẫu chuẩn (Teacher) hay không",
-        "referenceBaseline": "thay đổi tương tự có phát huy tác dụng bên phía Mẫu chuẩn hay không",
-        "targetReplica": "kết luận hiện tại có ổn định qua các lần chạy lại hay không"
+        "targetBaseline": "nó có cải thiện hơn mốc đối chiếu không",
+        "targetReference": "vẫn còn khoảng cách với mẫu tham chiếu không",
+        "referenceBaseline": "cùng kiểu thay đổi đó có hiệu quả ở phía mẫu tham chiếu không",
+        "targetReplica": "kết luận hiện tại có ổn định không"
       },
       "previewModeLabel": "Chế độ so sánh",
-      "previewPairsLabel": "Các cặp đối chiếu",
+      "previewPairsLabel": "Nhóm so sánh từng cặp",
       "previewReasonsLabel": "Ghi chú hệ thống",
       "previewModeStructured": "So sánh thông minh",
-      "previewModeGeneric": "So sánh tiêu chuẩn",
-      "genericFallbackSummary": "Thiết lập này sẽ dùng so sánh tiêu chuẩn thay vì so sánh thông minh từng cặp.",
-      "confirmDisabled": "Hãy xử lý các xung đột vai trò trước khi xác nhận",
+      "previewModeGeneric": "So sánh chuẩn",
+      "genericFallbackSummary": "Thiết lập này sẽ dùng so sánh chuẩn thay vì so sánh thông minh từng cặp.",
+      "confirmDisabled": "Giải quyết các xung đột trước khi xác nhận",
       "noVersionLabel": "Chưa chọn phiên bản",
-      "noModel": "Chưa chọn mô hình",
-      "blockingSummary": "Thiết lập vai trò hiện tại đang có xung đột. Vui lòng sửa trước khi xác nhận.",
+      "noModel": "Chưa chọn model",
+      "blockingSummary": "Cài đặt vai trò hiện tại có xung đột. Vui lòng sửa trước khi xác nhận.",
       "advancedSectionTitle": "Chi tiết nâng cao",
-      "advancedSectionSummary": "Phần này giải thích cách hệ thống ghép cặp các cột và lý do suy luận.",
+      "advancedSectionSummary": "Phần này giải thích hệ thống sẽ so sánh các cột như thế nào và vì sao.",
       "showAdvancedRoles": "Hiện vai trò nâng cao",
       "hideAdvancedRoles": "Ẩn vai trò nâng cao",
       "showAdvancedDetails": "Xem chi tiết nâng cao",
       "hideAdvancedDetails": "Ẩn chi tiết nâng cao",
-      "advancedConflictTitle": "Các vấn đề cần giải quyết",
+      "advancedConflictTitle": "Vấn đề cần giải quyết",
       "pairValues": {
-        "targetBaseline": "Mục tiêu tối ưu vs Bản cơ sở",
-        "targetReference": "Mục tiêu tối ưu vs Mẫu chuẩn (Teacher)",
-        "referenceBaseline": "Mẫu chuẩn vs Bản cơ sở của Mẫu chuẩn",
-        "targetReplica": "Mục tiêu tối ưu vs Chạy kiểm tra lại (Retest)"
+        "targetBaseline": "Mục tiêu tối ưu với Mốc đối chiếu",
+        "targetReference": "Mục tiêu tối ưu với Mẫu tham chiếu",
+        "referenceBaseline": "Mẫu tham chiếu với Mốc của mẫu",
+        "targetReplica": "Mục tiêu tối ưu với Chạy lại"
       },
       "reasonValues": {
-        "duplicateTarget": "Có nhiều hơn một Mục tiêu tối ưu nên hệ thống không thể xác định cột chính cần cải thiện.",
-        "duplicateBaseline": "Có nhiều hơn một Bản cơ sở nên hệ thống không thể xác định mốc đối chiếu chuẩn.",
-        "duplicateReference": "Có nhiều hơn một Mẫu chuẩn (Teacher) nên hệ thống không thể xác định cột cần học hỏi.",
-        "duplicateReferenceBaseline": "Có nhiều hơn một Bản cơ sở của Mẫu chuẩn nên không thể ghép cặp chính xác.",
-        "hasAuxiliarySnapshot": "Một số cột được chọn không thuộc cặp đối chiếu cốt lõi nên lượt này chuyển về so sánh tiêu chuẩn.",
-        "missingTarget": "Chưa có Mục tiêu tối ưu hợp lệ nên không thể bắt đầu so sánh thông minh.",
-        "missingStructuredCompanion": "Mục tiêu tối ưu đang thiếu cột đối chiếu đi kèm (Bản cơ sở, Mẫu chuẩn hoặc Chạy lại) nên chưa thể chấm điểm từng cặp.",
-        "referenceBaselineWithoutReference": "Có Bản cơ sở của Mẫu chuẩn nhưng lại thiếu cột Mẫu chuẩn tương ứng."
+        "duplicateTarget": "Có nhiều mục tiêu tối ưu nên hệ thống không biết cột nào mới thực sự đang được tối ưu.",
+        "duplicateBaseline": "Có nhiều mốc đối chiếu nên hệ thống không biết nên dùng mốc nào làm mốc đối chiếu.",
+        "duplicateReference": "Có nhiều mẫu tham chiếu nên hệ thống không biết nên học từ cột nào.",
+        "duplicateReferenceBaseline": "Có nhiều mốc của mẫu tham chiếu nên hệ thống không biết mốc nào thuộc về phía mẫu tham chiếu.",
+        "hasAuxiliarySnapshot": "Một số test đã chọn không phải so sánh từng cặp có ý nghĩa nên lần chạy này dùng so sánh chuẩn.",
+        "missingTarget": "Không có mục tiêu tối ưu dùng được nên không thể bắt đầu so sánh thông minh.",
+        "missingStructuredCompanion": "Mục tiêu tối ưu đang thiếu đối tác quan trọng (mốc đối chiếu, mẫu tham chiếu hoặc lần chạy lại) nên chưa thể chạy đánh giá từng cặp chính.",
+        "referenceBaselineWithoutReference": "Có mốc của mẫu tham chiếu nhưng không có mẫu tham chiếu tương ứng nên bằng chứng đó sẽ không tham gia so sánh thông minh."
       },
       "roleValues": {
         "target": "Mục tiêu tối ưu",
-        "baseline": "Bản cơ sở (Baseline)",
-        "reference": "Mẫu chuẩn (Teacher)",
-        "referenceBaseline": "Cơ sở của Mẫu chuẩn",
-        "replica": "Chạy lại (Retest)",
-        "auxiliary": "Kiểm thử khác"
+        "baseline": "Mốc đối chiếu",
+        "reference": "Mẫu tham chiếu",
+        "referenceBaseline": "Mốc của mẫu",
+        "replica": "Chạy lại",
+        "auxiliary": "Test khác"
       },
       "suggestionReasons": {
-        "default": "Hệ thống suy luận gợi ý này từ mối quan hệ giữa các phiên bản, mô hình và nội dung prompt hiện tại.",
+        "default": "Hệ thống suy ra gợi ý này từ các phiên bản, model và mối quan hệ prompt hiện tại.",
         "target": {
-          "uniqueWorkspace": "Đây là cột duy nhất dùng không gian làm việc hiện tại nên được gợi ý làm Mục tiêu tối ưu.",
-          "workspace": "Đây là cột không gian làm việc hiện tại nên được gợi ý làm Mục tiêu tối ưu."
+          "uniqueWorkspace": "Đây là cột workspace duy nhất nên được gợi ý làm mục tiêu tối ưu.",
+          "workspace": "Đây là cột workspace hiện tại nên được gợi ý làm mục tiêu tối ưu."
         },
         "baseline": {
-          "dynamicPrevious": "Đây là phiên bản liền trước của không gian làm việc hiện tại nên được gợi ý làm Bản cơ sở.",
-          "sameModelDifferentPrompt": "Cột này dùng cùng mô hình với Mục tiêu tối ưu nhưng khác phiên bản prompt nên được gợi ý làm Bản cơ sở."
+          "dynamicPrevious": "Đây là phiên bản trước đó của workspace hiện tại nên được gợi ý làm mốc đối chiếu.",
+          "sameModelDifferentPrompt": "Dùng cùng model với mục tiêu tối ưu nhưng prompt khác nên được gợi ý làm mốc đối chiếu."
         },
         "reference": {
-          "samePromptDifferentModel": "Đây là kết quả chạy cùng prompt nhưng trên một mô hình khác nên được gợi ý làm Mẫu chuẩn (Teacher).",
-          "differentModel": "Cột này dùng mô hình khác với Mục tiêu tối ưu nên được gợi ý làm Mẫu chuẩn (Teacher)."
+          "samePromptDifferentModel": "Đây là kết quả workspace từ một model khác nên được gợi ý làm mẫu tham chiếu.",
+          "differentModel": "Dùng model khác với mục tiêu tối ưu nên được gợi ý làm mẫu tham chiếu."
         },
         "referenceBaseline": {
-          "sameModelDifferentPrompt": "Cột này dùng cùng mô hình với Mẫu chuẩn nhưng ở phiên bản prompt trước nên được gợi ý làm Cơ sở của Mẫu chuẩn."
+          "sameModelDifferentPrompt": "Dùng cùng model với mẫu tham chiếu nhưng prompt khác nên được gợi ý làm phiên bản trước đó của mẫu tham chiếu."
         },
         "replica": {
-          "previousMatchesWorkspace": "Nội dung trùng khớp với không gian làm việc hiện tại nên được gợi ý làm lượt Chạy lại (Retest).",
-          "samePromptAsTarget": "Dùng cùng nội dung prompt với Mục tiêu tối ưu nên được gợi ý làm lượt Chạy lại (Retest)."
+          "previousMatchesWorkspace": "Nội dung giống workspace hiện tại nên được gợi ý làm lần chạy lại.",
+          "samePromptAsTarget": "Dùng cùng prompt với mục tiêu tối ưu nên được gợi ý làm lần chạy lại."
         },
         "auxiliary": {
-          "default": "Cột này không nằm trong các cặp đối chiếu cốt lõi nên được xếp vào nhóm Kiểm thử khác."
+          "default": "Cột này sẽ không vào so sánh thông minh từng cặp chính nên giữ làm test khác."
         }
       }
     },
     "compareShared": {
       "status": {
-        "needTarget": "Vui lòng chọn Mục tiêu tối ưu trước.",
+        "needTarget": "Vui lòng chọn mục tiêu tối ưu trước.",
         "needReview": "Cài đặt đã thay đổi. Vui lòng xác nhận lại."
       },
       "roleValues": {
         "target": "Mục tiêu tối ưu",
-        "baseline": "Bản cơ sở",
-        "reference": "Mẫu chuẩn (Teacher)",
-        "referenceBaseline": "Cơ sở Mẫu chuẩn",
-        "replica": "Chạy lại (Retest)",
-        "auxiliary": "Kiểm thử khác"
+        "baseline": "Mốc đối chiếu",
+        "reference": "Mẫu tham chiếu",
+        "referenceBaseline": "Mốc của mẫu",
+        "replica": "Chạy lại",
+        "auxiliary": "Test khác"
       },
       "roleDescriptions": {
-        "target": "Cột bạn đang trực tiếp tối ưu và muốn cải thiện chất lượng trong vòng này.",
-        "baseline": "Mốc đối chiếu (có thể là bản gốc hoặc phiên bản trước) dùng để đánh giá xem Mục tiêu tối ưu có thực sự tiến bộ hay không.",
-        "reference": "Kết quả mẫu đáng học hỏi, thường được sinh từ một mô hình mạnh hơn hoặc ổn định hơn.",
-        "referenceBaseline": "Bản cơ sở bên phía mô hình Mẫu chuẩn, giúp kiểm tra xem thay đổi prompt có mang lại tiến bộ tương tự trên mô hình mạnh hay không.",
-        "replica": "Lượt chạy kiểm tra lại nhằm đánh giá độ ổn định của kết quả (tránh ăn may trên một lần sinh).",
-        "auxiliary": "Cột kiểm thử phụ; vẫn xuất hiện trong so sánh tiêu chuẩn nhưng không tạo thành cặp chấm điểm cốt lõi."
+        "target": "Đây là cột bạn đang tích cực tối ưu và muốn cải thiện trong vòng này.",
+        "baseline": "Mốc đối chiếu có thể là prompt nhập ban đầu hoặc một phiên bản prompt khác; dùng để đánh giá mục tiêu có cải thiện không.",
+        "reference": "Đây là đầu ra mẫu đáng học hỏi, thường từ model mạnh hơn hoặc ổn định hơn.",
+        "referenceBaseline": "Mốc phía mẫu tham chiếu giúp đánh giá cùng một thay đổi prompt có cải thiện đầu ra của mẫu tham chiếu không.",
+        "replica": "Đây là lần chạy lại để kiểm tra kết luận có ổn định không. Nếu phiên bản trước đó giống workspace, nó cũng có thể xuất hiện ở đây.",
+        "auxiliary": "Test này vẫn có thể xuất hiện trong so sánh chuẩn nhưng sẽ không thành cặp so sánh thông minh chính."
       },
       "roleSource": {
         "manual": "Bạn đã xác nhận vai trò này thủ công.",
-        "auto": "Vai trò này được hệ thống tự động gợi ý."
+        "auto": "Vai trò này do hệ thống gợi ý tự động."
       },
       "unresolved": {
-        "label": "Chưa rõ vai trò",
-        "description": "Cột này chưa được ánh xạ rõ vào vai trò so sánh cốt lõi nào.",
-        "source": "Hệ thống hiện chưa thể phân loại cột này vào Mục tiêu tối ưu, Bản cơ sở, Mẫu chuẩn hay Chạy lại."
+        "label": "Chưa rõ",
+        "description": "Cột này chưa được gắn với vai trò so sánh chính nào.",
+        "source": "Hệ thống hiện chưa thể phân loại cột này là mục tiêu tối ưu, mốc đối chiếu, mẫu tham chiếu hay lần chạy lại."
       },
       "review": {
-        "workspaceChanged": "Prompt liên kết trong không gian làm việc đã thay đổi, cần xem lại vai trò này.",
-        "staleManual": "Vai trò chọn thủ công trước đó không còn khớp với cấu hình so sánh hiện tại."
+        "workspaceChanged": "Prompt workspace liên kết đã thay đổi nên cần xem lại vai trò này.",
+        "staleManual": "Vai trò thủ công cũ không còn khớp với thiết lập so sánh hiện tại."
       },
-      "roleAction": "Nhấn vào nhãn này để cập nhật vai trò so sánh.",
+      "roleAction": "Nhấn vào thẻ này để cập nhật vai trò so sánh.",
       "assignment": {
-        "unassigned": "Chưa gán vai trò.",
+        "unassigned": "Chưa gán vai trò nào.",
         "manual": "Bạn đã chọn: {role}",
         "auto": "Gợi ý hệ thống: {role}"
       },
       "modeValues": {
         "structured": "So sánh thông minh",
-        "generic": "So sánh tiêu chuẩn"
+        "generic": "So sánh chuẩn"
       },
       "recommendationValues": {
-        "continue": "Tiếp tục tinh chỉnh",
-        "stop": "Nên dừng tại đây",
-        "review": "Cần kiểm tra thủ công"
+        "continue": "Tiếp tục lặp lại",
+        "stop": "Tạm dừng",
+        "review": "Cần xem lại"
       }
     },
     "compareHelp": {
-      "title": "Hướng dẫn Đánh giá So sánh",
+      "title": "Hướng dẫn đánh giá so sánh",
       "tooltip": "Đánh giá so sánh là gì?"
     },
     "compareUnavailable": {
-      "missingWorkspace": "Đánh giá so sánh yêu cầu ít nhất một kết quả kiểm thử từ Không gian làm việc hiện tại để đưa ra đề xuất cải thiện. Hãy chạy kiểm thử cột Không gian làm việc trước rồi so sánh lại."
+      "missingWorkspace": "Đánh giá so sánh cần ít nhất một kết quả kiểm thử workspace vì hệ thống cần đưa ra hướng dẫn cho prompt workspace hiện tại. Hãy chạy cột workspace trước rồi so sánh lại."
     },
     "compareSummary": {
       "decision": {
-        "title": "Khuyến nghị tinh chỉnh"
+        "title": "Lời khuyên lặp lại"
       },
-      "reusableImprovements": "Các điểm cải thiện có thể tái sử dụng",
-      "rewriteButton": "Viết lại theo đánh giá này",
-      "rewriteSkipHint": "Khuyến nghị hiện tại là giữ nguyên prompt trừ khi bạn xác định vẫn còn dư địa cải thiện rõ ràng.",
-      "rewriteMinorHint": "Tại đây chỉ nên tinh chỉnh nhỏ thay vì viết lại toàn bộ cấu trúc lớn.",
+      "reusableImprovements": "Cải tiến dùng lại được",
+      "rewriteButton": "Viết lại từ đánh giá này",
+      "rewriteSkipHint": "Hướng dẫn hiện tại khuyên giữ nguyên prompt trừ khi bạn đã xác nhận vẫn còn cải tiến rõ ràng, dùng lại được.",
+      "rewriteMinorHint": "Nên sửa nhỏ ở đây thay vì viết lại lớn.",
       "compactSignals": {
-        "targetVsBaseline": "So với bản trước",
-        "targetVsReferenceGap": "Khoảng cách Teacher",
-        "improvementHeadroom": "Dư địa cải thiện",
-        "overfitRisk": "Nguy cơ quá khớp"
+        "targetVsBaseline": "Trước đó",
+        "targetVsReferenceGap": "Khoảng cách với mẫu",
+        "improvementHeadroom": "Dư địa",
+        "overfitRisk": "Quá khớp"
       },
       "reasonTitles": {
-        "progress": "So với bản trước",
-        "reference": "Mẫu chuẩn (Teacher)",
-        "stability": "Độ ổn định"
+        "progress": "Trước đó",
+        "reference": "Mẫu tham chiếu",
+        "stability": "Ổn định"
       },
       "reasonBodies": {
         "progress": {
-          "improved": "Mục tiêu tối ưu đã vượt lên so với phiên bản trước, nhưng vẫn nên kiểm tra xem những cải thiện nào thực sự tái sử dụng được.",
-          "flat": "Mục tiêu tối ưu tương đương phiên bản trước; hãy kết hợp thêm bằng chứng từ Mẫu chuẩn và độ ổn định trước khi quyết định bước tiếp theo.",
-          "regressed": "Mục tiêu tối ưu bị thụt lùi so với phiên bản trước; hãy kiểm tra xem quy tắc nào vừa bị lược bỏ hoặc làm yếu đi."
+          "improved": "Mục tiêu tối ưu đang tốt hơn phiên bản trước nhưng bạn vẫn nên xác nhận cải tiến nào thực sự dùng lại được.",
+          "flat": "Mục tiêu tối ưu gần như ngang với phiên bản trước nên bạn cần kết hợp bằng chứng từ mẫu tham chiếu và độ ổn định trước khi quyết định bước tiếp theo.",
+          "regressed": "Mục tiêu tối ưu đã thụt lùi so với phiên bản trước nên bạn nên xem điều gì đã tệ đi trước."
         },
         "reference": {
-          "none": "Mục tiêu tối ưu đã tiệm cận chất lượng của Mẫu chuẩn (Teacher), việc viết lại thêm có thể không mang lại nhiều khác biệt.",
-          "minor": "Vẫn còn một vài điểm cấu trúc nhỏ mà Mục tiêu tối ưu có thể học hỏi từ Mẫu chuẩn.",
-          "major": "Vẫn còn khoảng cách rõ rệt so với Mẫu chuẩn; vòng tinh chỉnh tiếp theo nên tập trung học hỏi chiến lược trình bày của Mẫu chuẩn."
+          "none": "Mục tiêu tối ưu đã gần với mẫu tham chiếu nên viết lại nữa có thể ít hiệu quả.",
+          "minor": "Vẫn còn vài thay đổi về cấu trúc mà mục tiêu tối ưu có thể học từ mẫu tham chiếu.",
+          "major": "Vẫn còn khoảng cách rõ rệt với mẫu tham chiếu nên vòng tiếp theo cần tập trung học chiến lược mạnh hơn ở phía mẫu tham chiếu."
         },
         "stability": {
-          "high": "Mức cải thiện hiện tại có nguy cơ quá khớp (overfit) cao vào mẫu thử đơn lẻ; cần lọc bỏ các quy tắc quá hẹp trước khi viết lại.",
-          "medium": "Vẫn tồn tại rủi ro quá khớp ở mức trung bình; vòng tiếp theo chỉ nên giữ lại các quy tắc tổng quát.",
-          "low": "Kết quả đã gần hội tụ ổn định; hãy cân nhắc kỹ trước khi chồng thêm quy tắc mới.",
-          "default": "Cần thêm bằng chứng trên cùng đầu vào để khẳng định kết luận hiện tại có thực sự ổn định hay không."
+          "high": "Mức cải thiện hiện tại có thể chứa rủi ro khớp mẫu cao nên cần lọc các quy tắc quá khớp trước khi viết lại.",
+          "medium": "Vẫn còn rủi ro quá khớp nên vòng tiếp theo chỉ nên giữ lại các quy tắc dùng lại được một cách thận trọng hơn.",
+          "low": "Kết quả đã gần hội tụ nên hãy xác nhận vẫn còn dư địa cải thiện thực sự trước khi thêm quy tắc mới.",
+          "default": "Bạn vẫn cần thêm bằng chứng đầu vào chung để xác nhận kết luận này có ổn định không."
         }
       },
       "advanced": {
@@ -424,80 +425,80 @@ const messages = {
         "hide": "Ẩn chi tiết nâng cao",
         "title": "Chi tiết so sánh",
         "mode": "Chế độ so sánh",
-        "roles": "Các cột được đối chiếu",
-        "stopSignals": "Tín hiệu rủi ro & hội tụ",
+        "roles": "Các cột được so sánh",
+        "stopSignals": "Tín hiệu rủi ro và hội tụ",
         "insights": "Phát hiện chính",
-        "focusSummaries": "Tóm tắt theo trọng tâm",
-        "pairHighlights": "Điểm nhấn từng cặp",
-        "evidence": "Bằng chứng gốc nổi bật",
-        "learnableSignals": "Điểm có thể học hỏi",
-        "overfit": "Nguy cơ quá khớp (Overfit)",
-        "conflicts": "Cần kiểm tra thủ công",
-        "judgements": "Kết quả chấm từng cặp"
+        "focusSummaries": "Phát hiện theo trọng tâm",
+        "pairHighlights": "Điểm nổi bật từng cặp",
+        "evidence": "Điểm nổi bật bằng chứng thô",
+        "learnableSignals": "Tín hiệu học được",
+        "overfit": "Rủi ro quá khớp",
+        "conflicts": "Cần xem lại thủ công",
+        "judgements": "So sánh từng cặp"
       }
     },
     "compareMetadata": {
-      "title": "Siêu dữ liệu so sánh nâng cao",
+      "title": "Metadata so sánh nâng cao",
       "insights": "Phát hiện chính",
       "decision": {
         "title": "Quyết định so sánh",
-        "keyEvidence": "Bằng chứng cốt lõi",
-        "nextActions": "Hành động tiếp theo",
+        "keyEvidence": "Bằng chứng chính",
+        "nextActions": "Bước tiếp theo",
         "headlines": {
-          "continue": "Mục tiêu tối ưu đang đi đúng hướng và vẫn còn dư địa cải thiện rõ ràng.",
-          "stop": "Kết quả hiện tại đã gần hội tụ; việc tự động viết lại thêm ít có khả năng cải thiện đáng kể.",
-          "review": "Kết quả so sánh hiện tại có điểm mâu thuẫn, cần xem xét thủ công trước khi viết lại.",
-          "regressed": "Mục tiêu tối ưu có dấu hiệu thụt lùi so với phiên bản trước; không nên áp dụng bản viết lại này ngay."
+          "continue": "Mục tiêu tối ưu đang đi đúng hướng nhưng vẫn còn dư địa cải thiện có thể hành động.",
+          "stop": "Kết quả hiện tại có vẻ gần hội tụ; viết lại tự động thêm nữa khó giúp ích nhiều.",
+          "review": "Kết quả so sánh hiện tại cần xem lại thủ công trước khi chấp nhận viết lại.",
+          "regressed": "Mục tiêu tối ưu có vẻ đã thụt lùi so với phiên bản trước; không nên chấp nhận bản viết lại này trực tiếp."
         },
         "actions": {
-          "inspectRegression": "Kiểm tra xem phiên bản mới đã làm mất hoặc làm yếu đi chỉ dẫn quan trọng nào trước khi viết lại.",
-          "reviewBeforeRewrite": "Xem kỹ các bằng chứng mâu thuẫn trước, sau đó quyết định nên viết lại hay giữ bản hiện tại.",
-          "reviewPromptValidity": "Kiểm tra xem thay đổi trong prompt có thực sự tổng quát không, vì kết quả bên phía Mẫu chuẩn chưa ủng hộ thay đổi này.",
-          "learnFromReference": "Học hỏi cấu trúc lập luận vững hơn từ phía Mẫu chuẩn (Teacher) trong vòng tinh chỉnh kế tiếp.",
-          "filterOverfit": "Lọc bỏ các quy tắc chỉ phục vụ riêng mẫu thử hiện tại và giữ lại hướng dẫn tổng quát.",
-          "continueTargetedRewrite": "Nếu tiếp tục viết lại, chỉ tập trung giải quyết khoảng trống quan trọng nhất thay vì sửa dàn trải.",
-          "acceptCurrent": "Coi phiên bản hiện tại đã đạt ngưỡng hội tụ và tránh chồng thêm quy tắc trừ khi có trường hợp kiểm thử mới.",
-          "verifyStability": "Kiểm tra lại độ ổn định bằng một đầu vào dùng chung khác nếu kết quả hiện tại vẫn sát nút."
+          "inspectRegression": "Xem phiên bản mới đã bỏ hoặc làm yếu điều gì trước khi viết lại.",
+          "reviewBeforeRewrite": "Xem lại bằng chứng mâu thuẫn trước rồi mới quyết định viết lại hay giữ phiên bản hiện tại.",
+          "reviewPromptValidity": "Kiểm tra thay đổi prompt có thực sự áp dụng được không, vì bằng chứng phía mẫu tham chiếu hiện không ủng hộ nó.",
+          "learnFromReference": "Học cấu trúc mạnh hơn ở phía mẫu tham chiếu trước vòng viết lại tiếp theo.",
+          "filterOverfit": "Lọc bỏ các quy tắc chỉ đúng với mẫu cụ thể và chỉ giữ hướng dẫn dùng lại được.",
+          "continueTargetedRewrite": "Nếu tiếp tục viết lại, chỉ tập trung vào khoảng cách có tín hiệu cao nhất thay vì sửa rộng.",
+          "acceptCurrent": "Xem workspace hiện tại là gần hội tụ và tránh thêm quy tắc mới trừ khi có bằng chứng mới.",
+          "verifyStability": "Kiểm tra lại độ ổn định bằng một đầu vào chung khác nếu đánh giá hiện tại vẫn còn ở mức ranh giới."
         }
       },
-      "focusSummaries": "Tóm tắt theo trọng tâm",
+      "focusSummaries": "Phát hiện theo trọng tâm",
       "mode": "Chế độ so sánh",
-      "roles": "Các cột được đối chiếu",
-      "judgements": "Kết quả chấm từng cặp",
-      "pairHighlights": "Điểm nhấn từng cặp",
+      "roles": "Các cột được so sánh",
+      "judgements": "So sánh từng cặp",
+      "pairHighlights": "Điểm nổi bật từng cặp",
       "progressSummary": "So với phiên bản trước",
-      "referenceGapSummary": "So với Mẫu chuẩn (Teacher)",
-      "promptChangeSummary": "Độ hiệu lực của thay đổi Prompt",
+      "referenceGapSummary": "So với mẫu tham chiếu",
+      "promptChangeSummary": "Tính hợp lệ của thay đổi Prompt",
       "stabilitySummary": "Độ ổn định",
-      "stopSignals": "Tín hiệu rủi ro & hội tụ",
+      "stopSignals": "Tín hiệu rủi ro và hội tụ",
       "evidence": "Bằng chứng",
-      "evidenceHighlights": "Điểm nhấn bằng chứng",
-      "learnableSignals": "Tín hiệu có thể học hỏi",
-      "overfitWarnings": "Cảnh báo quá khớp (Overfit)",
-      "conflictSignals": "Cần kiểm tra thủ công",
-      "targetVsBaseline": "Mục tiêu tối ưu vs Bản cơ sở",
-      "targetVsReferenceGap": "Khoảng cách tới Mẫu chuẩn",
+      "evidenceHighlights": "Điểm nổi bật bằng chứng",
+      "learnableSignals": "Tín hiệu học được",
+      "overfitWarnings": "Cảnh báo quá khớp",
+      "conflictSignals": "Cần xem lại thủ công",
+      "targetVsBaseline": "Mục tiêu tối ưu với Mốc đối chiếu",
+      "targetVsReferenceGap": "Mục tiêu tối ưu với Khoảng cách mẫu tham chiếu",
       "improvementHeadroom": "Dư địa cải thiện",
-      "overfitRisk": "Nguy cơ quá khớp",
+      "overfitRisk": "Rủi ro quá khớp",
       "stopRecommendation": "Khuyến nghị",
-      "stopReasons": "Tín hiệu suy luận",
+      "stopReasons": "Tín hiệu lý giải",
       "modeValues": {
         "structured": "So sánh thông minh",
-        "generic": "So sánh tiêu chuẩn"
+        "generic": "So sánh chuẩn"
       },
       "roleValues": {
         "target": "Mục tiêu tối ưu",
-        "baseline": "Bản cơ sở",
-        "reference": "Mẫu chuẩn (Teacher)",
-        "referenceBaseline": "Cơ sở Mẫu chuẩn",
-        "replica": "Chạy lại (Retest)",
-        "auxiliary": "Kiểm thử khác"
+        "baseline": "Mốc đối chiếu",
+        "reference": "Mẫu tham chiếu",
+        "referenceBaseline": "Mốc của mẫu",
+        "replica": "Chạy lại",
+        "auxiliary": "Test khác"
       },
       "verdictValues": {
         "left-better": "Bên trái tốt hơn",
         "right-better": "Bên phải tốt hơn",
-        "mixed": "Hơn kém đan xen",
-        "similar": "Tương đương nhau"
+        "mixed": "Lẫn lộn",
+        "similar": "Tương tự"
       },
       "confidenceValues": {
         "low": "Độ tin cậy thấp",
@@ -505,104 +506,104 @@ const messages = {
         "high": "Độ tin cậy cao"
       },
       "conflictSignalValues": {
-        "improvementNotSupportedOnReference": "Mục tiêu tối ưu cải thiện hơn bản trước, nhưng thay đổi prompt tương tự không mang lại hiệu quả bên phía Mẫu chuẩn.",
-        "improvementUnstableAcrossReplicas": "Mục tiêu tối ưu có cải thiện, nhưng bằng chứng chạy kiểm tra lại cho thấy kết quả chưa ổn định.",
-        "regressionOutweighsCosmeticGains": "Sự thụt lùi về nội dung cốt lõi so với bản trước nghiêm trọng hơn các cải thiện hình thức nhỏ lẻ.",
-        "sampleOverfitRiskVisible": "Cải thiện thực chất và dấu hiệu học vẹt theo mẫu cùng tồn tại, cần lưu ý rủi ro quá khớp."
+        "improvementNotSupportedOnReference": "Mục tiêu tối ưu đã cải thiện hơn phiên bản trước nhưng cùng thay đổi prompt đó không được ủng hộ ở phía mẫu tham chiếu.",
+        "improvementUnstableAcrossReplicas": "Mục tiêu đã cải thiện nhưng bằng chứng kiểm tra độ ổn định cho thấy mức cải thiện có thể không ổn định.",
+        "regressionOutweighsCosmeticGains": "Sự thụt lùi so với phiên bản trước nên được coi trọng hơn các cải thiện bề ngoài khác.",
+        "sampleOverfitRiskVisible": "Cải thiện dùng lại được và cải thiện do khớp mẫu cùng tồn tại nên kết luận an toàn hơn là giữ rủi ro quá khớp ở mức nhìn thấy được."
       },
       "signalValues": {
         "targetVsBaseline": {
-          "improved": "Có tiến bộ",
-          "flat": "Tương đương",
-          "regressed": "Thụt lùi"
+          "improved": "Đã cải thiện",
+          "flat": "Gần như không đổi",
+          "regressed": "Đã thụt lùi"
         },
         "targetVsReferenceGap": {
           "none": "Khoảng cách rất nhỏ",
-          "minor": "Còn khoảng cách nhỏ",
+          "minor": "Vẫn còn khoảng cách",
           "major": "Khoảng cách rõ rệt"
         },
         "improvementHeadroom": {
-          "none": "Hầu như không còn",
+          "none": "Gần như không còn",
           "low": "Thấp",
-          "medium": "Trung bình",
+          "medium": "Vừa",
           "high": "Cao"
         },
         "overfitRisk": {
           "low": "Thấp",
-          "medium": "Trung bình",
+          "medium": "Vừa",
           "high": "Cao"
         },
         "stopRecommendation": {
-          "continue": "Tiếp tục tinh chỉnh",
-          "stop": "Nên dừng tại đây",
-          "review": "Cần kiểm tra lại"
+          "continue": "Tiếp tục lặp lại",
+          "stop": "Tạm dừng",
+          "review": "Cần xem lại"
         }
       }
     },
     "level": {
       "excellent": "Xuất sắc",
       "good": "Tốt",
-      "acceptable": "Đạt yêu cầu",
+      "acceptable": "Chấp nhận được",
       "poor": "Kém",
       "veryPoor": "Rất kém"
     },
     "dimension": {
-      "goalAchievement": "Mức độ đạt mục tiêu",
+      "goalAchievement": "Đạt mục tiêu",
       "outputQuality": "Chất lượng đầu ra",
       "formatCompliance": "Tuân thủ định dạng",
-      "relevance": "Độ liên quan"
+      "relevance": "Mức liên quan"
     },
-    "optimizedBetter": "Phiên bản tối ưu tốt hơn",
+    "optimizedBetter": "Phiên bản đã tối ưu tốt hơn",
     "originalBetter": "Phiên bản gốc tốt hơn",
     "syntheticInput": {
-      "noExplicitText": "Không có đầu vào kiểm thử riêng; kết quả được sinh trực tiếp từ prompt hiện tại.",
+      "noExplicitText": "Không có đầu vào kiểm thử bổ sung; đầu ra được tạo trực tiếp từ prompt hiện tại.",
       "noExplicitVariables": "Không có đầu vào biến bổ sung."
     },
     "error": {
       "title": "Đánh giá thất bại",
       "serviceNotReady": "Dịch vụ đánh giá chưa sẵn sàng, vui lòng thử lại sau",
       "failed": "Đánh giá thất bại: {error}",
-      "noOptimizedPrompt": "Chưa có prompt để tối ưu"
+      "noOptimizedPrompt": "Không có prompt để tối ưu"
     },
     "designContext": {
       "basic": "Ngữ cảnh thiết kế",
       "advanced": "Ngữ cảnh thiết kế"
     },
     "variableExtraction": {
-      "extractButton": "Tự động trích xuất biến",
+      "extractButton": "Tự trích xuất biến",
       "extracting": "Đang trích xuất...",
-      "dialogTitle": "Kết quả trích xuất biến tự động",
+      "dialogTitle": "Kết quả trích xuất tự động",
       "variableName": "Tên biến",
       "variableValue": "Giá trị biến",
-      "reason": "Lý do trích xuất",
-      "category": "Phân loại",
+      "reason": "Lý do",
+      "category": "Danh mục",
       "selected": "Đã chọn",
       "batchCreate": "Tạo hàng loạt",
-      "noVariables": "Không phát hiện biến nào có thể trích xuất",
-      "extractFailed": "Tự động trích xuất biến thất bại",
-      "staleResult": "Prompt hoặc danh sách biến đã thay đổi. Vui lòng trích xuất lại.",
+      "noVariables": "Không xác định được biến nào có thể trích xuất",
+      "extractFailed": "Trích xuất tự động thất bại",
+      "staleResult": "Prompt hoặc biến đã thay đổi. Vui lòng trích xuất lại.",
       "createSuccess": "Đã tạo thành công {count} biến",
       "summary": "Tóm tắt",
-      "workspaceNotReady": "Không thể truy cập trạng thái không gian làm việc",
+      "workspaceNotReady": "Không truy cập được trạng thái workspace",
       "noPromptContent": "Vui lòng nhập nội dung prompt trước",
-      "noEvaluationModel": "Vui lòng chọn mô hình đánh giá trước",
+      "noEvaluationModel": "Vui lòng chọn model đánh giá trước",
       "serviceNotReady": "Dịch vụ trích xuất biến chưa sẵn sàng",
-      "invalidVariableNames": "Tên biến không hợp lệ (không bắt đầu bằng số hoặc # / ^ ! > &; không chứa khoảng trắng/ngoặc nhọn; tối đa {max} ký tự): {names}"
+      "invalidVariableNames": "Tên biến không hợp lệ (không bắt đầu bằng số hoặc # / ^ ! > &; không có khoảng trắng/dấu ngoặc; tối đa {max} ký tự): {names}"
     },
     "diagnose": {
       "title": "Phân tích chẩn đoán",
       "confidence": "Độ tin cậy",
-      "findings": "Vấn đề phát hiện",
-      "patchPlan": "Kế hoạch vá lỗi (Patch Plan)",
-      "noFindings": "Không phát hiện vấn đề nào",
-      "noPatchPlan": "Chưa có kế hoạch vá lỗi",
+      "findings": "Phát hiện",
+      "patchPlan": "Kế hoạch vá",
+      "noFindings": "Không tìm thấy vấn đề",
+      "noPatchPlan": "Không có kế hoạch vá",
       "applyFix": "Áp dụng bản sửa",
-      "replaceNow": "Thay thế ngay",
-      "invariantsWarning": "Bị giới hạn bởi các điều kiện bất biến (invariants)",
-      "changeBudgetWarning": "Bị giới hạn bởi phạm vi thay đổi cho phép",
+      "replaceNow": "Thay ngay",
+      "invariantsWarning": "Bị giới hạn bởi bất biến",
+      "changeBudgetWarning": "Bị giới hạn bởi ngân sách thay đổi",
       "status": {
-        "ok": "Chẩn đoán hoàn tất",
-        "degraded": "Hoàn tất một phần",
+        "ok": "Chẩn đoán OK",
+        "degraded": "Suy giảm một phần",
         "failed": "Chẩn đoán thất bại"
       },
       "severity": {
@@ -614,11 +615,11 @@ const messages = {
       },
       "anchorType": {
         "text": "Văn bản",
-        "section": "Phân đoạn",
-        "pattern": "Mẫu (Pattern)"
+        "section": "Mục",
+        "pattern": "Mẫu"
       },
       "operation": {
-        "insert": "Chèn thêm",
+        "insert": "Chèn",
         "replace": "Thay thế",
         "delete": "Xóa"
       },
@@ -627,7 +628,7 @@ const messages = {
         "after": "Sau",
         "replace": "Thay thế"
       },
-      "invariantsRisks": "Rủi ro vi phạm điều kiện bất biến"
+      "invariantsRisks": "Rủi ro bất biến"
     }
   }
 } as const;

@@ -1,760 +1,626 @@
-// Naive UI 主题配置 - 全面基于 Naive UI 的 themeOverrides 系统
+// Naive UI theme — Slice 3 rewrite (design-system §1.1, §6).
+//
+// ONE compact light/dark override, driven by the app's own markers:
+// `data-workspace-theme` + the `.dark` class (PromptOptimizerApp.vue
+// watches `naiveTheme.name` and sets dataset.workspaceTheme; applyThemeId
+// below toggles `.dark` for Tailwind's `dark:` variant). Primary is the
+// design token --color-accent in both modes, on-primary is
+// --color-on-accent. There are no other themes.
+//
+// Structure: one `ThemePalette` per mode (plain values only) + one
+// `buildThemeOverrides()` that turns a palette into the Naive overrides,
+// so each rule is written once and light/dark cannot drift apart.
+//
+// Single source of truth (UIUX-M03, M-Ea): the palette values below are
+// PLAIN hex/rgba literals on purpose, and they MUST stay literals. Naive
+// derives its component themes from these values in JS — `seemly`
+// changeColor() / composite() / scaleColor() parse them, and they THROW
+// on anything that is not a parseable colour. Verified 2026-11-19 (Node,
+// seemly 0.3.10): changeColor('var(--color-accent)', {alpha: 0.2}) throws
+// "[seemly/rgba]: Invalid color value var(--color-accent)." — and so does
+// color-mix(). 105+ call sites consume the common colours this way
+// (changeColor: primaryColor 39x, errorColor 22x, warningColor 20x,
+// successColor 12x, infoColor 12x, *ColorSuppl 2x each; composite/
+// scaleColor: cardColor/modalColor/popoverColor 15-17x each, bodyColor
+// 4x; Button's secondary branch runs changeColor on colorPrimary).
+// Replacing a palette literal with var(--color-…) would therefore crash
+// theme computation at app boot, not just restyle it. The single-source
+// rule is enforced instead by tests/unit/config/naive-theme-tokens.spec.ts,
+// which reads styles/tokens.css and asserts every palette value equals
+// its token (light + dark), asserts the alpha-derived values equal
+// rgba(token, alpha), and pins the tokenless literals (hover/pressed
+// shades, action, iconColorHover) so any change is deliberate. If a
+// palette value and its token ever disagree, fix the DRIFT — do not
+// convert the palette to var() references.
+//
+// Replaces the old 925-line, 6-theme file (light #4b5563, thin-only dark
+// #64748b, blue #1f6bd1, classic #7b6a58, dark-base green #1fb598,
+// dark-base purple #b47bff). Removed ids and their fate:
+// - blue / classic were light-base -> resolve to `light`
+// - green / purple were dark-base -> resolve to `dark`
+// - a persisted removed id (global-settings, or the legacy
+//   localStorage('naive-theme-id') key) is normalised once at init and
+//   whenever switchTheme() is called, so old installs keep working.
+// - `theme.blue/classic/green/purple` i18n keys were removed with them;
+//   the toggle offers Light / Dark / Auto only (ThemeToggleUI.vue).
+//
+// Sizing (design-system §1.2, §1.3): inputs/selects take 16px via
+// fontSizeMedium (PoInput rule: 16px on all screens — this is also what
+// stops iOS zoom on focus). Height: theme sets the 36px desktop floor
+// (heightMedium); the 44px mobile target lives in the compact CSS, which
+// is exactly the mobile layout (isCompact = width < 1024), not in
+// per-component overrides.
+//
+// Contrast, measured by script (Slice 3, contrast.py — see
+// ~/workspace/prompt-optimizer-coordinator/naive-theme/contrast.txt):
+// - Transient pair from Slice 2, RESOLVED: #111111 on #6d9cfe = 7.05:1
+//   (was #111111 on #64748b = 3.97:1). Light primary: #ffffff on #1f6bd1
+//   = 5.14:1. Both pass 4.5:1.
+// - Input border vs input surface (3:1 UI bar): the token
+//   --color-border-emphasized FAILS here (#d4d4d4 on #ffffff = 1.48:1;
+//   #525252 on #262626 = 1.94:1), so this file overrides the Naive
+//   Input/Select border to a passing grey WITHOUT changing tokens.css:
+//   light #767676 on #ffffff = 4.54:1, dark #9e9e9e (= dark
+//   --color-text-secondary) on #262626 = 5.65:1. Hover/focus borders are
+//   darker / the accent.
+// - Focus ring (accent) vs surroundings, all pass 3:1: light #1f6bd1 vs
+//   #ffffff 5.14:1, vs #f1f1f1 4.55:1; dark #6d9cfe vs #262626 5.65:1,
+//   vs #1b1b1b 6.43:1.
+// - Placeholder is #767676 light (4.54:1) / #9e9e9e dark (5.65:1).
+// - Disabled text/borders are exempt from the contrast bars (WCAG
+//   1.4.3/1.4.11 do not apply to disabled controls).
+// - KNOWN OPEN ISSUE (not fixed here — DataManager.vue is out of this
+//   slice's edit scope): its local dark correction forces primary-button
+//   text to #fff, which was 4.76:1 on the old slate #64748b but is only
+//   2.68:1 on the new #6d9cfe. That override should be deleted in Slice 4.
+// - KNOWN LIMIT (compact CSS), RESOLVED by M-Ea (UIUX-M01): compact
+//   inputs/selects now use `--n-border: 1px solid
+//   var(--color-text-tertiary)` (compact/foundation.css) — #767676 light
+//   (4.54:1 vs paper, 4.02:1 vs the #f1f1f1 fill) / #9e9e9e dark
+//   (5.65:1 vs #262626). The fill (--compact-soft) is unchanged.
 import { computed, ref, watch } from 'vue'
 
-import { darkTheme, lightTheme, type GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
+import { darkTheme, lightTheme, type GlobalTheme, type GlobalThemeOverrides } from 'naive-ui'
 import { pinia } from '../plugins/pinia'
 import { useGlobalSettings } from '../stores/settings/useGlobalSettings'
 
-// 当前主题ID
-export const currentThemeId = ref<string>('light')
+// The only applied theme ids. 'auto' is a *selection* (persisted in
+// useGlobalSettings, default), resolved to light/dark at apply time.
+export type ThemeId = 'light' | 'dark'
+export type SelectedThemeId = ThemeId | 'auto'
+
+// Removed theme ids (Slice 3) and what they resolve to, for installs
+// that still have one persisted. blue/classic were light-base,
+// green/purple were dark-base.
+const LEGACY_THEME_ID_MAP: Record<string, ThemeId> = {
+  blue: 'light',
+  classic: 'light',
+  green: 'dark',
+  purple: 'dark',
+}
+
+/** Normalise a persisted/legacy selection: removed ids map to light/dark, unknown ids -> null. */
+const normalizeSelectedThemeId = (themeId: string): SelectedThemeId | null => {
+  if (themeId === 'light' || themeId === 'dark' || themeId === 'auto') return themeId
+  return LEGACY_THEME_ID_MAP[themeId] ?? null
+}
+
+// 当前主题ID (the *applied* id: 'light' | 'dark', never 'auto')
+export const currentThemeId = ref<ThemeId>('light')
 
 // 主题类型定义
 export interface ThemeConfig {
-  id: string
+  id: ThemeId
   labelKey: string
   naiveTheme: GlobalTheme | null
   themeOverrides: GlobalThemeOverrides
 }
 
+/** All per-mode values. Accent/on-accent mirror --color-accent / --color-on-accent in tokens.css. */
+interface ThemePalette {
+  accent: string
+  accentHover: string
+  accentPressed: string
+  accentSuppl: string
+  onAccent: string
+  onAccentDisabled: string
+  info: string
+  infoHover: string
+  infoPressed: string
+  infoSuppl: string
+  success: string
+  successHover: string
+  successPressed: string
+  successSuppl: string
+  warning: string
+  warningHover: string
+  warningPressed: string
+  warningSuppl: string
+  warningBorder: string
+  warningText: string
+  error: string
+  errorHover: string
+  errorPressed: string
+  errorSuppl: string
+  body: string
+  surface: string
+  table: string
+  tableHeader: string
+  input: string
+  inputDisabled: string
+  action: string
+  hoverOverlay: string
+  hoverOverlayStrong: string
+  text1: string
+  text2: string
+  text3: string
+  textDisabled: string
+  inputTextDisabled: string
+  placeholder: string
+  placeholderDisabled: string
+  icon: string
+  iconHover: string
+  iconPressed: string
+  iconDisabled: string
+  border: string
+  divider: string
+  scrollbar: string
+  scrollbarHover: string
+  close: string
+  closeHover: string
+  closePressed: string
+  clear: string
+  clearHover: string
+  clearPressed: string
+  inputBorder: string
+  inputBorderHover: string
+  inputBorderDisabled: string
+  focusRing: string
+  focusRingSoft: string
+  warningRing: string
+  errorRing: string
+  btnDefault: string
+  btnDefaultHover: string
+  btnDefaultPressed: string
+  btnDefaultBorder: string
+  btnDefaultBorderHover: string
+  btnDefaultBorderPressed: string
+  disabledBg: string
+  ripple: string
+  tab: string
+  tabActive: string
+  radioActiveBg: string
+  shadow: string
+}
+
+const lightPalette: ThemePalette = {
+  accent: '#1f6bd1',
+  accentHover: '#185cb8',
+  accentPressed: '#134c98',
+  accentSuppl: '#6caef7',
+  onAccent: '#ffffff',
+  onAccentDisabled: 'rgba(255, 255, 255, 0.6)',
+  info: '#0074e2',
+  infoHover: '#005fb8',
+  infoPressed: '#004e96',
+  infoSuppl: '#b9d7ff',
+  success: '#198100',
+  successHover: '#146a00',
+  successPressed: '#0f5200',
+  successSuppl: '#bce0bb',
+  warning: '#ffce2f',
+  warningHover: '#e6b800',
+  warningPressed: '#c9a000',
+  warningSuppl: '#fae19e',
+  warningBorder: '#836700',
+  warningText: '#836700',
+  error: '#c9303a',
+  errorHover: '#a92632',
+  errorPressed: '#8f1f28',
+  errorSuppl: '#ffc4be',
+  body: '#f1f1f1',
+  surface: '#ffffff',
+  table: '#ffffff',
+  tableHeader: '#f1f1f1',
+  input: '#ffffff',
+  inputDisabled: '#f1f1f1',
+  action: '#f1f1f1',
+  hoverOverlay: 'rgba(31, 107, 209, 0.08)',
+  hoverOverlayStrong: 'rgba(31, 107, 209, 0.16)',
+  text1: '#000000',
+  text2: '#474747',
+  text3: '#767676',
+  textDisabled: '#919191',
+  inputTextDisabled: 'rgba(0, 0, 0, 0.45)',
+  placeholder: '#767676',
+  placeholderDisabled: 'rgba(118, 118, 118, 0.6)',
+  icon: '#767676',
+  iconHover: '#474747',
+  iconPressed: '#000000',
+  iconDisabled: 'rgba(118, 118, 118, 0.5)',
+  border: '#00000014',
+  divider: '#00000014',
+  scrollbar: 'rgba(0, 0, 0, 0.25)',
+  scrollbarHover: 'rgba(0, 0, 0, 0.45)',
+  close: 'rgba(0, 0, 0, 0.55)',
+  closeHover: '#000000',
+  closePressed: '#000000',
+  clear: 'rgba(0, 0, 0, 0.2)',
+  clearHover: 'rgba(0, 0, 0, 0.3)',
+  clearPressed: 'rgba(0, 0, 0, 0.4)',
+  // 3:1 boundary: #767676 on #ffffff = 4.54:1 (token
+  // --color-border-emphasized #d4d4d4 is only 1.48:1 — see header).
+  inputBorder: '#767676',
+  inputBorderHover: '#525252',
+  inputBorderDisabled: 'rgba(118, 118, 118, 0.5)',
+  focusRing: '0 0 0 2px rgba(31, 107, 209, 0.25)',
+  focusRingSoft: '0 0 0 2px rgba(31, 107, 209, 0.12)',
+  warningRing: '0 0 0 2px rgba(131, 103, 0, 0.25)',
+  errorRing: '0 0 0 2px rgba(201, 48, 58, 0.25)',
+  btnDefault: '#ffffff',
+  btnDefaultHover: '#f1f1f1',
+  btnDefaultPressed: '#e8e8e8',
+  btnDefaultBorder: '#767676',
+  btnDefaultBorderHover: '#525252',
+  btnDefaultBorderPressed: '#404040',
+  disabledBg: '#b9d7ff',
+  ripple: 'rgba(31, 107, 209, 0.25)',
+  tab: '#f1f1f1',
+  tabActive: '#ffffff',
+  radioActiveBg: '#b9d7ff',
+  shadow: '0 12px 28px rgba(15, 23, 42, 0.08)',
+}
+
+const darkPalette: ThemePalette = {
+  accent: '#6d9cfe',
+  accentHover: '#87aefe',
+  accentPressed: '#a3c0fe',
+  accentSuppl: '#253c5a',
+  onAccent: '#111111',
+  onAccentDisabled: 'rgba(17, 17, 17, 0.55)',
+  info: '#6d9cfe',
+  infoHover: '#87aefe',
+  infoPressed: '#a3c0fe',
+  infoSuppl: '#88bcff3d',
+  success: '#64af4c',
+  successHover: '#79bd63',
+  successPressed: '#90ca90',
+  successSuppl: '#90ca903d',
+  warning: '#ffce2f',
+  warningHover: '#ffd94d',
+  warningPressed: '#eec448',
+  warningSuppl: '#e2b6233d',
+  warningBorder: '#eec448',
+  warningText: '#eec448',
+  error: '#ff705d',
+  errorHover: '#ff8a7a',
+  errorPressed: '#ffaea7',
+  errorSuppl: '#ff98903d',
+  body: '#1b1b1b',
+  surface: '#1b1b1b',
+  table: '#262626',
+  tableHeader: '#1b1b1b',
+  input: '#262626',
+  inputDisabled: '#1b1b1b',
+  action: '#262626',
+  hoverOverlay: 'rgba(109, 156, 254, 0.08)',
+  hoverOverlayStrong: 'rgba(109, 156, 254, 0.16)',
+  text1: '#ffffff',
+  text2: '#9e9e9e',
+  text3: '#9e9e9e',
+  textDisabled: '#525252',
+  inputTextDisabled: 'rgba(255, 255, 255, 0.45)',
+  placeholder: '#9e9e9e',
+  placeholderDisabled: 'rgba(158, 158, 158, 0.6)',
+  icon: '#9e9e9e',
+  iconHover: '#ffffff',
+  iconPressed: '#ffffff',
+  iconDisabled: 'rgba(158, 158, 158, 0.5)',
+  border: '#ffffff1a',
+  divider: '#ffffff1a',
+  scrollbar: 'rgba(255, 255, 255, 0.25)',
+  scrollbarHover: 'rgba(255, 255, 255, 0.45)',
+  close: 'rgba(255, 255, 255, 0.6)',
+  closeHover: '#ffffff',
+  closePressed: '#ffffff',
+  clear: 'rgba(255, 255, 255, 0.2)',
+  clearHover: 'rgba(255, 255, 255, 0.3)',
+  clearPressed: 'rgba(255, 255, 255, 0.4)',
+  // 3:1 boundary: #9e9e9e on #262626 = 5.65:1 (token
+  // --color-border-emphasized #525252 is only 1.94:1 — see header).
+  inputBorder: '#9e9e9e',
+  inputBorderHover: '#c2c2c2',
+  inputBorderDisabled: 'rgba(158, 158, 158, 0.5)',
+  focusRing: '0 0 0 2px rgba(109, 156, 254, 0.3)',
+  focusRingSoft: '0 0 0 2px rgba(109, 156, 254, 0.12)',
+  warningRing: '0 0 0 2px rgba(238, 196, 72, 0.3)',
+  errorRing: '0 0 0 2px rgba(255, 112, 93, 0.3)',
+  btnDefault: '#262626',
+  btnDefaultHover: '#333333',
+  btnDefaultPressed: '#404040',
+  btnDefaultBorder: '#9e9e9e',
+  btnDefaultBorderHover: '#c2c2c2',
+  btnDefaultBorderPressed: '#d4d4d4',
+  disabledBg: '#253c5a',
+  ripple: 'rgba(109, 156, 254, 0.3)',
+  tab: '#1b1b1b',
+  tabActive: '#262626',
+  radioActiveBg: '#253c5a',
+  shadow: '0 12px 28px rgba(0, 0, 0, 0.45)',
+}
+
+/**
+ * One builder for both modes. Sizing is fixed by the design system, not
+ * the palette: fontSizeMedium 16px (inputs/selects, all screens),
+ * heightMedium 36px (desktop floor; 44px mobile lives in compact CSS).
+ */
+const buildThemeOverrides = (p: ThemePalette): GlobalThemeOverrides => ({
+  common: {
+    primaryColor: p.accent,
+    primaryColorHover: p.accentHover,
+    primaryColorPressed: p.accentPressed,
+    primaryColorSuppl: p.accentSuppl,
+    infoColor: p.info,
+    infoColorHover: p.infoHover,
+    infoColorPressed: p.infoPressed,
+    infoColorSuppl: p.infoSuppl,
+    successColor: p.success,
+    successColorHover: p.successHover,
+    successColorPressed: p.successPressed,
+    successColorSuppl: p.successSuppl,
+    warningColor: p.warning,
+    warningColorHover: p.warningHover,
+    warningColorPressed: p.warningPressed,
+    warningColorSuppl: p.warningSuppl,
+    errorColor: p.error,
+    errorColorHover: p.errorHover,
+    errorColorPressed: p.errorPressed,
+    errorColorSuppl: p.errorSuppl,
+    bodyColor: p.body,
+    cardColor: p.surface,
+    modalColor: p.surface,
+    popoverColor: p.surface,
+    tableColor: p.table,
+    tableHeaderColor: p.tableHeader,
+    inputColor: p.input,
+    inputColorDisabled: p.inputDisabled,
+    actionColor: p.action,
+    hoverColor: p.hoverOverlay,
+    textColorBase: p.text1,
+    textColor1: p.text1,
+    textColor2: p.text2,
+    textColor3: p.text3,
+    textColorDisabled: p.textDisabled,
+    placeholderColor: p.placeholder,
+    placeholderColorDisabled: p.placeholderDisabled,
+    iconColor: p.icon,
+    iconColorHover: p.iconHover,
+    iconColorPressed: p.iconPressed,
+    iconColorDisabled: p.iconDisabled,
+    borderColor: p.border,
+    dividerColor: p.divider,
+    scrollbarColor: p.scrollbar,
+    scrollbarColorHover: p.scrollbarHover,
+    closeIconColor: p.close,
+    closeIconColorHover: p.closeHover,
+    closeIconColorPressed: p.closePressed,
+    clearColor: p.clear,
+    clearColorHover: p.clearHover,
+    clearColorPressed: p.clearPressed,
+  },
+  /* A11Y-H02 + R3D-01: Naive's Tag/Typography warning TEXT defaults to
+   * common.warningColor (#ffce2f) — unreadable on the pale warning
+   * background (1.40:1) and on white (1.49:1). The design-system token
+   * --color-status-warning-text (#836700 light / #eec448 dark) is the
+   * text color; warningColor itself stays #ffce2f so warning buttons,
+   * alert icons and other warning surfaces are unaffected. */
+  Tag: {
+    textColorWarning: p.warningText,
+    closeIconColorWarning: p.warningText,
+    closeIconColorHoverWarning: p.warningText,
+    closeIconColorPressedWarning: p.warningText,
+  },
+  Typography: {
+    textColorWarning: p.warningText,
+  },
+  Button: {
+    fontSizeMedium: '16px',
+    heightMedium: '36px',
+    borderRadiusMedium: '10px',
+    textColorPrimary: p.onAccent,
+    textColorHoverPrimary: p.onAccent,
+    textColorPressedPrimary: p.onAccent,
+    textColorFocusPrimary: p.onAccent,
+    textColorDisabledPrimary: p.onAccentDisabled,
+    colorPrimary: p.accent,
+    colorHoverPrimary: p.accentHover,
+    colorPressedPrimary: p.accentPressed,
+    colorFocusPrimary: p.accent,
+    colorDisabledPrimary: p.disabledBg,
+    borderPrimary: `1px solid ${p.accent}`,
+    borderHoverPrimary: `1px solid ${p.accentHover}`,
+    borderPressedPrimary: `1px solid ${p.accentPressed}`,
+    borderFocusPrimary: `1px solid ${p.accent}`,
+    borderDisabledPrimary: `1px solid ${p.disabledBg}`,
+    rippleColorPrimary: p.ripple,
+    textColor: p.text1,
+    textColorHover: p.text1,
+    textColorPressed: p.text1,
+    color: p.btnDefault,
+    colorHover: p.btnDefaultHover,
+    colorPressed: p.btnDefaultPressed,
+    border: `1px solid ${p.btnDefaultBorder}`,
+    borderHover: `1px solid ${p.btnDefaultBorderHover}`,
+    borderPressed: `1px solid ${p.btnDefaultBorderPressed}`,
+  },
+  Input: {
+    fontSizeMedium: '16px',
+    heightMedium: '36px',
+    borderRadius: '10px',
+    lineHeight: '1.5',
+    color: p.input,
+    colorDisabled: p.inputDisabled,
+    colorFocus: p.input,
+    textColor: p.text1,
+    textColorDisabled: p.inputTextDisabled,
+    placeholderColor: p.placeholder,
+    placeholderColorDisabled: p.placeholderDisabled,
+    iconColor: p.icon,
+    iconColorHover: p.iconHover,
+    iconColorPressed: p.iconPressed,
+    iconColorDisabled: p.iconDisabled,
+    clearColor: p.clear,
+    clearColorHover: p.clearHover,
+    clearColorPressed: p.clearPressed,
+    border: `1px solid ${p.inputBorder}`,
+    borderDisabled: `1px solid ${p.inputBorderDisabled}`,
+    borderHover: `1px solid ${p.inputBorderHover}`,
+    borderFocus: `1px solid ${p.accent}`,
+    boxShadowFocus: p.focusRing,
+    borderWarning: `1px solid ${p.warningBorder}`,
+    borderHoverWarning: `1px solid ${p.warningBorder}`,
+    borderFocusWarning: `1px solid ${p.warningBorder}`,
+    boxShadowFocusWarning: p.warningRing,
+    borderError: `1px solid ${p.error}`,
+    borderHoverError: `1px solid ${p.error}`,
+    borderFocusError: `1px solid ${p.error}`,
+    boxShadowFocusError: p.errorRing,
+    caretColor: p.accent,
+    suffixTextColor: p.text2,
+    prefixTextColor: p.text2,
+  },
+  Select: {
+    peers: {
+      InternalSelection: {
+        fontSizeMedium: '16px',
+        heightMedium: '36px',
+        borderRadius: '10px',
+        textColor: p.text1,
+        textColorDisabled: p.inputTextDisabled,
+        placeholderColor: p.placeholder,
+        placeholderColorDisabled: p.placeholderDisabled,
+        color: p.input,
+        colorDisabled: p.inputDisabled,
+        colorActive: p.input,
+        border: `1px solid ${p.inputBorder}`,
+        borderHover: `1px solid ${p.inputBorderHover}`,
+        borderActive: `1px solid ${p.accent}`,
+        borderFocus: `1px solid ${p.accent}`,
+        boxShadowHover: p.focusRingSoft,
+        boxShadowActive: p.focusRing,
+        boxShadowFocus: p.focusRing,
+        borderWarning: `1px solid ${p.warningBorder}`,
+        borderHoverWarning: `1px solid ${p.warningBorder}`,
+        borderActiveWarning: `1px solid ${p.warningBorder}`,
+        borderFocusWarning: `1px solid ${p.warningBorder}`,
+        boxShadowFocusWarning: p.warningRing,
+        borderError: `1px solid ${p.error}`,
+        borderHoverError: `1px solid ${p.error}`,
+        borderActiveError: `1px solid ${p.error}`,
+        borderFocusError: `1px solid ${p.error}`,
+        boxShadowFocusError: p.errorRing,
+        caretColor: p.accent,
+        arrowColor: p.icon,
+        arrowColorDisabled: p.iconDisabled,
+        loadingColor: p.accent,
+      },
+      InternalSelectMenu: {
+        optionFontSizeMedium: '16px',
+        optionHeightMedium: '36px',
+        borderRadius: '10px',
+        color: p.surface,
+        optionTextColor: p.text1,
+        optionTextColorPressed: p.text1,
+        optionTextColorActive: p.text1,
+        optionColorPending: p.hoverOverlay,
+        optionColorActive: p.hoverOverlayStrong,
+        optionColorActivePending: p.hoverOverlayStrong,
+        optionCheckColor: p.accent,
+      },
+    },
+  },
+  Card: {
+    borderRadius: '12px',
+    color: p.surface,
+    colorModal: p.surface,
+    colorTarget: p.surface,
+    textColor: p.text1,
+    titleTextColor: p.text1,
+    borderColor: p.border,
+    actionColor: p.action,
+    closeIconColor: p.icon,
+    closeIconColorHover: p.iconHover,
+    closeIconColorPressed: p.iconPressed,
+    boxShadow: p.shadow,
+  },
+  Tabs: {
+    tabColor: p.tab,
+    tabColorActive: p.tabActive,
+    tabBorderColor: p.border,
+    tabTextColorBar: p.text2,
+    tabTextColorBarHover: p.text1,
+    tabTextColorBarActive: p.text1,
+    tabTextColorCard: p.text2,
+    tabTextColorCardActive: p.text1,
+    barColor: p.accent,
+  },
+  Radio: {
+    buttonBorderColor: p.inputBorder,
+    buttonBorderColorActive: p.accent,
+    buttonColor: p.input,
+    buttonColorActive: p.radioActiveBg,
+    buttonTextColor: p.text2,
+    buttonTextColorActive: p.text1,
+  },
+  Dropdown: {
+    color: p.surface,
+    optionTextColor: p.text1,
+    optionTextColorHover: p.text1,
+    optionTextColorActive: p.text1,
+    optionColorHover: p.hoverOverlay,
+    optionColorActive: p.hoverOverlayStrong,
+    borderColor: p.border,
+  },
+})
+
 // 纯Naive UI主题配置 - 完全消除CSS依赖
-export const naiveThemeConfigs: Record<string, ThemeConfig> = {
+export const naiveThemeConfigs: Record<ThemeId, ThemeConfig> = {
   light: {
     id: 'light',
     labelKey: 'theme.light',
     naiveTheme: lightTheme,
-    themeOverrides: {
-      common: {
-        primaryColor: '#4b5563',
-        primaryColorHover: '#3f4854',
-        primaryColorPressed: '#374151',
-        primaryColorSuppl: '#9ca3af',
-        successColor: '#059669',
-        successColorHover: '#047857',
-        successColorPressed: '#065f46',
-        successColorSuppl: '#dcfce7',
-        errorColor: '#dc2626',
-        errorColorHover: '#b91c1c',
-        errorColorPressed: '#991b1b',
-        errorColorSuppl: '#fee2e2',
-        bodyColor: '#f5f6f8',
-        cardColor: '#ffffff',
-        inputColor: '#f7f8fa',
-        inputColorDisabled: '#f1f2f4',
-        modalColor: '#ffffff',
-        popoverColor: '#ffffff',
-        tableColor: '#f8f9fb',
-        hoverColor: 'rgba(79, 89, 102, 0.08)',
-        textColorBase: '#1f2933',
-        textColor1: '#1f2933',
-        textColor2: '#4b5563',
-        textColor3: '#6b7280',
-        placeholderColor: '#9ca3af',
-        borderColor: '#e5e7eb',
-        dividerColor: '#eef1f4',
-        scrollbarColor: 'rgba(148, 163, 184, 0.35)',
-        scrollbarColorHover: 'rgba(107, 114, 128, 0.55)',
-        closeIconColor: 'rgba(79, 89, 102, 0.65)',
-        closeIconColorHover: '#4b5563',
-        closeIconColorPressed: '#374151',
-        clearColor: 'rgba(79, 89, 102, 0.2)',
-        clearColorHover: 'rgba(79, 89, 102, 0.28)',
-        clearColorPressed: 'rgba(79, 89, 102, 0.36)'
-      },
-      Button: {
-        textColorPrimary: '#f9fafb',
-        textColorHoverPrimary: '#f9fafb',
-        textColorPressedPrimary: '#f9fafb',
-        textColorFocusPrimary: '#f9fafb',
-        textColorDisabledPrimary: 'rgba(249, 250, 251, 0.55)',
-        colorPrimary: '#4b5563',
-        colorHoverPrimary: '#3f4854',
-        colorPressedPrimary: '#374151',
-        colorFocusPrimary: '#4b5563',
-        colorDisabledPrimary: '#c4c8ce',
-        borderPrimary: '1px solid #4b5563',
-        borderHoverPrimary: '1px solid #3f4854',
-        borderPressedPrimary: '1px solid #374151',
-        borderFocusPrimary: '1px solid #4b5563',
-        borderDisabledPrimary: '1px solid #c4c8ce',
-        rippleColorPrimary: 'rgba(79, 89, 102, 0.25)',
-        textColor: '#4b5563',
-        textColorHover: '#374151',
-        textColorPressed: '#1f2933',
-        color: '#f4f5f7',
-        colorHover: '#e7e9ed',
-        colorPressed: '#d9dce2',
-        border: '1px solid #e5e7eb',
-        borderHover: '1px solid #d5d7dc',
-        borderPressed: '1px solid #c4c7cd'
-      },
-      Input: {
-        color: '#f7f8fa',
-        colorDisabled: '#f1f2f4',
-        colorFocus: '#ffffff',
-        textColor: '#1f2933',
-        textColorDisabled: 'rgba(31, 41, 51, 0.45)',
-        placeholderColor: '#9ca3af',
-        placeholderColorDisabled: 'rgba(156, 163, 175, 0.6)',
-        iconColor: '#9ca3af',
-        iconColorHover: '#6b7280',
-        iconColorPressed: '#4b5563',
-        iconColorDisabled: 'rgba(156, 163, 175, 0.5)',
-        clearColor: 'rgba(79, 89, 102, 0.2)',
-        clearColorHover: 'rgba(79, 89, 102, 0.3)',
-        clearColorPressed: 'rgba(79, 89, 102, 0.4)',
-        border: '1px solid #d9dce1',
-        borderDisabled: '1px solid rgba(213, 215, 220, 0.6)',
-        borderHover: '1px solid #c6cbd2',
-        borderFocus: '1px solid #aeb4bd',
-        boxShadowFocus: '0 0 0 2px rgba(75, 85, 99, 0.12)',
-        caretColor: '#4b5563',
-        suffixTextColor: '#6b7280',
-        prefixTextColor: '#6b7280'
-      },
-      Card: {
-        color: '#ffffff',
-        colorModal: '#ffffff',
-        colorTarget: '#ffffff',
-        textColor: '#1f2933',
-        titleTextColor: '#181f2a',
-        borderColor: '#e5e7eb',
-        actionColor: '#f4f5f7',
-        closeIconColor: '#9ca3af',
-        closeIconColorHover: '#6b7280',
-        closeIconColorPressed: '#4b5563',
-        boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08)'
-      },
-      Tabs: {
-        tabColor: '#f3f4f6',
-        tabColorActive: '#e5e7eb',
-        tabBorderColor: '#e5e7eb',
-        tabTextColorBar: '#6b7280',
-        tabTextColorBarHover: '#4b5563',
-        tabTextColorBarActive: '#1f2933',
-        tabTextColorCard: '#6b7280',
-        tabTextColorCardActive: '#1f2933',
-        barColor: '#d1d5db'
-      },
-      Radio: {
-        buttonBorderColor: '#e5e7eb',
-        buttonBorderColorActive: '#cbd0d6',
-        buttonColor: '#f4f5f7',
-        buttonColorActive: '#dfe2e7',
-        buttonTextColor: '#6b7280',
-        buttonTextColorActive: '#1f2933'
-      },
-      Dropdown: {
-        color: '#ffffff',
-        optionTextColor: '#4b5563',
-        optionTextColorHover: '#1f2933',
-        optionTextColorActive: '#1f2933',
-        optionColorHover: '#f1f2f5',
-        optionColorActive: '#e6e8ec',
-        borderColor: '#e5e7eb'
-      }
-    }
+    themeOverrides: buildThemeOverrides(lightPalette),
   },
-
   dark: {
-    id: 'dark', 
+    id: 'dark',
     labelKey: 'theme.dark',
     naiveTheme: darkTheme,
-    themeOverrides: {
-      common: {
-        primaryColor: '#64748b',
-        primaryColorHover: '#475569',
-        primaryColorPressed: '#334155',
-        primaryColorSuppl: '#94a3b8',
-        successColor: '#22c55e',
-        successColorHover: '#16a34a',
-        successColorPressed: '#15803d',
-        successColorSuppl: '#22543d',
-        errorColor: '#ef4444',
-        errorColorHover: '#dc2626',
-        errorColorPressed: '#b91c1c',
-        errorColorSuppl: '#7f1d1d',
-      }
-    }
+    themeOverrides: buildThemeOverrides(darkPalette),
   },
-
-  blue: {
-    id: 'blue',
-    labelKey: 'theme.blue',
-    naiveTheme: lightTheme,
-    themeOverrides: {
-      common: {
-        primaryColor: '#1f6bd1',
-        primaryColorHover: '#185cb8',
-        primaryColorPressed: '#134c98',
-        primaryColorSuppl: '#6caef7',
-        bodyColor: '#e4f0ff',
-        cardColor: '#f6faff',
-        modalColor: '#f6faff',
-        popoverColor: '#f6faff',
-        tableColor: '#eef5ff',
-        inputColor: '#ffffff',
-        hoverColor: 'rgba(31, 107, 209, 0.08)',
-        actionColor: '#eaf3ff',
-        textColorBase: '#0f2f55',
-        textColor1: '#0f2f55',
-        textColor2: '#1d4d85',
-        textColor3: '#4a6c91',
-        placeholderColor: '#6f88aa',
-        borderColor: '#92bbea',
-        dividerColor: '#c6dcf6',
-        scrollbarColor: 'rgba(41, 98, 158, 0.35)',
-        scrollbarColorHover: 'rgba(24, 76, 126, 0.55)',
-        closeIconColor: 'rgba(26, 69, 119, 0.7)',
-        closeIconColorHover: '#185cb8',
-        closeIconColorPressed: '#134c98',
-        clearColor: 'rgba(31, 107, 209, 0.25)',
-        clearColorHover: 'rgba(31, 107, 209, 0.35)',
-        clearColorPressed: 'rgba(31, 107, 209, 0.45)'
-      },
-      Button: {
-        textColorPrimary: '#ffffff',
-        textColorHoverPrimary: '#ffffff',
-        textColorPressedPrimary: '#ffffff',
-        textColorFocusPrimary: '#ffffff',
-        textColorDisabledPrimary: 'rgba(255, 255, 255, 0.6)',
-        colorPrimary: '#1f6bd1',
-        colorHoverPrimary: '#185cb8',
-        colorPressedPrimary: '#134c98',
-        colorFocusPrimary: '#1f6bd1',
-        colorDisabledPrimary: '#a1c6f1',
-        borderPrimary: '1px solid #1f6bd1',
-        borderHoverPrimary: '1px solid #185cb8',
-        borderPressedPrimary: '1px solid #134c98',
-        borderFocusPrimary: '1px solid #1f6bd1',
-        borderDisabledPrimary: '1px solid #a1c6f1',
-        rippleColorPrimary: 'rgba(31, 107, 209, 0.25)',
-        textColor: '#1d4d85',
-        textColorHover: '#16406f',
-        textColorPressed: '#0f2f55',
-        color: '#eaf3ff',
-        colorHover: '#deebff',
-        colorPressed: '#cfe1ff',
-        border: '1px solid #c0d8f6',
-        borderHover: '1px solid #aaccf2',
-        borderPressed: '1px solid #97bfec'
-      },
-      Input: {
-        color: '#ffffff',
-        colorDisabled: '#f0f5fb',
-        colorFocus: '#ffffff',
-        textColor: '#0f2f55',
-        textColorDisabled: 'rgba(15, 47, 85, 0.45)',
-        placeholderColor: '#6f88aa',
-        placeholderColorDisabled: 'rgba(111, 136, 170, 0.6)',
-        iconColor: '#6f88aa',
-        iconColorHover: '#2c5e9b',
-        iconColorPressed: '#214a7d',
-        iconColorDisabled: 'rgba(111, 136, 170, 0.5)',
-        clearColor: 'rgba(31, 107, 209, 0.25)',
-        clearColorHover: 'rgba(31, 107, 209, 0.35)',
-        clearColorPressed: 'rgba(31, 107, 209, 0.45)',
-        border: '1px solid #b2cef2',
-        borderDisabled: '1px solid rgba(178, 206, 242, 0.6)',
-        borderHover: '1px solid #9ac0ec',
-        borderFocus: '1px solid #78ace4',
-        boxShadowFocus: '0 0 0 2px rgba(31, 107, 209, 0.2)',
-        caretColor: '#1f6bd1',
-        suffixTextColor: '#4a6c91',
-        prefixTextColor: '#4a6c91'
-      },
-      Card: {
-        color: '#f6faff',
-        colorModal: '#f6faff',
-        colorTarget: '#f6faff',
-        textColor: '#0f2f55',
-        titleTextColor: '#0c2443',
-        borderColor: '#b2cef2',
-        actionColor: '#e3efff',
-        closeIconColor: '#6f88aa',
-        closeIconColorHover: '#2c5e9b',
-        closeIconColorPressed: '#214a7d',
-        boxShadow: '0 16px 36px rgba(15, 47, 85, 0.12)'
-      },
-      Tabs: {
-        tabColor: '#eaf3ff',
-        tabColorActive: '#cfe1ff',
-        tabBorderColor: '#b2cef2',
-        tabTextColorBar: '#4a6c91',
-        tabTextColorBarHover: '#1d4d85',
-        tabTextColorBarActive: '#0f2f55',
-        tabTextColorCard: '#4a6c91',
-        tabTextColorCardActive: '#0f2f55',
-        barColor: '#8fb9ec'
-      },
-      Radio: {
-        buttonBorderColor: '#b2cef2',
-        buttonBorderColorActive: '#8fb9ec',
-        buttonColor: '#eaf3ff',
-        buttonColorActive: '#d2e5ff',
-        buttonTextColor: '#4a6c91',
-        buttonTextColorActive: '#0f2f55'
-      },
-      Dropdown: {
-        color: '#ffffff',
-        optionTextColor: '#1d4d85',
-        optionTextColorHover: '#0f2f55',
-        optionTextColorActive: '#0f2f55',
-        optionColorHover: '#e1efff',
-        optionColorActive: '#cfe1ff',
-        borderColor: '#b2cef2'
-      }
-    }
-  },
-
-  classic: {
-    id: 'classic',
-    labelKey: 'theme.classic',
-    naiveTheme: lightTheme,
-    themeOverrides: {
-      common: {
-        primaryColor: '#7b6a58',
-        primaryColorHover: '#6a5a4a',
-        primaryColorPressed: '#594a3d',
-        primaryColorSuppl: '#d7ccbc',
-        successColor: '#059669',
-        successColorHover: '#047857',
-        successColorPressed: '#065f46',
-        successColorSuppl: '#dcfce7',
-        errorColor: '#dc2626',
-        errorColorHover: '#b91c1c',
-        errorColorPressed: '#991b1b',
-        errorColorSuppl: '#fee2e2',
-        bodyColor: '#f5f2ec',
-        cardColor: '#fefcf8',
-        modalColor: '#f9f5ef',
-        popoverColor: '#fefcf8',
-        tableColor: '#f7f1e8',
-        inputColor: '#f8f4ee',
-        hoverColor: 'rgba(123, 106, 88, 0.08)',
-        textColorBase: '#403830',
-        textColor1: '#403830',
-        textColor2: '#6a6156',
-        textColor3: '#968d82',
-        placeholderColor: '#b0a79c',
-        borderColor: '#e3d7c7',
-        dividerColor: '#ede3d6',
-        scrollbarColor: 'rgba(141, 126, 110, 0.4)',
-        scrollbarColorHover: 'rgba(123, 106, 88, 0.55)',
-        closeIconColor: 'rgba(103, 92, 80, 0.7)',
-        closeIconColorHover: '#675c50',
-        closeIconColorPressed: '#51473d',
-        clearColor: 'rgba(123, 106, 88, 0.2)',
-        clearColorHover: 'rgba(123, 106, 88, 0.3)',
-        clearColorPressed: 'rgba(123, 106, 88, 0.4)',
-        boxShadow1: '0 6px 20px rgba(87, 69, 55, 0.08)',
-        boxShadow2: '0 12px 32px rgba(87, 69, 55, 0.12)'
-      },
-      Button: {
-        textColorPrimary: '#3f382f',
-        textColorHoverPrimary: '#3f382f',
-        textColorPressedPrimary: '#3f382f',
-        textColorFocusPrimary: '#3f382f',
-        textColorDisabledPrimary: 'rgba(63, 56, 47, 0.4)',
-        colorPrimary: '#d7ccbc',
-        colorHoverPrimary: '#cabfaa',
-        colorPressedPrimary: '#beb29a',
-        colorFocusPrimary: '#d7ccbc',
-        colorDisabledPrimary: '#e5dbcf',
-        borderPrimary: '1px solid #cabfaa',
-        borderHoverPrimary: '1px solid #b9ac96',
-        borderPressedPrimary: '1px solid #a59782',
-        borderFocusPrimary: '1px solid #cabfaa',
-        borderDisabledPrimary: '1px solid #e2d6c7',
-        rippleColorPrimary: 'rgba(123, 106, 88, 0.35)',
-        textColor: '#4c443c',
-        textColorHover: '#3f382f',
-        textColorPressed: '#3f382f',
-        color: '#f6f1ea',
-        colorHover: '#ede3d6',
-        colorPressed: '#e1d6c7',
-        border: '1px solid #e3d7c7',
-        borderHover: '1px solid #d8ccba',
-        borderPressed: '1px solid #cbbca5'
-      },
-      Input: {
-        color: '#f8f4ee',
-        colorDisabled: '#f3ede5',
-        colorFocus: '#fefbf7',
-        textColor: '#403830',
-        textColorDisabled: 'rgba(64, 56, 48, 0.45)',
-        placeholderColor: '#b0a79c',
-        placeholderColorDisabled: 'rgba(176, 167, 156, 0.6)',
-        iconColor: '#a29688',
-        iconColorHover: '#877b6d',
-        iconColorPressed: '#6e6256',
-        iconColorDisabled: 'rgba(162, 150, 136, 0.5)',
-        clearColor: 'rgba(123, 106, 88, 0.2)',
-        clearColorHover: 'rgba(123, 106, 88, 0.32)',
-        clearColorPressed: 'rgba(123, 106, 88, 0.45)',
-        border: '1px solid #d8cdbd',
-        borderDisabled: '1px solid rgba(216, 205, 189, 0.6)',
-        borderHover: '1px solid #cbbfae',
-        borderFocus: '1px solid #bfae99',
-        boxShadowFocus: '0 0 0 2px rgba(123, 106, 88, 0.16)',
-        caretColor: '#7b6a58',
-        suffixTextColor: '#8a7c6c',
-        prefixTextColor: '#8a7c6c'
-      },
-      Card: {
-        color: '#fefcf8',
-        colorModal: '#fefcf8',
-        colorTarget: '#fefcf8',
-        textColor: '#403830',
-        titleTextColor: '#3a332b',
-        borderColor: '#e3d7c7',
-        actionColor: '#f3eadf',
-        closeIconColor: '#8f8376',
-        closeIconColorHover: '#6e6256',
-        closeIconColorPressed: '#5a4f45',
-        boxShadow: '0 12px 32px rgba(87, 69, 55, 0.12)'
-      },
-      Tabs: {
-        tabColor: '#f1ece4',
-        tabColorActive: '#e4d8c8',
-        tabBorderColor: '#e3d7c7',
-        tabTextColorBar: '#6a6156',
-        tabTextColorBarHover: '#4d453c',
-        tabTextColorBarActive: '#4d453c',
-        tabTextColorCard: '#6a6156',
-        tabTextColorCardActive: '#3f382f',
-        barColor: '#d2c5b5'
-      },
-      Radio: {
-        buttonBorderColor: '#e3d7c7',
-        buttonBorderColorActive: '#cabfaa',
-        buttonColor: '#f6f1ea',
-        buttonColorActive: '#d7ccbc',
-        buttonTextColor: '#6a6156',
-        buttonTextColorActive: '#3f382f'
-      },
-      Dropdown: {
-        color: '#fefcf8',
-        optionTextColor: '#4c443c',
-        optionTextColorHover: '#3f382f',
-        optionTextColorActive: '#3f382f',
-        optionColorHover: '#ede3d6',
-        optionColorActive: '#e1d6c7',
-        borderColor: '#e3d7c7'
-      }
-    }
-  },
-
-  green: {
-    id: 'green',
-    labelKey: 'theme.green',
-    naiveTheme: darkTheme,
-    themeOverrides: {
-      common: {
-        primaryColor: '#1fb598',
-        primaryColorHover: '#1aa184',
-        primaryColorPressed: '#16846c',
-        primaryColorSuppl: '#57e4c8',
-        bodyColor: '#0f342b',
-        cardColor: '#174737',
-        modalColor: '#174737',
-        popoverColor: '#174737',
-        tableColor: '#1b4f3d',
-        tableHeaderColor: '#1f5f49',
-        inputColor: '#1d5240',
-        codeColor: '#1f5f49',
-        tabColor: '#1f5f49',
-        actionColor: '#1f5f49',
-        textColorBase: '#e9fbf4',
-        textColor1: 'rgba(233, 251, 244, 0.96)',
-        textColor2: 'rgba(233, 251, 244, 0.82)',
-        textColor3: 'rgba(233, 251, 244, 0.6)',
-        textColorDisabled: 'rgba(233, 251, 244, 0.4)',
-        placeholderColor: 'rgba(197, 239, 224, 0.7)',
-        placeholderColorDisabled: 'rgba(197, 239, 224, 0.45)',
-        iconColor: 'rgba(207, 246, 232, 0.75)',
-        iconColorHover: 'rgba(207, 246, 232, 0.88)',
-        iconColorPressed: '#e9fbf4',
-        iconColorDisabled: 'rgba(207, 246, 232, 0.45)',
-        borderColor: 'rgba(47, 128, 109, 0.45)',
-        dividerColor: 'rgba(47, 128, 109, 0.25)',
-        scrollbarColor: 'rgba(38, 108, 92, 0.35)',
-        scrollbarColorHover: 'rgba(38, 108, 92, 0.55)',
-        closeIconColor: 'rgba(207, 246, 232, 0.7)',
-        closeIconColorHover: 'rgba(207, 246, 232, 0.88)',
-        closeIconColorPressed: '#e9fbf4',
-        clearColor: 'rgba(233, 251, 244, 0.6)',
-        clearColorHover: 'rgba(233, 251, 244, 0.75)',
-        clearColorPressed: 'rgba(233, 251, 244, 0.9)',
-        successColor: '#3dd68c',
-        successColorHover: '#2fb973',
-        successColorPressed: '#258f59',
-        successColorSuppl: '#174f3b',
-        errorColor: '#ff6b6b',
-        errorColorHover: '#f05252',
-        errorColorPressed: '#c73f3f',
-        errorColorSuppl: '#4d2020'
-      },
-      Button: {
-        textColorPrimary: '#0f342b',
-        textColorHoverPrimary: '#0b271f',
-        textColorPressedPrimary: '#092017',
-        textColorFocusPrimary: '#0f342b',
-        textColorDisabledPrimary: 'rgba(15, 52, 43, 0.82)',
-        colorPrimary: '#57e4c8',
-        colorHoverPrimary: '#3fd2b4',
-        colorPressedPrimary: '#2eb39a',
-        colorFocusPrimary: '#57e4c8',
-        colorDisabledPrimary: '#459f8d',
-        borderPrimary: '1px solid #3fd2b4',
-        borderHoverPrimary: '1px solid #2eb39a',
-        borderPressedPrimary: '1px solid #258f76',
-        borderFocusPrimary: '1px solid #3fd2b4',
-        borderDisabledPrimary: '1px solid rgba(63, 210, 180, 0.35)',
-        rippleColorPrimary: 'rgba(63, 210, 180, 0.35)',
-        textColor: 'rgba(233, 251, 244, 0.88)',
-        textColorHover: '#e9fbf4',
-        textColorPressed: '#c5efe0',
-        color: '#194638',
-        colorHover: '#1e5443',
-        colorPressed: '#184638',
-        border: '1px solid rgba(63, 210, 180, 0.28)',
-        borderHover: '1px solid rgba(63, 210, 180, 0.4)',
-        borderPressed: '1px solid rgba(63, 210, 180, 0.52)'
-      },
-      Input: {
-        color: '#1d5240',
-        colorDisabled: '#1a4a3a',
-        colorFocus: '#205845',
-        textColor: '#e9fbf4',
-        textColorDisabled: 'rgba(233, 251, 244, 0.55)',
-        placeholderColor: 'rgba(197, 239, 224, 0.7)',
-        placeholderColorDisabled: 'rgba(197, 239, 224, 0.45)',
-        iconColor: 'rgba(197, 239, 224, 0.75)',
-        iconColorHover: '#c5efe0',
-        iconColorPressed: '#e9fbf4',
-        iconColorDisabled: 'rgba(197, 239, 224, 0.4)',
-        clearColor: 'rgba(233, 251, 244, 0.6)',
-        clearColorHover: 'rgba(233, 251, 244, 0.75)',
-        clearColorPressed: 'rgba(233, 251, 244, 0.9)',
-        border: '1px solid rgba(63, 210, 180, 0.32)',
-        borderDisabled: '1px solid rgba(63, 210, 180, 0.18)',
-        borderHover: '1px solid rgba(63, 210, 180, 0.45)',
-        borderFocus: '1px solid #57e4c8',
-        boxShadowFocus: '0 0 0 2px rgba(87, 228, 200, 0.16)',
-        loadingColor: '#57e4c8',
-        suffixTextColor: 'rgba(233, 251, 244, 0.8)',
-        prefixTextColor: 'rgba(233, 251, 244, 0.8)'
-      },
-      Card: {
-        color: '#174737',
-        colorModal: '#174737',
-        colorTarget: '#174737',
-        textColor: '#e9fbf4',
-        titleTextColor: '#def7ef',
-        borderColor: 'rgba(63, 210, 180, 0.28)',
-        actionColor: '#205845',
-        closeIconColor: 'rgba(233, 251, 244, 0.7)',
-        closeIconColorHover: '#c5efe0',
-        closeIconColorPressed: '#e9fbf4',
-        boxShadow: '0 18px 40px rgba(9, 32, 23, 0.45)'
-      },
-      Tabs: {
-        tabColor: '#1b4f3d',
-        tabColorActive: '#20614a',
-        tabBorderColor: 'rgba(63, 210, 180, 0.32)',
-        tabTextColorBar: 'rgba(233, 251, 244, 0.7)',
-        tabTextColorBarHover: '#c5efe0',
-        tabTextColorBarActive: '#e9fbf4',
-        tabTextColorCard: 'rgba(233, 251, 244, 0.7)',
-        tabTextColorCardActive: '#e9fbf4',
-        barColor: 'rgba(63, 210, 180, 0.6)'
-      },
-      Radio: {
-        buttonBorderColor: 'rgba(63, 210, 180, 0.32)',
-        buttonBorderColorActive: 'rgba(87, 228, 200, 0.6)',
-        buttonColor: '#1b4f3d',
-        buttonColorActive: '#20614a',
-        buttonTextColor: 'rgba(233, 251, 244, 0.7)',
-        buttonTextColorActive: '#e9fbf4'
-      },
-      Dropdown: {
-        color: '#174737',
-        optionTextColor: '#e9fbf4',
-        optionTextColorHover: '#c5efe0',
-        optionTextColorActive: '#0f342b',
-        optionColorHover: '#1f5f49',
-        optionColorActive: '#236b52',
-        borderColor: 'rgba(63, 210, 180, 0.32)'
-      }
-    }
-  },
-
-  purple: {
-    id: 'purple',
-    labelKey: 'theme.purple',
-    naiveTheme: darkTheme,
-    themeOverrides: {
-      common: {
-        primaryColor: '#b47bff',
-        primaryColorHover: '#a060f7',
-        primaryColorPressed: '#8c4edf',
-        primaryColorSuppl: '#d6c3ff',
-        bodyColor: '#1f1633',
-        cardColor: '#2a1f45',
-        modalColor: '#2a1f45',
-        popoverColor: '#2a1f45',
-        tableColor: '#31255a',
-        tableHeaderColor: '#3b2d6a',
-        inputColor: '#342964',
-        codeColor: '#3b2d6a',
-        tabColor: '#3b2d6a',
-        actionColor: '#3b2d6a',
-        textColorBase: '#f5ecff',
-        textColor1: 'rgba(245, 236, 255, 0.94)',
-        textColor2: 'rgba(245, 236, 255, 0.78)',
-        textColor3: 'rgba(245, 236, 255, 0.58)',
-        textColorDisabled: 'rgba(245, 236, 255, 0.38)',
-        placeholderColor: 'rgba(214, 193, 255, 0.7)',
-        placeholderColorDisabled: 'rgba(214, 193, 255, 0.45)',
-        iconColor: 'rgba(225, 210, 255, 0.7)',
-        iconColorHover: 'rgba(225, 210, 255, 0.85)',
-        iconColorPressed: '#f5ecff',
-        iconColorDisabled: 'rgba(225, 210, 255, 0.45)',
-        borderColor: 'rgba(147, 111, 214, 0.35)',
-        dividerColor: 'rgba(147, 111, 214, 0.2)',
-        scrollbarColor: 'rgba(127, 85, 194, 0.35)',
-        scrollbarColorHover: 'rgba(127, 85, 194, 0.55)',
-        closeIconColor: 'rgba(225, 210, 255, 0.7)',
-        closeIconColorHover: '#e1d2ff',
-        closeIconColorPressed: '#f5ecff',
-        clearColor: 'rgba(225, 210, 255, 0.6)',
-        clearColorHover: 'rgba(225, 210, 255, 0.75)',
-        clearColorPressed: 'rgba(225, 210, 255, 0.9)',
-        successColor: '#5be0a2',
-        successColorHover: '#41c488',
-        successColorPressed: '#329a6a',
-        successColorSuppl: '#1c4b35',
-        errorColor: '#ff7aa2',
-        errorColorHover: '#f25c87',
-        errorColorPressed: '#c1426a',
-        errorColorSuppl: '#4b1f32'
-      },
-      Button: {
-        textColorPrimary: '#1f1633',
-        textColorHoverPrimary: '#1a122c',
-        textColorPressedPrimary: '#140d22',
-        textColorFocusPrimary: '#1f1633',
-        textColorDisabledPrimary: 'rgba(31, 22, 51, 0.82)',
-        colorPrimary: '#c9a5ff',
-        colorHoverPrimary: '#b98bff',
-        colorPressedPrimary: '#a069f3',
-        colorFocusPrimary: '#c9a5ff',
-        colorDisabledPrimary: '#7056b0',
-        borderPrimary: '1px solid #b98bff',
-        borderHoverPrimary: '1px solid #a069f3',
-        borderPressedPrimary: '1px solid #8a56db',
-        borderFocusPrimary: '1px solid #b98bff',
-        borderDisabledPrimary: '1px solid rgba(185, 139, 255, 0.35)',
-        rippleColorPrimary: 'rgba(185, 139, 255, 0.35)',
-        textColor: 'rgba(245, 236, 255, 0.88)',
-        textColorHover: '#f5ecff',
-        textColorPressed: '#d6c3ff',
-        color: '#2d204b',
-        colorHover: '#36275a',
-        colorPressed: '#402d6c',
-        border: '1px solid rgba(147, 111, 214, 0.3)',
-        borderHover: '1px solid rgba(147, 111, 214, 0.42)',
-        borderPressed: '1px solid rgba(147, 111, 214, 0.55)'
-      },
-      Input: {
-        color: '#342964',
-        colorDisabled: '#2f245a',
-        colorFocus: '#392c6c',
-        textColor: '#f5ecff',
-        textColorDisabled: 'rgba(245, 236, 255, 0.58)',
-        placeholderColor: 'rgba(214, 193, 255, 0.7)',
-        placeholderColorDisabled: 'rgba(214, 193, 255, 0.45)',
-        iconColor: 'rgba(214, 193, 255, 0.75)',
-        iconColorHover: '#d6c3ff',
-        iconColorPressed: '#f5ecff',
-        iconColorDisabled: 'rgba(214, 193, 255, 0.4)',
-        clearColor: 'rgba(225, 210, 255, 0.6)',
-        clearColorHover: 'rgba(225, 210, 255, 0.75)',
-        clearColorPressed: 'rgba(225, 210, 255, 0.9)',
-        border: '1px solid rgba(147, 111, 214, 0.35)',
-        borderDisabled: '1px solid rgba(147, 111, 214, 0.2)',
-        borderHover: '1px solid rgba(169, 129, 229, 0.45)',
-        borderFocus: '1px solid #b47bff',
-        boxShadowFocus: '0 0 0 2px rgba(180, 123, 255, 0.2)',
-        loadingColor: '#b47bff',
-        suffixTextColor: 'rgba(245, 236, 255, 0.78)',
-        prefixTextColor: 'rgba(245, 236, 255, 0.78)'
-      },
-      Card: {
-        color: '#2a1f45',
-        colorModal: '#2a1f45',
-        colorTarget: '#2a1f45',
-        textColor: '#f5ecff',
-        titleTextColor: '#fdf7ff',
-        borderColor: 'rgba(147, 111, 214, 0.35)',
-        actionColor: '#342964',
-        closeIconColor: 'rgba(225, 210, 255, 0.7)',
-        closeIconColorHover: '#d6c3ff',
-        closeIconColorPressed: '#f5ecff',
-        boxShadow: '0 18px 42px rgba(16, 8, 29, 0.45)'
-      },
-      Tabs: {
-        tabColor: '#342964',
-        tabColorActive: '#3f3277',
-        tabBorderColor: 'rgba(147, 111, 214, 0.35)',
-        tabTextColorBar: 'rgba(245, 236, 255, 0.75)',
-        tabTextColorBarHover: '#e1d2ff',
-        tabTextColorBarActive: '#f5ecff',
-        tabTextColorCard: 'rgba(245, 236, 255, 0.75)',
-        tabTextColorCardActive: '#f5ecff',
-        barColor: 'rgba(180, 123, 255, 0.6)'
-      },
-      Radio: {
-        buttonBorderColor: 'rgba(147, 111, 214, 0.35)',
-        buttonBorderColorActive: 'rgba(180, 123, 255, 0.55)',
-        buttonColor: '#342964',
-        buttonColorActive: '#403277',
-        buttonTextColor: 'rgba(245, 236, 255, 0.78)',
-        buttonTextColorActive: '#fdf7ff'
-      },
-      Dropdown: {
-        color: '#2a1f45',
-        optionTextColor: '#f5ecff',
-        optionTextColorHover: '#e1d2ff',
-        optionTextColorActive: '#1f1633',
-        optionColorHover: '#36275a',
-        optionColorActive: '#42317a',
-        borderColor: 'rgba(147, 111, 214, 0.35)'
-      }
-    }
-  }
 }
 
 // 获取可用主题列表
 export const availableThemes = Object.values(naiveThemeConfigs)
 
 // 当前主题配置
-export const currentThemeConfig = computed(() => 
+export const currentThemeConfig = computed(() =>
   naiveThemeConfigs[currentThemeId.value] || naiveThemeConfigs.light
 )
 
 // 当前 Naive UI 主题
-export const currentNaiveTheme = computed<GlobalTheme | null>(() => 
+export const currentNaiveTheme = computed<GlobalTheme | null>(() =>
   currentThemeConfig.value.naiveTheme
 )
 
 // 当前主题覆盖配置
-export const currentThemeOverrides = computed<GlobalThemeOverrides>(() => 
+export const currentThemeOverrides = computed<GlobalThemeOverrides>(() =>
   currentThemeConfig.value.themeOverrides || {}
 )
 
-const resolveAppliedThemeId = (selectedThemeId: string): string => {
-  if (selectedThemeId === 'auto') {
+const resolveAppliedThemeId = (selectedThemeId: string): ThemeId => {
+  const normalized = normalizeSelectedThemeId(selectedThemeId)
+  if (normalized === 'auto' || normalized === null) {
+    // 'auto', and any unknown id, fall back to the OS preference (light on failure).
     try {
       const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
       return prefersDark ? 'dark' : 'light'
@@ -762,7 +628,7 @@ const resolveAppliedThemeId = (selectedThemeId: string): string => {
       return 'light'
     }
   }
-  return selectedThemeId
+  return normalized
 }
 
 const applyThemeId = (selectedThemeId: string): boolean => {
@@ -853,12 +719,17 @@ const ensureAutoColorSchemeWatch = (settings: ReturnType<typeof useGlobalSetting
 
 // 主题切换（统一由 useGlobalSettings 持久化）
 export const switchTheme = (themeId: string): boolean => {
+  const normalized = normalizeSelectedThemeId(themeId)
+  if (normalized === null) {
+    console.warn(`Theme '${themeId}' not found`)
+    return false
+  }
   const settings = useGlobalSettings(pinia)
-  settings.updateThemeId(themeId)
+  settings.updateThemeId(normalized)
 
-  const ok = applyThemeId(themeId)
+  const ok = applyThemeId(normalized)
   if (ok) {
-    console.log(`Pure Naive UI theme switched to: ${themeId}`)
+    console.log(`Pure Naive UI theme switched to: ${normalized}`)
   }
   return ok
 }
@@ -866,9 +737,11 @@ export const switchTheme = (themeId: string): boolean => {
 // 获取当前主题ID
 export const getCurrentThemeId = (): string => currentThemeId.value
 
-// 获取主题配置
+// 获取主题配置 (removed ids resolve to their light/dark replacement)
 export const getThemeConfig = (themeId: string): ThemeConfig | null => {
-  return naiveThemeConfigs[themeId] || null
+  const normalized = normalizeSelectedThemeId(themeId)
+  if (normalized === null || normalized === 'auto') return null
+  return naiveThemeConfigs[normalized] || null
 }
 
 // 初始化主题系统
@@ -884,6 +757,17 @@ export const initializeNaiveTheme = (): void => {
     }
   } catch (error) {
     console.warn('Failed to load legacy theme preference:', error)
+  }
+
+  // 一次性规范化：已持久化的 theme id 若已被删除 (blue/classic/green/
+  // purple) 或未知 -> 对应的 light/dark, 或 'auto'.
+  const stored = settings.state.selectedThemeId
+  const normalizedStored = normalizeSelectedThemeId(stored)
+  if (normalizedStored && normalizedStored !== stored) {
+    settings.updateThemeId(normalizedStored)
+  } else if (normalizedStored === null) {
+    console.warn(`Unknown persisted theme '${stored}', resetting to 'auto'`)
+    settings.updateThemeId('auto')
   }
 
   // When in 'auto' mode, keep theme synced with OS color scheme changes.

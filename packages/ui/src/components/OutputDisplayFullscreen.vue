@@ -6,6 +6,7 @@
             v-if="internalVisible"
             ref="coreDisplayRef"
             :initial-view-mode="initialViewMode"
+            :preserve-initial-view-mode="true"
             expand-preview
             test-id="output-fullscreen"
             :content="internalContent"

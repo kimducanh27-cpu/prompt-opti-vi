@@ -31,10 +31,6 @@
   min-height: 100%;
 }
 
-.workspace-compact .favorites-manager-shell--page .favorites-manager-content {
-  overflow: visible;
-}
-
 .workspace-compact .image-model-picker-row .image-model-picker-item {
   min-width: 0;
   max-width: 100%;
@@ -50,7 +46,7 @@
   width: 100% !important;
 }
 
-.workspace-compact .template-editor-modal.adaptive-modal-page > .n-card-header {
+.workspace-compact .template-editor-modal.adaptive-modal-sheet > .n-card-header {
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
 

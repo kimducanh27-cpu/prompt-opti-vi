@@ -102,6 +102,7 @@
                         ghost
                         round
                         :title="t('common.preview')"
+                        :aria-label="t('common.preview')"
                     >
                         <template #icon>
                             <NIcon :size="16">
@@ -303,7 +304,7 @@
 </template>
 
 <script setup lang="ts">
-import { Eye as UiEye, Check as UiCheck, RefreshCw as UiRefreshCw } from '@lucide/vue'
+import { PhEye as UiEye, PhCheck as UiCheck, PhArrowClockwise as UiRefreshCw } from '@phosphor-icons/vue'
 import OutputPlainText from './OutputPlainText.vue'
 import { ref, computed, nextTick, watch, type PropType } from "vue";
 import { useI18n } from "vue-i18n";

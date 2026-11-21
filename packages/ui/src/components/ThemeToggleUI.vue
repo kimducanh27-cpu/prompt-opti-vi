@@ -1,6 +1,8 @@
 <template>
   <NDropdown
     :options="dropdownOptions"
+    :menu-props="dropdownMenuProps"
+    :node-props="dropdownNodeProps"
     @select="handleThemeSelect"
     placement="bottom-end"
     trigger="click"
@@ -21,12 +23,13 @@
 </template>
   
 <script setup lang="ts">
-import { Sun, Moon, Snowflake, Palette, Leaf, Bot } from '@lucide/vue'
+import { PhSun as Sun, PhMoon as Moon, PhCircleHalf as SunMoon } from '@phosphor-icons/vue'
 import { computed, h } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import { NButton, NDropdown, type DropdownOption } from 'naive-ui'
 import { useNaiveTheme } from '../composables/ui/useNaiveTheme'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 
 const { t } = useI18n()
 
@@ -37,36 +40,46 @@ const {
   changeTheme 
 } = useNaiveTheme()
 
-// Theme choices share Lucide geometry and retain their identifying colors.
+// Theme choices share Phosphor geometry and retain their identifying colours
+// (sun / moon / half-sun). The colours live in the CSS classes at the
+// bottom of this file, sourced from the design tokens (UIUX-L01) — not hex
+// literals: the Phosphor `color` prop becomes an SVG presentation attribute,
+// which cannot resolve var(), so the colour rides on a class instead
+// (Phosphor strokes use currentColor). Slice 3: only Light / Dark / Auto
+// remain (blue/classic/green/purple removed).
 const themeIcons = {
-  light: { icon: Sun, color: '#eab308' },
-  dark: { icon: Moon, color: '#60a5fa' },
-  blue: { icon: Snowflake, color: '#2563eb' },
-  classic: { icon: Palette, color: '#b08968' },
-  green: { icon: Leaf, color: '#16a34a' },
-  purple: { icon: Bot, color: '#9333ea' },
+  light: Sun,
+  dark: Moon,
+  auto: SunMoon,
 }
-const createThemeIcon = (id: string, isColored = false) => {
-  const theme = themeIcons[id as keyof typeof themeIcons]
-  if (!theme) return null
-  return h(theme.icon, { size: 16, color: isColored ? theme.color : 'currentColor', 'aria-hidden': true })
+const createThemeIcon = (id: string) => {
+  const icon = themeIcons[id as keyof typeof themeIcons]
+  if (!icon) return null
+  return h(icon, { size: 16, class: `theme-toggle-icon theme-toggle-icon--${id}`, 'aria-hidden': true })
 }
 
 // 当前主题的图标
-const currentThemeIcon = computed(() => createThemeIcon(themeId.value, true))
+const currentThemeIcon = computed(() => createThemeIcon(themeId.value))
 
 // 当前主题的标签（使用国际化）
 const currentThemeLabel = computed(() => {
   return t(`theme.${themeId.value}`)
 })
 
-// 为Naive UI Dropdown创建选项
+// 为Naive UI Dropdown创建选项: Light / Dark (from the theme configs) + Auto
+// (a selection, not a theme — it resolves to light/dark via the OS preference).
 const dropdownOptions = computed<DropdownOption[]>(() => {
-  return availableThemes.map(theme => ({
+  const options: DropdownOption[] = availableThemes.map(theme => ({
     key: theme.id,
     label: t(`theme.${theme.id}`),
-    icon: () => createThemeIcon(theme.id, true)
+    icon: () => createThemeIcon(theme.id)
   }))
+  options.push({
+    key: 'auto',
+    label: t('theme.auto'),
+    icon: () => createThemeIcon('auto')
+  })
+  return options
 })
 
 // 处理主题选择
@@ -74,3 +87,12 @@ const handleThemeSelect = (key: string) => {
   changeTheme(key)
 }
 </script>
+
+<style>
+/* UIUX-L01: theme-icon identifying colours from the design tokens
+   (tokens.css). Non-scoped on purpose: the dropdown menu is teleported to
+   <body>, so a scoped rule would not reach the option icons. */
+.theme-toggle-icon--light { color: var(--color-status-warning); }
+.theme-toggle-icon--dark { color: var(--color-accent); }
+.theme-toggle-icon--auto { color: var(--color-text-tertiary); }
+</style>

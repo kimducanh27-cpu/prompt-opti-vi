@@ -4,8 +4,8 @@
       <NInput :value="search" clearable :placeholder="t('templateManager.searchPlaceholder')" :aria-label="t('templateManager.searchAriaLabel')" @update:value="$emit('update:search', $event)" />
       <NButton type="primary" @click="$emit('add')">{{ t('templateManager.addTemplate') }}</NButton>
     </div>
-    <NSelect :value="category" :options="categories" filterable :aria-label="t('workspace.templateCategory')" @update:value="$emit('update:category', $event)" />
-    <NText depth="3" class="mobile-template-count">{{ t('templateManager.templateCount', { count: templates.length }) }}</NText>
+    <NSelect :value="category" :options="categories" filterable :aria-label="t('workspace.templateCategory')" :input-props="{ 'aria-label': t('workspace.templateCategory') }" @update:value="$emit('update:category', $event)" />
+    <NText depth="3" class="mobile-template-count">{{ t('templateManager.templateCount', { count: totalCount ?? templates.length }) }}</NText>
     <article v-for="template in templates" :key="template.id" class="mobile-template-row">
       <button type="button" class="mobile-template-open" @click="$emit('view', template)">
         <span class="mobile-template-name">{{ template.name }}</span>
@@ -16,7 +16,7 @@
           <strong v-if="template.id === selectedId">{{ t('template.selected') }}</strong>
         </span>
       </button>
-      <NDropdown trigger="click" :options="actions(template)" @select="key => onAction(key, template)">
+      <NDropdown trigger="click" :options="actions(template)" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="key => onAction(key, template)">
         <NButton quaternary :aria-label="`${template.name} · ${t('common.actions')}`">···</NButton>
       </NDropdown>
     </article>
@@ -28,6 +28,7 @@
 import { NButton, NDropdown, NEmpty, NInput, NSelect, NText } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import type { Template } from '@prompt-optimizer/core'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 defineProps<{
   templates: Template[]
@@ -35,6 +36,9 @@ defineProps<{
   category: string
   search: string
   selectedId?: string
+  // M-G: the passed array is the paginated slice, so the count line shows
+  // the TOTAL when given (falls back to the visible length).
+  totalCount?: number
 }>()
 const emit = defineEmits<{
   'update:category': [value: string]
@@ -97,8 +101,14 @@ const onAction = (key: string | number, template: Template) => {
   font: inherit;
   padding: 10px 0 12px;
 }
+/* EU06-07: very long names wrapped 4–5 lines with no ellipsis. Clamp to
+   2 lines, same pattern as the description below (the list is designed for
+   a 2-line name + 2-line description + 1-line meta). */
 .mobile-template-name {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;

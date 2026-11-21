@@ -61,6 +61,7 @@
                     size="small"
                     @click="$emit('open-preview')"
                     :title="$t('common.preview')"
+                    :aria-label="$t('common.preview')"
                     ghost
                     round
                 >
@@ -76,6 +77,7 @@
                     size="small"
                     @click="openFullscreen"
                     :title="$t('common.expand')"
+                    :aria-label="$t('common.expand')"
                     ghost
                     round
                 >
@@ -149,6 +151,7 @@
                     <NButton
                         type="primary"
                         size="medium"
+                        class="disabled-label-readable"
                         :data-testid="`${testIdPrefix}-optimize-button`"
                         :aria-label="compact ? buttonText : undefined"
                         :aria-busy="compact ? loading : undefined"
@@ -166,6 +169,7 @@
     <FullscreenDialog v-model="isFullscreen" :title="label">
         <NInput
             v-model:value="fullscreenValue"
+            class="input-panel-fullscreen-editor"
             type="textarea"
             :placeholder="placeholder"
             :autosize="false"
@@ -178,7 +182,7 @@
 
 <script setup lang="ts">
 import OptimizationControls from './OptimizationControls.vue'
-import { CircleHelp as UiCircleHelp, MessageSquareText as UiMessageSquareText, Eye as UiEye, Maximize2 as UiMaximize2 } from '@lucide/vue'
+import { PhQuestion as UiCircleHelp, PhChatText as UiMessageSquareText, PhEye as UiEye, PhArrowsOut as UiMaximize2 } from '@phosphor-icons/vue'
 import { computed } from 'vue'
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
 const { compactInputRows } = useWorkspaceLayout()
@@ -325,3 +329,19 @@ const handleAddMissingVariable = (varName: string) => {
     emit("add-missing-variable", varName);
 };
 </script>
+
+<style scoped>
+/* R3A-02: Naive's `show-count` word count is absolutely positioned over the
+   textarea's bottom-right corner, so the last line of text slides underneath
+   it (measured live: count 21px tall, top ~27.5px above the box bottom).
+   Reserve a 32px strip at the bottom of the editable area so text never sits
+   under the count — same "reserve space" pattern as VariableAwareInput's
+   `.vai-has-count` rule. The mirror gets the same padding: it drives the
+   autosize height, so el and mirror must agree. */
+.input-panel-primary-editor :deep(.n-input__textarea-el),
+.input-panel-primary-editor :deep(.n-input__textarea-mirror),
+.input-panel-fullscreen-editor :deep(.n-input__textarea-el),
+.input-panel-fullscreen-editor :deep(.n-input__textarea-mirror) {
+    padding-bottom: 32px;
+}
+</style>

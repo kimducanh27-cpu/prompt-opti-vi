@@ -1,0 +1,60 @@
+/**
+ * M-B (Medium batch) — output-display toolbar touch-target floors.
+ *
+ * Covers: EU09-01 (output toolbar buttons only 36px — Preview, Source, ⋮,
+ * fullscreen; NButton size="small" ×10) and the per-result-card toolbar
+ * controls from R3A-03 (Preview 72.72×36, star ☆ 32×36, card ⋮/Expand 32×36).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches teleported sheets).
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* EU09-01 + R3A-03 — the whole output toolbar (OutputDisplayCore.vue:20,
+ * NFlex class="output-display-toolbar"): output-view-menu (the folded
+ * Preview/Source/Compare dropdown trigger, :26), output-view-modes
+ * (Preview/Source/Compare buttons, :32-58), output-toolbar-actions (⋮
+ * output-compact-actions, output-favorite star ☆, output-stop,
+ * output-fullscreen, copy split, :62+). Live floor: output.css:143
+ * `.compact-two-region .output-display-toolbar .n-button { min-height: 36px }`
+ * (0,3,0) — same specificity, later import wins; --n-height !important
+ * beats the size="small" theme height. V-B-FIX: M-B's ancestor
+ * `.output-toolbar` exists NOWHERE (grep: zero hits in any .vue/.css) —
+ * the rule was in dist but never applied. */
+.workspace-compact .output-display-toolbar .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* R3A-03 — copy split buttons in the toolbar. Live rules: OutputDisplayCore
+ * scoped CSS :899-913 (height 28px, min-width 28/24px, (0,4,0)) — the (0,5,0)
+ * selector below + !important mirrors the proven arena.css override (same
+ * shape, workspace-wide ancestor). V-B-FIX: M-B's selector was doubly dead —
+ * wrong ancestor (`.output-toolbar` does not exist) AND a compound
+ * `.output-copy-split-button.n-button...` (the div carries
+ * .output-copy-split-button; the NButton inside carries
+ * .n-button.output-copy-split-primary/-menu). Corrected to the descendant
+ * shape arena.css uses. NOTE: arena.css already floors these buttons inside
+ * Arena only; this rule is the workspace-wide equivalent (all 7 workspaces
+ * use the same toolbar). */
+.workspace-compact .output-toolbar-actions .output-copy-split-button .n-button.output-copy-split-primary,
+.workspace-compact .output-toolbar-actions .output-copy-split-button .n-button.output-copy-split-menu {
+  min-width: 44px !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-height: 44px;
+}
+
+/* R3A-03 — card Expand button in the test answer content. Live rule:
+ * test-result.css:324-326 `.test-answer-content .output-toolbar-actions
+ * .n-button { width: 32px; min-width: 32px; min-height: 36px }` (0,3,0) —
+ * this rule is (0,4,0) + !important and wins. */
+.workspace-compact .test-answer-content .output-toolbar-actions .n-button {
+  width: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+}

@@ -734,7 +734,13 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
             await applyFavoriteExample(draft)
             applyFavoriteSessionBinding(favorite, draft, targetKey)
 
-            toast.success(t('toast.success.imageFavoriteLoaded'))
+            // VL-D-01 (EU-F02 image branch): no second success toast here.
+            // The shared toast.success(favoriteLoaded) below fires for
+            // every branch, so the image branch used to stack 3 toasts
+            // (switchedToImageMode + imageFavoriteLoaded + favoriteLoaded).
+            // Now it fires exactly 2, matching the basic branch
+            // (mode-switched + favoriteLoaded). The imageFavoriteLoaded
+            // i18n key was deleted in cleanup (S7-6, N-2).
         } else if (
             favoriteMode?.functionMode === 'basic' ||
             favoriteMode?.functionMode === 'context'
@@ -769,12 +775,13 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
                 await handleContextModeChange(favoriteMode.optimizationMode as ContextMode)
             }
 
-            toast.info(
-                t('toast.info.switchedToFunctionMode', {
-                    mode: targetFunctionMode === 'pro' ? t('common.context') : t('common.basic'),
-                }),
-            )
-
+            // EU-F02: one "switched" toast only. This used to fire a second,
+            // near-identical toast (switchedToFunctionMode: "Automatically
+            // switched to Basic/Context mode") right before the
+            // optimizationModeAutoSwitched one, so "Use now" stacked 4 toasts
+            // covering ~30% of the screen. The history-restore flow fires
+            // exactly one "switched" toast; the destination workspace is
+            // visible on screen anyway.
             if (favoriteMode.optimizationMode) {
                 toast.info(
                     t('toast.info.optimizationModeAutoSwitched', {

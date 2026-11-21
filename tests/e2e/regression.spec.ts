@@ -342,8 +342,9 @@ test.describe('关键功能持续性测试', () => {
   });
 
   test('应用主界面能够正常加载', async ({ page }) => {
-    // 验证基础 HTML 结构
-    const app = page.locator('#app, [id="app"], main');
+    // Scoped to #app only (Slice 7): the shell also renders <main>, so the
+    // old '#app, [id="app"], main' selector matched 2 elements (strict mode).
+    const app = page.locator('#app');
     await expect(app).toBeAttached();
 
     // 验证页面标题

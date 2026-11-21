@@ -57,7 +57,7 @@ const messages = {
       "allTags": "All Tags",
       "allModes": "All",
       "popularTags": "Common Tags",
-      "totalCount": "{count} items",
+      "totalCount": "{count} item | {count} items",
       "import": "Import",
       "add": "Add",
       "emptySearchResult": "No matching favorites found",
@@ -94,9 +94,10 @@ const messages = {
         "packageImportSuccess": "Import completed: {imported} successful, {skipped} skipped; restored {restored} image resources, skipped {resourceSkipped} resources",
         "importPartialFailed": "Some favorites failed to import",
         "importFailed": "Import failed",
-        "resourcesMissing": "{count} image resources are missing",
-        "resourcesCorrupt": "{count} image resources are corrupt",
-        "resourcesFailed": "{count} image resources failed to restore",
+        "invalidJsonFile": "Import failed: the file is not valid JSON. Check the file and try again.",
+        "resourcesMissing": "{count} image resource is missing | {count} image resources are missing",
+        "resourcesCorrupt": "{count} image resource is corrupt | {count} image resources are corrupt",
+        "resourcesFailed": "{count} image resource failed to restore | {count} image resources failed to restore",
         "sharePngMissingData": "This PNG does not contain importable favorite share data. Use the original exported PNG file; screenshots, compressed images, or converted images cannot be imported.",
         "shareHtmlMissingData": "This HTML file does not contain importable favorite share data. Use a share HTML file exported by Prompt Optimizer.",
         "readFileFailed": "Failed to read file",
@@ -111,7 +112,7 @@ const messages = {
         "export": "Export Favorites",
         "clear": "Clear Favorites",
         "exportSuccess": "Export successful",
-        "exportPartialSuccess": "Export successful, but {count} image resources are missing",
+        "exportPartialSuccess": "Export successful, but {count} image resource is missing | Export successful, but {count} image resources are missing",
         "exportFailed": "Export failed",
         "clearConfirm": "Are you sure you want to clear all favorites? This action cannot be undone.",
         "clearSuccess": "Cleared successfully",
@@ -135,7 +136,7 @@ const messages = {
         "listTitle": "Favorite List",
         "contentTitle": "Content",
         "extraTitle": "Extra details",
-        "useCountInline": "{count} uses",
+        "useCountInline": "{count} use | {count} uses",
         "garden": {
           "snapshotTitle": "Prompt Garden Snapshot",
           "snapshotHint": "Imported visual assets and variable settings from Prompt Garden",
@@ -181,8 +182,8 @@ const messages = {
           "empty": "No variables or examples configured",
           "variables": "Variables",
           "examples": "Examples",
-          "variableCount": "{count} variables",
-          "exampleCount": "{count} examples",
+          "variableCount": "{count} variable | {count} variables",
+          "exampleCount": "{count} example | {count} examples",
           "hasInputImages": "Has input images",
           "variableName": "Variable",
           "variableDefault": "Default",
@@ -235,8 +236,8 @@ const messages = {
           "image2image": "Image-to-Image",
           "multiimage": "Multi-Image"
         },
-        "variableCount": "{count} vars",
-        "exampleCount": "{count} examples"
+        "variableCount": "{count} var | {count} vars",
+        "exampleCount": "{count} example | {count} examples"
       },
       "categories": {
         "default": {
@@ -257,7 +258,7 @@ const messages = {
       "tagManager": {
         "title": "Tag Manager",
         "searchPlaceholder": "Search tags...",
-        "totalTags": "Total {count} tags",
+        "totalTags": "Total {count} tag | Total {count} tags",
         "add": "Add Tag",
         "tagName": "Tag Name",
         "useCount": "Use Count",
@@ -297,7 +298,7 @@ const messages = {
           "cancel": "Cancel",
           "warning": "After merging, \"{source}\" tag will be deleted, and all favorites using this tag will use \"{target}\" tag instead"
         },
-        "deleteConfirm": "Are you sure you want to delete tag \"{name}\"? This will remove the tag from {count} favorites.",
+        "deleteConfirm": "Are you sure you want to delete tag \"{name}\"? This will remove the tag from {count} favorite. | Are you sure you want to delete tag \"{name}\"? This will remove the tag from {count} favorites.",
         "messages": {
           "loadFailed": "Failed to load tag list",
           "addSuccess": "Tag added successfully",
@@ -335,7 +336,7 @@ const messages = {
       "exportHtml": "Export HTML",
       "exportPng": "Export PNG",
       "exportSuccess": "Share file exported",
-      "exportPartialSuccess": "Share file exported, but {count} image resources are missing",
+      "exportPartialSuccess": "Share file exported, but {count} image resource is missing | Share file exported, but {count} image resources are missing",
       "exportFailed": "Share export failed",
       "sections": {
         "description": "Description",
@@ -535,9 +536,9 @@ const messages = {
       "parentCategoryPlaceholder": "Select parent category (leave empty for root)",
       "categoryColor": "Category Color",
       "confirmDelete": "Confirm Delete",
-      "deleteWarning": "Are you sure you want to delete category <strong>{name}</strong>?",
-      "deleteChildrenWarning": "Warning: This category has {count} subcategories that will also be deleted!",
-      "deleteUsageWarning": "Note: This category is used by {count} favorites, which will become uncategorized after deletion.",
+      "deleteWarning": "Are you sure you want to delete category {name}?",
+      "deleteChildrenWarning": "Warning: This category has {count} subcategory that will also be deleted! | Warning: This category has {count} subcategories that will also be deleted!",
+      "deleteUsageWarning": "Note: This category is used by {count} favorite, which will become uncategorized after deletion. | Note: This category is used by {count} favorites, which will become uncategorized after deletion.",
       "deleteSuccess": "Deleted successfully",
       "deleteFailed": "Failed to delete",
       "saveSuccess": "Saved successfully",

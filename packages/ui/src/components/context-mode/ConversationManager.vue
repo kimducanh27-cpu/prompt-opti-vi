@@ -118,6 +118,8 @@
                                     <NDropdown
                                         trigger="click"
                                         :options="roleOptions"
+                                        :menu-props="dropdownMenuProps"
+                                        :node-props="dropdownNodeProps"
                                         placement="bottom-start"
                                         @select="
                                             (key) =>
@@ -236,6 +238,8 @@
                     <NSpace justify="center">
                         <NDropdown
                             :options="addMessageOptions"
+                            :menu-props="dropdownMenuProps"
+                            :node-props="dropdownNodeProps"
                             @select="handleAddMessageWithRole"
                         >
                             <NButton
@@ -244,11 +248,18 @@
                                 type="primary"
                                 block
                                 data-testid="pro-multi-add-message"
+                                :aria-label="t('conversation.addMessage')"
+                                :title="t('conversation.addMessage')"
+                                aria-haspopup="menu"
                             >
                                 <template #icon>
                                     <UiPlus />
                                 </template>
                                 {{ t("conversation.addMessage") }}
+                                <!-- R3E-03: 下拉提示（之前只有 Plus 图标，没有 chevron /
+                                     aria / title，用户误以为是普通按钮）。逻辑不动：
+                                     仍是 NDropdown 触发器，没有 @click（EU02-01 已证伪）。 -->
+                                <UiChevronDown :size="14" class="add-message-chevron" />
                             </NButton>
                         </NDropdown>
                     </NSpace>
@@ -259,7 +270,7 @@
 </template>
 
 <script setup lang="ts">
-import { Tags as UiTags, TriangleAlert, Wrench, Settings as RenderSettings, User as RenderUser, Lightbulb as RenderLightbulb, Wrench as RenderWrench, SquarePen as UiSquarePen, MessageSquare as UiMessageSquare, CircleCheck as UiCircleCheck, Circle as UiCircle, ChevronUp as UiChevronUp, ChevronDown as UiChevronDown, Trash2 as UiTrash2, Plus as UiPlus } from '@lucide/vue'
+import { PhTag as UiTags, PhWarning as TriangleAlert, PhWrench as Wrench, PhGear as RenderSettings, PhUser as RenderUser, PhLightbulb as RenderLightbulb, PhWrench as RenderWrench, PhPencilSimple as UiSquarePen, PhChat as UiMessageSquare, PhCheckCircle as UiCircleCheck, PhCircle as UiCircle, PhCaretUp as UiChevronUp, PhCaretDown as UiChevronDown, PhTrash as UiTrash2, PhPlus as UiPlus } from '@phosphor-icons/vue'
 import { ref, computed, watch, h, onMounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -280,6 +291,7 @@ import { usePerformanceMonitor } from "../../composables/performance/usePerforma
 import { useDebounceThrottle } from '../../composables/performance/useDebounceThrottle';
 import { useWorkspaceLayout } from '../../composables/ui/useWorkspaceLayout';
 import { useToast } from "../../composables/ui/useToast";
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y';
 import { VariableAwareInput } from "../variable-extraction";
 import { PREDEFINED_VARIABLES } from "../../types/variable";
 import type {
@@ -702,5 +714,11 @@ watch(
 .message-card-not-optimizable {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* R3E-03: "+ Add Message" 下拉 chevron，与文字保持一点间距 */
+.add-message-chevron {
+    margin-left: 4px;
+    flex: none;
 }
 </style>

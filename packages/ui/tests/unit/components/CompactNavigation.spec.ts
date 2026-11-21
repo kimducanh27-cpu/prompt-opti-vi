@@ -40,7 +40,7 @@ describe('mobile navigation panels', () => {
       await wrapper.get('#compact-mode-group-pro').trigger('click')
       expect(routing.push).not.toHaveBeenCalled()
       expect(wrapper.findAll('.compact-mode-choice')).toHaveLength(8)
-      expect(wrapper.get('[aria-current="page"]').attributes('data-testid')).toBe('compact-mode-image-text2image')
+      expect(wrapper.get('.compact-mode-choice[aria-current="page"]').attributes('data-testid')).toBe('compact-mode-image-text2image')
     } finally { wrapper.unmount() }
   })
 
@@ -79,14 +79,49 @@ describe('mobile navigation panels', () => {
     } finally { wrapper.unmount() }
   })
 
-  it('keeps the six management actions and collapses help by default', async () => {
+  it('keeps the seven management actions and collapses help by default', async () => {
     const wrapper = createNavigation()
     try {
       await wrapper.get('[data-testid="compact-global-menu"]').trigger('click')
-      expect(wrapper.findAll('.compact-function-tile')).toHaveLength(6)
+      expect(wrapper.findAll('.compact-function-tile')).toHaveLength(7)
       expect(wrapper.get('.compact-menu-help').attributes('open')).toBeUndefined()
       await wrapper.get('[data-testid="compact-menu-models"]').trigger('click')
       expect(wrapper.emitted('action')).toEqual([['models']])
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
+    } finally { wrapper.unmount() }
+  })
+
+  it('shows a five-tab bottom bar and navigates via the router', async () => {
+    const wrapper = createNavigation()
+    try {
+      expect(wrapper.findAll('.compact-tab-bar button')).toHaveLength(5)
+      expect(wrapper.get('[data-testid="compact-tab-image"]').attributes('aria-current')).toBe('page')
+      await wrapper.get('[data-testid="compact-tab-basic"]').trigger('click')
+      await flushPromises()
+      expect(routing.push).toHaveBeenCalledExactlyOnceWith('/basic/system')
+      // Tapping the active tab does not navigate.
+      await wrapper.get('[data-testid="compact-tab-image"]').trigger('click')
+      await flushPromises()
+      expect(routing.push).toHaveBeenCalledTimes(1)
+    } finally { wrapper.unmount() }
+  })
+
+  it('shows the current sub-modes as a segmented strip under the header', () => {
+    const wrapper = createNavigation()
+    try {
+      expect(wrapper.find('.compact-mode-strip').exists()).toBe(true)
+      const segmented = wrapper.findComponent({ name: 'PoSegmented' })
+      expect(segmented.props('modelValue')).toBe('text2image')
+      expect(segmented.props('options')).toHaveLength(3)
+    } finally { wrapper.unmount() }
+  })
+
+  it('emits the tools action from the functions menu', async () => {
+    const wrapper = createNavigation()
+    try {
+      await wrapper.get('[data-testid="compact-global-menu"]').trigger('click')
+      await wrapper.get('[data-testid="compact-menu-tools"]').trigger('click')
+      expect(wrapper.emitted('action')).toEqual([['tools']])
       expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
     } finally { wrapper.unmount() }
   })

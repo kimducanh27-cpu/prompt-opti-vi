@@ -5,7 +5,7 @@
         <span class="mobile-model-row-title">{{ title }}</span>
         <span v-if="subtitle" class="mobile-model-row-subtitle" :title="subtitle">{{ subtitle }}</span>
       </button>
-      <NDropdown trigger="click" placement="bottom-end" :options="menuOptions" @select="key => emit('action', String(key))">
+      <NDropdown trigger="click" placement="bottom-end" :options="menuOptions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="key => emit('action', String(key))">
         <NButton quaternary class="mobile-model-row-menu" :aria-label="`${t('modelManager.provider.more')} ${title}`">⋯</NButton>
       </NDropdown>
     </div>
@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import { NButton, NDropdown, useThemeVars, type DropdownOption } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 defineProps<{
   title: string
@@ -42,12 +43,19 @@ const theme = useThemeVars()
 </script>
 
 <style scoped>
+/* UIUX-M04 (M-Ea): this was a bordered card per item (1px border +
+ * 12px radius + paper background), violating design-system §2.4 — dense
+ * data is rows, not cards. Desktop already renders PoRow rows; this
+ * restyles the mobile row to the same PoRow pattern (components/
+ * primitives/PoRow.vue): no border, a 1px bottom divider, transparent
+ * background. Padding 12px 4px: the sheet provides 12px inset, so the
+ * total 16px matches PoRow's 16px horizontal. */
 .mobile-model-row {
-  padding: 12px;
+  padding: 12px 4px;
   min-width: 0;
-  border: 1px solid var(--compact-border);
-  border-radius: 12px;
-  background: var(--compact-paper);
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
 }
 .mobile-model-row-main {
   display: flex;

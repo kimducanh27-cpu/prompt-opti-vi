@@ -14,17 +14,8 @@ import type { AppServices } from "../types/services";
 
 export type SupportedLocale = "zh-CN" | "zh-TW" | "en-US" | "vi-VN";
 
-/**
- * Vietnamese-first distribution.
- *
- * The packaged edition opens in Vietnamese on first run regardless of the
- * browser language so the localized interface is the default experience; an
- * explicit choice made in the language switcher is persisted and always wins.
- * Flip this constant to "en-US" to restore browser-language detection as the
- * first-run policy.
- */
-export const DEFAULT_LOCALE: SupportedLocale = "vi-VN";
-export const SUPPORTED_LOCALES: SupportedLocale[] = ["vi-VN", "en-US", "zh-CN", "zh-TW"];
+export const DEFAULT_LOCALE: SupportedLocale = "en-US";
+export const SUPPORTED_LOCALES: SupportedLocale[] = ["zh-CN", "zh-TW", "en-US", "vi-VN"];
 
 function normalizeLocaleCandidate(
   locale: string | null | undefined,
@@ -40,12 +31,12 @@ function normalizeLocaleCandidate(
 
   const lower = normalized.toLowerCase();
 
-  if (lower === 'vi' || lower.startsWith('vi-') || lower.startsWith('vi_')) {
-    return 'vi-VN';
-  }
-
   if (lower === 'en' || lower.startsWith('en-')) {
     return 'en-US';
+  }
+
+  if (lower === 'vi' || lower.startsWith('vi-')) {
+    return 'vi-VN';
   }
 
   if (lower === 'zh' || lower.startsWith('zh-')) {
@@ -62,6 +53,19 @@ function normalizeLocaleCandidate(
   }
 
   return null;
+}
+
+function getBrowserPreferredLocale(): SupportedLocale {
+  if (typeof navigator === 'undefined') {
+    return DEFAULT_LOCALE;
+  }
+
+  const candidates =
+    Array.isArray(navigator.languages) && navigator.languages.length > 0
+      ? navigator.languages
+      : [navigator.language];
+
+  return resolveDefaultLocale(candidates);
 }
 
 export function sanitizeSupportedLocale(
@@ -99,25 +103,26 @@ export function setI18nServices(services: AppServices) {
 // 创建i18n实例
 const i18n = createI18n({
   legacy: false,
-  locale: DEFAULT_LOCALE,
+  // OBS-01 (stored XSS): escape interpolated params so a user-supplied value
+  // (e.g. a category name) can never inject HTML through a `v-html` message.
+  // Only the message templates' own HTML still renders — params are escaped,
+  // not the template. (After the companion CategoryManager edit, no locale
+  // message contains HTML at all, so this is pure defense in depth.)
+  escapeParameterHtml: true,
+  locale: getBrowserPreferredLocale(),
   fallbackLocale: {
-    "vi-VN": ["en-US"],
     "zh-TW": ["zh-CN", "en-US"],
     "zh-CN": ["en-US"],
+    "vi-VN": ["en-US"],
     default: ["en-US"],
   },
   messages: {
-    "vi-VN": viVN,
     "zh-CN": zhCN,
     "zh-TW": zhTW,
     "en-US": enUS,
+    "vi-VN": viVN,
   },
 });
-
-function syncDocumentLangAttribute(locale: string) {
-  if (typeof document === 'undefined' || !document.documentElement) return;
-  document.documentElement.setAttribute('lang', locale);
-}
 
 function syncLocaleToElectronMain(locale: string) {
   if (typeof window === 'undefined') return;
@@ -130,14 +135,13 @@ function syncLocaleToElectronMain(locale: string) {
   });
 }
 
-// Keep Electron main process and <html lang> informed so native menus & screen readers
-// follow the app's selected language.
+// Keep Electron main process informed so native menus (context menu, etc.)
+// can follow the app's selected language.
 watch(
   i18n.global.locale,
   (locale) => {
     const value = String(locale || '');
     if (!value) return;
-    syncDocumentLangAttribute(value);
     syncLocaleToElectronMain(value);
   },
   { immediate: true },
@@ -146,9 +150,11 @@ watch(
 // 初始化语言设置
 async function initializeLanguage() {
   try {
+    const browserLocale = getBrowserPreferredLocale();
+
     if (!servicesRef.value) {
       console.warn("[i18n] Services unavailable during locale initialization. Falling back to default locale.");
-      i18n.global.locale.value = DEFAULT_LOCALE;
+      i18n.global.locale.value = browserLocale;
       return;
     }
 
@@ -157,7 +163,7 @@ async function initializeLanguage() {
       UI_SETTINGS_KEYS.PREFERRED_LANGUAGE,
       null,
     );
-    const resolvedLocale = sanitizeSupportedLocale(savedLanguage, DEFAULT_LOCALE);
+    const resolvedLocale = sanitizeSupportedLocale(savedLanguage, browserLocale);
 
     i18n.global.locale.value = resolvedLocale;
 
@@ -170,7 +176,7 @@ async function initializeLanguage() {
     }
   } catch (error) {
     console.error("[i18n] Failed to initialize locale:", error);
-    i18n.global.locale.value = DEFAULT_LOCALE;
+    i18n.global.locale.value = getBrowserPreferredLocale();
   }
 }
 

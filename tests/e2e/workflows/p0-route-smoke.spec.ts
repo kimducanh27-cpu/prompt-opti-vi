@@ -27,7 +27,9 @@ test.describe('P0 route smoke', () => {
       await expect(page.locator('.loading-container')).toHaveCount(0, { timeout: 15000 })
 
       await expect(page).toHaveURL(new RegExp(`#${route.hashPath.replace('/#', '')}$`))
-      await expect(page.locator('#app, [id="app"], main')).toBeAttached()
+      // Scoped to #app only (Slice 7): the shell also renders <main>, so the
+      // old '#app, [id="app"], main' selector matched 2 elements (strict mode).
+      await expect(page.locator('#app')).toBeAttached()
 
       // 页面应渲染出一定的 DOM（避免空白屏）
       const appDescendants = await page.locator('#app *').count()

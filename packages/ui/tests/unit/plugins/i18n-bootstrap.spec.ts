@@ -31,9 +31,9 @@ afterEach(() => {
 })
 
 describe('i18n bootstrap helpers', () => {
-  it('defaults to vi-VN when browser language is missing', () => {
-    expect(resolveDefaultLocale(undefined)).toBe('vi-VN')
-    expect(resolveDefaultLocale('')).toBe('vi-VN')
+  it('defaults to en-US when browser language is missing', () => {
+    expect(resolveDefaultLocale(undefined)).toBe('en-US')
+    expect(resolveDefaultLocale('')).toBe('en-US')
   })
 
   it('maps Chinese browser languages to supported Chinese locales', () => {
@@ -44,27 +44,32 @@ describe('i18n bootstrap helpers', () => {
     expect(resolveDefaultLocale('zh-Hant')).toBe('zh-TW')
   })
 
+  it('maps Vietnamese browser languages to vi-VN', () => {
+    expect(resolveDefaultLocale('vi-VN')).toBe('vi-VN')
+    expect(resolveDefaultLocale('vi')).toBe('vi-VN')
+    expect(sanitizeSupportedLocale('vi-VN')).toBe('vi-VN')
+    expect(sanitizeSupportedLocale('vi')).toBe('vi-VN')
+  })
+
   it('keeps supported saved locales', () => {
     expect(sanitizeSupportedLocale('zh-CN')).toBe('zh-CN')
     expect(sanitizeSupportedLocale('zh-TW')).toBe('zh-TW')
     expect(sanitizeSupportedLocale('en-US')).toBe('en-US')
-    expect(sanitizeSupportedLocale('vi-VN')).toBe('vi-VN')
   })
 
   it('normalizes legacy short locale values', () => {
     expect(sanitizeSupportedLocale('zh')).toBe('zh-CN')
     expect(sanitizeSupportedLocale('en')).toBe('en-US')
-    expect(sanitizeSupportedLocale('vi')).toBe('vi-VN')
   })
 
-  it('falls back to vi-VN for unsupported saved locales', () => {
-    expect(sanitizeSupportedLocale('ja-JP')).toBe('vi-VN')
-    expect(sanitizeSupportedLocale('')).toBe('vi-VN')
-    expect(sanitizeSupportedLocale(undefined)).toBe('vi-VN')
+  it('falls back to en-US for unsupported saved locales', () => {
+    expect(sanitizeSupportedLocale('ja-JP')).toBe('en-US')
+    expect(sanitizeSupportedLocale('')).toBe('en-US')
+    expect(sanitizeSupportedLocale(undefined)).toBe('en-US')
   })
 
-  it('initializes to vi-VN on first run regardless of the browser language', async () => {
-    setNavigatorLocales('en-US')
+  it('initializes to Chinese when browser language is Chinese and no saved preference exists', async () => {
+    setNavigatorLocales('zh-CN')
 
     const get = vi.fn().mockResolvedValue(null)
     const set = vi.fn().mockResolvedValue(undefined)
@@ -78,9 +83,9 @@ describe('i18n bootstrap helpers', () => {
 
     await initializeI18nWithStorage()
 
-    expect(i18n.global.locale.value).toBe('vi-VN')
+    expect(i18n.global.locale.value).toBe('zh-CN')
     expect(get).toHaveBeenCalledWith(UI_SETTINGS_KEYS.PREFERRED_LANGUAGE, null)
-    expect(set).toHaveBeenCalledWith(UI_SETTINGS_KEYS.PREFERRED_LANGUAGE, 'vi-VN')
+    expect(set).toHaveBeenCalledWith(UI_SETTINGS_KEYS.PREFERRED_LANGUAGE, 'zh-CN')
   })
 
   it('normalizes legacy zh preference during initialization instead of overwriting it with English', async () => {
@@ -114,5 +119,14 @@ describe('i18n bootstrap helpers', () => {
     expect(zhTW.settings.languageSwitcher.languages).toEqual(expected)
     expect(enUS.settings.languageSwitcher.languages).toEqual(expected)
     expect(viVN.settings.languageSwitcher.languages).toEqual(expected)
+  })
+
+  it('switches the app language to vi-VN and resolves Vietnamese strings', () => {
+    i18n.global.locale.value = 'vi-VN'
+
+    expect(i18n.global.locale.value).toBe('vi-VN')
+    expect(i18n.global.t('common.save')).toBe('Lưu')
+    expect(i18n.global.t('settings.languageSwitcher.languages.vi-VN')).toBe('Tiếng Việt')
+    expect(i18n.global.t('test.title')).toBe('Kiểm thử')
   })
 })

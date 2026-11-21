@@ -49,10 +49,10 @@ const naiveStubs = {
     template: '<div class="n-space"><slot /></div>',
     props: ['vertical', 'size', 'align', 'wrap'],
   },
-  NTable: {
-    name: 'NTable',
-    template: '<table class="n-table"><slot /></table>',
-    props: ['size', 'striped', 'singleLine'],
+  PoTable: {
+    name: 'PoTable',
+    template: '<div class="po-table-stub"><span v-for="row in rows" :key="row.name" class="po-table-row">{{ row.name }} {{ row.defaultValue }} {{ row.required }} {{ row.description }}</span></div>',
+    props: ['columns', 'rows'],
   },
   NTag: {
     name: 'NTag',
@@ -118,6 +118,37 @@ describe('FavoriteReproducibilityDisplay', () => {
         },
       ],
     ])
+  })
+
+  it('renders variables through PoTable with the same values as the old table', () => {
+    const wrapper = mount(FavoriteReproducibilityDisplay, {
+      props: {
+        reproducibility: {
+          source: 'reproducibility' as const,
+          variables: [
+            { name: 'city', description: 'Target city', required: true, defaultValue: 'Hanoi', options: [] },
+            { name: 'tone', description: '', required: false, defaultValue: '', options: [] },
+          ],
+          examples: [],
+          variableCount: 2,
+          exampleCount: 0,
+          hasInputImages: false,
+          hasData: true,
+        },
+      },
+      global: {
+        stubs: naiveStubs,
+      },
+    })
+
+    const table = wrapper.findComponent({ name: 'PoTable' })
+    expect(table.exists()).toBe(true)
+    expect(table.props('rows')).toEqual([
+      { name: 'city', defaultValue: 'Hanoi', required: 'favorites.manager.preview.reproducibility.requiredYes', description: 'Target city' },
+      { name: 'tone', defaultValue: '-', required: 'favorites.manager.preview.reproducibility.requiredNo', description: '-' },
+    ])
+    expect(wrapper.text()).toContain('city')
+    expect(wrapper.text()).toContain('Hanoi')
   })
 
   it('renders example images and input images from resolved asset previews', () => {

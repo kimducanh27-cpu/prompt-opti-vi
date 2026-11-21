@@ -3,6 +3,8 @@
         <TemporaryVariablesPanel
             :compact="compact"
             :manager="variableManager"
+            :show-variable-manager="true"
+            @open-variable-manager="emit('open-variable-manager')"
         />
 
         <template v-if="mode === 'full'">

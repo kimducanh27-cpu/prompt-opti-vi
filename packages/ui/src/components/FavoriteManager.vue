@@ -1,13 +1,10 @@
 <template>
   <ToastUI>
-    <NModal
+    <!-- Slice 7: PoSheet — mobile bottom sheet (max 90dvh), desktop card ≤720px
+         (was 96vw / max 1440px). The library inside keeps its own layout. -->
+    <PoSheet
       :show="show"
-      preset="card"
-      :style="favoriteManagerModalStyle"
       :title="t('favorites.manager.title')"
-      size="large"
-      :bordered="false"
-      content-style="padding: 0;"
       @update:show="(value) => !value && close()"
     >
       <FavoriteLibraryWorkspace
@@ -15,25 +12,18 @@
         :active="show"
         :use-favorite="handleUseFavorite"
       />
-    </NModal>
+    </PoSheet>
   </ToastUI>
 </template>
 
 <script setup lang="ts">
-import NModal from "./common/AdaptiveModal.vue"
+import PoSheet from "./primitives/PoSheet.vue"
 import { useI18n } from 'vue-i18n'
 import { } from 'naive-ui'
 import type { FavoritePrompt } from '@prompt-optimizer/core'
 
 import FavoriteLibraryWorkspace from './FavoriteLibraryWorkspace.vue'
 import ToastUI from './Toast.vue'
-
-const FAVORITE_MANAGER_MODAL_MAX_WIDTH = '1440px'
-const favoriteManagerModalStyle = {
-  width: '96vw',
-  maxWidth: FAVORITE_MANAGER_MODAL_MAX_WIDTH,
-  maxHeight: '90vh',
-}
 
 const { t } = useI18n()
 

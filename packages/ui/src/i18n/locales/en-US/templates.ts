@@ -43,7 +43,7 @@ const messages = {
     "preview": "Preview",
     "fullscreen": "Fullscreen",
     "fullscreenEdit": "Fullscreen Edit",
-    "characterCount": "{count} characters",
+    "characterCount": "{count} character | {count} characters",
     "convertToAdvanced": "Convert to Advanced Format",
     "migrationDescription": "Convert simple template to advanced message format for more flexible control.",
     "originalTemplate": "Original Template",

@@ -12,7 +12,7 @@
         </summary>
         <pre>{{ variable.value }}</pre>
       </details>
-      <NDropdown trigger="click" :options="actions" @select="key => handleAction(key, variable.name)">
+      <NDropdown trigger="click" :options="actions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="key => handleAction(key, variable.name)">
         <NButton quaternary :disabled="disabled" :aria-label="`${t('common.actions')}: ${variable.name}`">⋯</NButton>
       </NDropdown>
     </article>
@@ -24,6 +24,7 @@ import { computed } from 'vue'
 import { NButton, NDropdown } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import type { VariableSource } from '../../types/variable'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 const props = defineProps<{
   variables: Array<{ name: string; value: string; source: VariableSource }>

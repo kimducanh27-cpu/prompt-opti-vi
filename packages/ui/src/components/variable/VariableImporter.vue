@@ -150,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { Upload as UiUpload, Info as UiInfo, Check as UiCheck, CircleX as UiCircleX } from '@lucide/vue'
+import { PhUpload as UiUpload, PhInfo as UiInfo, PhCheck as UiCheck, PhXCircle as UiCircleX } from '@phosphor-icons/vue'
 import NModal from '../common/AdaptiveModal.vue'
 import { ref, computed, watch } from 'vue'
 

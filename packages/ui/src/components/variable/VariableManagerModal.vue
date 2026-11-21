@@ -1,32 +1,55 @@
 <template>
-    <NModal
-        v-model:show="localVisible"
+    <!-- Slice 7: ONE PoSheet (mobile bottom sheet, max 90dvh; desktop card
+         <=720px). The export dialog becomes an in-place sheet page; the
+         editor/importer keep their own overlays (open item — hiding the
+         parent would spuriously emit close/cancel). Close/cancel are now
+         emitted by the localVisible watcher (PoSheet does not forward
+         @after-leave). -->
+    <PoSheet
+        :show="localVisible"
         :mask-closable="!showEditor && !showImporter"
-        preset="card"
-        :title="props.title || t('variables.management.title')"
-        size="huge"
-        :segmented="{ content: true }"
-        :style="modalStyle"
-        @after-leave="handleClose"
+        :title="isCompact && showExportModal ? undefined : (props.title || t('variables.management.title'))"
+        class="variable-manager-sheet"
+        @update:show="onSheetUpdateShow"
     >
+        <!-- R3C-04: Naive Card renders `title` INSTEAD of the #header slot, so
+             with :title always set this back button never rendered. The title
+             is undefined exactly while the export page is open in compact;
+             desktop keeps its title, byte-identical. Same class as the Tool
+             editor back-chevron (H3-NEW-01). -->
+        <template v-if="isCompact && showExportModal" #header>
+            <div class="po-sheet-page-heading">
+                <PoButton
+                    variant="ghost"
+                    icon-only
+                    :aria-label="props.title || t('variables.management.title')"
+                    @click="showExportModal = false"
+                >
+                    <template #icon>
+                        <UiChevronLeft />
+                    </template>
+                </PoButton>
+                <span class="po-sheet-page-title">{{ t('variables.management.exportTitle') }}</span>
+            </div>
+        </template>
+        <div v-if="!showExportModal">
         <!-- The mobile list owns list actions; editor drafts remain in their existing host. -->
         <div v-if="isCompact" class="variable-list-toolbar">
-            <NButton type="primary" :disabled="props.disabled || props.readonly || loading" @click="showAddVariable">
+            <PoButton variant="primary" :disabled="props.disabled || props.readonly || loading" @click="showAddVariable">
                 {{ t('variables.management.addVariable') }}
-            </NButton>
-            <NDropdown v-if="props.showImportExport !== false" trigger="click" :options="mobileListActions" @select="handleListAction">
-                <NButton :disabled="props.disabled || loading" :aria-label="t('workspace.moreOptions')">
+            </PoButton>
+            <NDropdown v-if="props.showImportExport !== false" trigger="click" :options="mobileListActions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="handleListAction">
+                <PoButton variant="secondary" :disabled="props.disabled || loading" :aria-label="t('workspace.moreOptions')">
                     {{ t('workspace.moreOptions') }}
-                </NButton>
+                </PoButton>
             </NDropdown>
         </div>
         <NSpace v-else justify="space-between">
-            <NButton
-                type="primary"
+            <PoButton
+                variant="primary"
                 @click="showAddVariable"
                 :disabled="props.disabled || loading"
                 :loading="props.loading"
-                :size="buttonSize"
             >
                 <template #icon>
                     <NIcon :size="16">
@@ -34,24 +57,24 @@
                     </NIcon>
                 </template>
                 {{ t("variables.management.addVariable") }}
-            </NButton>
+            </PoButton>
 
             <NSpace v-if="props.showImportExport !== false">
-                <NButton
+                <PoButton
+                    variant="secondary"
                     @click="showImportModal"
                     :disabled="props.disabled || props.readonly || loading"
-                    :size="buttonSize"
                 >
                     {{ t("variables.management.import") }}
-                </NButton>
+                </PoButton>
 
-                <NButton
+                <PoButton
+                    variant="secondary"
                     @click="showExportModal = true"
                     :disabled="props.disabled || loading"
-                    :size="buttonSize"
                 >
                     {{ t("variables.management.export") }}
-                </NButton>
+                </PoButton>
             </NSpace>
         </NSpace>
         <NDivider />
@@ -76,15 +99,10 @@
                     </NSpace>
                 </template>
                 <template #header-extra>
-                    <NButton
-                        size="small"
-                        quaternary
+                    <PoButton
+                        icon-only
+                        variant="ghost"
                         @click="isPredefinedExpanded = !isPredefinedExpanded"
-                        :title="
-                            isPredefinedExpanded
-                                ? t('common.collapse')
-                                : t('common.expand')
-                        "
                         :aria-label="
                             isPredefinedExpanded
                                 ? t('common.collapse')
@@ -96,7 +114,7 @@
                                 <UiChevronUp v-if="isPredefinedExpanded" /><UiChevronDown v-else />
                             </NIcon>
                         </template>
-                    </NButton>
+                    </PoButton>
                 </template>
 
                 <MobileVariableList
@@ -199,10 +217,10 @@
                                 />
                             </NGridItem>
                             <NGridItem span="2">
-                                <NButton
+                                <PoButton
+                                    variant="primary"
+                                    size="sm"
                                     @click="quickAddVariable"
-                                    type="primary"
-                                    size="small"
                                     :disabled="
                                         !canQuickAdd ||
                                         props.readonly ||
@@ -212,74 +230,17 @@
                                     block
                                 >
                                     {{ t("variables.add") }}
-                                </NButton>
+                                </PoButton>
                             </NGridItem>
                         </NGrid>
                     </div>
                 </template>
             </NCard>
         </NSpace>
+        </div>
 
-        <template #footer>
-            <NSpace justify="space-between">
-                <NText depth="3">{{
-                    t("variables.management.totalCount", {
-                        count: allVariables.length,
-                    })
-                }}</NText>
-                <NButton v-if="isCompact" @click="handleCancel" :disabled="loading">
-                    {{ t('common.close') }}
-                </NButton>
-                <NSpace v-else>
-                    <NButton
-                        v-if="!props.readonly"
-                        type="primary"
-                        @click="handleConfirm"
-                        :disabled="props.disabled"
-                        :loading="loading"
-                    >
-                        {{ t("common.confirm") }}
-                    </NButton>
-                    <NButton @click="handleCancel">
-                        {{
-                            props.readonly
-                                ? t("common.close")
-                                : t("common.cancel")
-                        }}
-                    </NButton>
-                </NSpace>
-            </NSpace>
-        </template>
-
-        <!-- 添加/编辑变量子弹窗 -->
-        <VariableEditor
-            v-model:show="showEditor"
-            :variable="editingVariable"
-            :existing-names="existingVariableNames"
-            :saving="loading"
-            :save-error="editorError"
-            @save="onVariableSave"
-            @cancel="onEditorCancel"
-        />
-
-        <!-- 导入弹窗 -->
-        <VariableImporter
-            v-model:show="showImporter"
-            :saving="loading"
-            :save-error="importError"
-            @import="onVariablesImport"
-        />
-
-        <!-- 导出弹窗 -->
-        <NModal
-            v-model:show="showExportModal"
-            preset="card"
-            :title="t('variables.management.exportTitle')"
-            size="large"
-            :segmented="{ content: true }"
-            :style="{ width: '600px', maxWidth: '90vw' }"
-            :mask-closable="!loading"
-        >
+        <!-- 导出页 (was a nested modal; now an in-place sheet page) -->
+        <div v-if="showExportModal">
             <NSpace vertical>
                 <!-- 导出格式选择 -->
                 <div>
@@ -323,32 +284,82 @@
                     />
                 </div>
             </NSpace>
+        </div>
 
-            <template #footer>
-                <NSpace justify="end">
-                    <NButton
-                        @click="showExportModal = false"
-                        :disabled="loading"
-                    >
-                        {{ t("common.cancel") }}
-                    </NButton>
-                    <NButton
-                        type="primary"
-                        @click="executeExport"
-                        :disabled="customVariables.length === 0 || loading"
+        <template #footer>
+            <NSpace v-if="!showExportModal" justify="space-between">
+                <NText depth="3">{{
+                    t("variables.management.totalCount", {
+                        count: allVariables.length,
+                    })
+                }}</NText>
+                <PoButton v-if="isCompact" variant="secondary" @click="handleCancel" :disabled="loading">
+                    {{ t('common.close') }}
+                </PoButton>
+                <NSpace v-else>
+                    <PoButton
+                        v-if="!props.readonly"
+                        variant="primary"
+                        @click="handleConfirm"
+                        :disabled="props.disabled"
                         :loading="loading"
                     >
-                        {{ t("variables.management.download") }}
-                    </NButton>
+                        {{ t("common.confirm") }}
+                    </PoButton>
+                    <PoButton variant="secondary" @click="handleCancel">
+                        {{
+                            props.readonly
+                                ? t("common.close")
+                                : t("common.cancel")
+                        }}
+                    </PoButton>
                 </NSpace>
-            </template>
-        </NModal>
-    </NModal>
+            </NSpace>
+            <NSpace v-else justify="end">
+                <PoButton
+                    variant="secondary"
+                    @click="showExportModal = false"
+                    :disabled="loading"
+                >
+                    {{ t("common.cancel") }}
+                </PoButton>
+                <PoButton
+                    variant="primary"
+                    @click="executeExport"
+                    :disabled="customVariables.length === 0 || loading"
+                    :loading="loading"
+                >
+                    {{ t("variables.management.download") }}
+                </PoButton>
+            </NSpace>
+        </template>
+
+        <!-- 添加/编辑变量子弹窗 -->
+        <VariableEditor
+            v-model:show="showEditor"
+            :variable="editingVariable"
+            :existing-names="existingVariableNames"
+            :saving="loading"
+            :save-error="editorError"
+            @save="onVariableSave"
+            @cancel="onEditorCancel"
+        />
+
+        <!-- 导入弹窗 -->
+        <VariableImporter
+            v-model:show="showImporter"
+            :saving="loading"
+            :save-error="importError"
+            @import="onVariablesImport"
+        />
+
+    </PoSheet>
 </template>
 
 <script setup lang="ts">
-import { Copy as RenderCopy, SquarePen as RenderSquarePen, Trash2 as RenderTrash2, Plus as UiPlus, ChevronUp as UiChevronUp, ChevronDown as UiChevronDown, Tag as UiTag } from '@lucide/vue'
-import NModal from "../common/AdaptiveModal.vue"
+import { PhCopy as RenderCopy, PhPencilSimple as RenderSquarePen, PhTrash as RenderTrash2, PhPlus as UiPlus, PhCaretUp as UiChevronUp, PhCaretDown as UiChevronDown, PhCaretLeft as UiChevronLeft, PhTag as UiTag } from '@phosphor-icons/vue'
+import PoSheet from "../primitives/PoSheet.vue"
+import PoButton from "../primitives/PoButton.vue"
 import { useWorkspaceLayout } from '../../composables/ui/useWorkspaceLayout'
 const { isCompact } = useWorkspaceLayout()
 import { ref, computed, watch, h } from 'vue'
@@ -356,7 +367,6 @@ import { ref, computed, watch, h } from 'vue'
 import { useI18n } from "vue-i18n";
 import {
 
-    NButton,
     NSpace,
     NTag,
     NDataTable,
@@ -380,6 +390,7 @@ import type {
     VariableManagerModalProps,
 } from "../../types/components";
 import { isValidVariableName, type VariableSource } from "../../types/variable";
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y';
 import type { VariableManagerHooks } from '../../composables/prompt/useVariableManager';
 import type { VariableExportData, VariableImportOptions } from '@prompt-optimizer/core';
 import VariableEditor from "./VariableEditor.vue";
@@ -398,9 +409,7 @@ interface VariableRow {
 
 // 响应式配置
 const {
-    modalWidth,
     buttonSize: responsiveButtonSize,
-    shouldUseCompactMode,
 } = useResponsive();
 
 // 使用标准化的 Props 接口，但保持向后兼容
@@ -475,11 +484,6 @@ const quickAddForm = ref({
 });
 
 // 计算属性
-const modalStyle = computed(() => ({
-    width: modalWidth.value,
-    maxWidth: shouldUseCompactMode.value ? "95vw" : "1200px",
-}));
-
 const buttonSize = computed(() => {
     return props.size === "small" || responsiveButtonSize.value === "small"
         ? "small"
@@ -491,9 +495,24 @@ watch(
     (visible) => {
         if (visible) {
             isPredefinedExpanded.value = false;
+        } else {
+            // Slice 7: PoSheet does not forward @after-leave, so the close
+            // + cancel signals the old NModal emitted there fire here.
+            handleClose();
         }
     },
 );
+
+// Slice 7: a close request from the export page goes back to the list;
+// only from the list page does it close the manager.
+const onSheetUpdateShow = (value: boolean) => {
+    if (value) return;
+    if (showExportModal.value) {
+        showExportModal.value = false;
+        return;
+    }
+    localVisible.value = false;
+};
 
 const allVariables = computed<VariableRow[]>(() => {
     const manager = props.variableManager?.variableManager.value;
@@ -570,11 +589,12 @@ const predefinedTableColumns = computed<DataTableColumns<VariableRow>>(() => [
         width: 80,
         render: (row: VariableRow) => {
             return h(
-                NButton,
+                PoButton,
                 {
-                    size: "small",
-                    quaternary: true,
-                    title: t("common.copy"),
+                    size: "sm",
+                    iconOnly: true,
+                    variant: "ghost",
+                    ariaLabel: t("common.copy"),
                     onClick: () => copyVariableName(row.name),
                 },
                 {
@@ -650,11 +670,12 @@ const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
                 {
                     default: () => [
                         h(
-                            NButton,
+                            PoButton,
                             {
-                                size: "small",
-                                quaternary: true,
-                                title: t("common.copy"),
+                                size: "sm",
+                                iconOnly: true,
+                                variant: "ghost",
+                                ariaLabel: t("common.copy"),
                                 onClick: () => copyVariableName(row.name),
                             },
                             {
@@ -666,11 +687,12 @@ const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
                             },
                         ),
                         h(
-                            NButton,
+                            PoButton,
                             {
-                                size: "small",
-                                quaternary: true,
-                                title: t("common.edit"),
+                                size: "sm",
+                                iconOnly: true,
+                                variant: "ghost",
+                                ariaLabel: t("common.edit"),
                                 onClick: () => editVariable(row),
                             },
                             {
@@ -682,12 +704,12 @@ const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
                             },
                         ),
                         h(
-                            NButton,
+                            PoButton,
                             {
-                                size: "small",
-                                quaternary: true,
-                                type: "error",
-                                title: t("common.delete"),
+                                size: "sm",
+                                iconOnly: true,
+                                variant: "destructive",
+                                ariaLabel: t("common.delete"),
                                 onClick: () => deleteVariable(row.name),
                             },
                             {
@@ -958,7 +980,10 @@ const handleConfirm = () => {
 };
 
 const handleCancel = () => {
-    emit("cancel");
+    // L-05: emit cancel exactly once. The localVisible watcher below is the
+    // single place that emits close/cancel on close (see the file header),
+    // so this handler only flips visibility — emitting here too fired
+    // `cancel` twice on every Cancel click.
     localVisible.value = false;
 };
 
@@ -1107,5 +1132,19 @@ const executeExport = () => {
     display: flex;
     justify-content: space-between;
     gap: 8px;
+}
+
+.po-sheet-page-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.po-sheet-page-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
 }
 </style>

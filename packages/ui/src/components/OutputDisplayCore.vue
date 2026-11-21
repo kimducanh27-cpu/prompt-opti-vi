@@ -22,7 +22,7 @@
           { key: 'render', label: t('common.preview') },
           { key: 'source', label: t('common.source') },
           ...(isActionEnabled('diff') && originalContent ? [{ key: 'diff', label: t('common.compare') }] : []),
-        ]" @select="selectCompactView">
+        ]" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="selectCompactView">
           <NButton quaternary size="small" data-testid="output-view-menu" class="output-view-menu">
             {{ t(internalViewMode === 'render' ? 'common.preview' : internalViewMode === 'diff' ? 'common.compare' : 'common.source') }}
             <NIcon size="14" style="margin-left: 6px"><ChevronDown /></NIcon>
@@ -62,7 +62,8 @@
         <NFlex align="center" :size="4" class="output-toolbar-actions">
           <slot name="toolbar-right-extra"></slot>
           <NDropdown v-if="foldActionControls && (isActionEnabled('copy') || isActionEnabled('favorite'))" trigger="click"
-            :options="compactActionOptions" @select="handleCompactAction">
+            key="compact-actions"
+            :options="compactActionOptions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="handleCompactAction">
             <NButton quaternary circle size="small" :aria-label="t('workspace.moreOptions')" data-testid="output-compact-actions">
               <template #icon><UiEllipsis aria-hidden="true" :size="18" /></template>
             </NButton>
@@ -109,6 +110,8 @@
             <NDropdown
               trigger="click"
               :options="copyActionOptions"
+              :menu-props="dropdownMenuProps"
+              :node-props="dropdownNodeProps"
               @select="handleCopyActionSelect"
             >
               <NButton
@@ -132,13 +135,16 @@
           </template>
           <NButton
             v-if="enableStop !== false && liveDocument && documentPhase === 'streaming'"
+            key="output-stop"
             size="small"
             data-testid="output-stop"
             @click="liveDocument.interrupt()"
           >{{ t('common.outputStop') }}</NButton>
           <NButton
             v-if="isActionEnabled('fullscreen')"
+            key="output-fullscreen"
             :aria-label="t('common.expand')"
+            :title="t('common.expand')"
             @click="handleFullscreen"
             size="small"
             quaternary
@@ -194,12 +200,12 @@
         </NCollapse>
       </NFlex>
       <!-- 主要内容区域 -->
-      <NFlex class="output-display-body" vertical style="flex: 1; min-height: 0; max-height: 100%; overflow: hidden;">
+      <NFlex ref="bodyRef" class="output-display-body" vertical style="flex: 1; min-height: 0; max-height: 100%; overflow: hidden;">
         <NText v-if="documentPhase === 'cancelled' || documentPhase === 'capacity' || documentPhase === 'failed'" role="status" depth="3">
           {{ t(documentPhase === 'capacity' ? 'common.outputCapacity' : documentPhase === 'failed' ? 'common.outputFailed' : 'common.outputCancelled') }}
         </NText>
         <!-- 对比模式 -->
-        <NFlex v-if="!isStreaming && internalViewMode === 'diff' && content && originalContent" vertical style="flex:1; min-height:0">
+        <NFlex ref="diffRef" v-if="!isStreaming && internalViewMode === 'diff' && content && originalContent" vertical style="flex:1; min-height:0">
           <template v-if="diffFallback">
             <NText depth="3">{{ t('common.outputSourceFallback') }}</NText>
             <NText depth="3">{{ t('promptOptimizer.originalPrompt') }}</NText>
@@ -290,7 +296,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ellipsis as UiEllipsis, Maximize2 as UiMaximize2, ChevronDown, Copy, Star } from '@lucide/vue'
+import { PhDotsThree as UiEllipsis, PhArrowsOut as UiMaximize2, PhCaretDown as ChevronDown, PhCopy as Copy, PhStar as Star } from '@phosphor-icons/vue'
 import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount, inject, h, type Ref } from 'vue'
 import { useElementSize } from '@vueuse/core'
 
@@ -307,6 +313,8 @@ import XmlRenderer from './XmlRenderer.vue'
 import OutputSourceView from './OutputSourceView.vue'
 import { getOutputDocument, type OutputRecord, type OutputPhase } from '../utils/output-document'
 import { extractHtmlCandidate } from '../utils/html-preview'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
+import { fadeIn, killMotion, revealOutput } from '../utils/motion'
 import TextDiffUI from './TextDiff.vue'
 import type { CompareResult, ICompareService } from '@prompt-optimizer/core'
 import { VariableAwareInput } from './variable-extraction'
@@ -346,6 +354,12 @@ const services = inject<Ref<AppServices | null>>('services') ?? ref<AppServices 
 interface Props {
   fitContent?: boolean
   initialViewMode?: 'render' | 'source' | 'diff'
+  /** EU09-02: when true, the editable-mode default (source on mount) is
+      skipped so the inherited initialViewMode is shown as-is. The
+      fullscreen core always inherits its view from the inline core, so
+      flipping it to source on mount shows raw markdown while the user was
+      looking at Preview. */
+  preserveInitialViewMode?: boolean
   previewSuspended?: boolean
   expandPreview?: boolean
   // 内容相关
@@ -385,6 +399,7 @@ const props = withDefaults(defineProps<Props>(), {
   testId: undefined,
   mode: 'readonly',
   initialViewMode: 'render',
+  preserveInitialViewMode: false,
   reasoningMode: 'auto',
   enabledActions: () => ['fullscreen', 'diff', 'copy', 'edit', 'reasoning', 'favorite'],
   height: '100%',
@@ -448,6 +463,9 @@ const {
 // 内部状态
 type ScrollbarLike = {
   scrollTo: (options: { top: number; behavior?: ScrollBehavior }) => void
+  // Vue component public instances expose $el; the scrollable element is
+  // Naive's inner `.n-scrollbar-container` (see _internal/scrollbar).
+  $el?: HTMLElement
 }
 
 const reasoningContentRef = ref<ScrollbarLike | null>(null)
@@ -585,6 +603,10 @@ const copyDisplayText = async (
 
   try {
     await copyText(textToCopy)
+    // R3A-04: 成功复制也要给确认提示，和失败路径（copyFailed toast）一致；
+    // 之前成功时静默，failure path 却 toast。父组件的 @copy 监听只做转发，
+    // 不弹 toast，所以这里是唯一的提示点，不会重复。
+    message.success(t('common.copySuccess'))
     emit('copy', textToCopy, emitType)
     return true
   } catch (error) {
@@ -639,12 +661,22 @@ const handleFullscreen = () => {
 const scrollReasoningToBottom = () => {
   if (reasoningContentRef.value) {
     nextTick(() => {
-      if (reasoningContentRef.value) {
-        reasoningContentRef.value.scrollTo({
-          top: 999999, // 滚动到底部
-          behavior: 'smooth'
-        })
+      const target = reasoningContentRef.value
+      if (!target) return
+      // P-004: only follow the stream when the user is already near the
+      // bottom — never yank their scroll position mid-read. And use
+      // 'auto' while streaming: a smooth animation restarted on every
+      // chunk never finishes and churns layout on the phone. The
+      // scrollable element is Naive NScrollbar's inner container; if its
+      // internal structure ever changes, fall back to scrolling (auto).
+      const container = target.$el?.querySelector<HTMLElement>('.n-scrollbar-container')
+      if (!container) {
+        target.scrollTo({ top: 999999, behavior: 'auto' })
+        return
       }
+      const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+      if (distanceToBottom > 48) return
+      target.scrollTo({ top: container.scrollHeight, behavior: 'auto' })
     })
   }
 }
@@ -731,6 +763,41 @@ watch(() => props.content, (newContent, oldContent) => {
   }
 })
 
+// M3 (step 7, D6 focal moment) + M6 compare: the output body is the one
+// authored reveal. The body NFlex (a Naive component) is reached via $el.
+// Text is in the DOM at t=0; only opacity + transform move — NEVER
+// autoAlpha here, so E2E visibility assertions cannot be hidden by the
+// tween. killMotion first: repeat Optimize runs never stack tweens on the
+// same element. Two triggers cover both run shapes: streaming end with
+// content (VCR replay) and content appearing while not streaming.
+const bodyRef = ref<{ $el?: HTMLElement } | null>(null)
+const diffRef = ref<{ $el?: HTMLElement } | null>(null)
+const revealOutputBody = () => {
+  const el = bodyRef.value?.$el
+  if (!el) return
+  killMotion(el)
+  revealOutput(el)
+}
+const revealCompareView = () => {
+  const el = diffRef.value?.$el
+  if (!el) return
+  killMotion(el)
+  fadeIn(el)
+}
+watch(() => isStreaming.value, (streaming, wasStreaming) => {
+  if (!streaming && wasStreaming && hasContent.value) revealOutputBody()
+})
+watch(() => props.content, (newContent, oldContent) => {
+  if (newContent && !oldContent && !isStreaming.value) revealOutputBody()
+})
+watch(internalViewMode, (view) => {
+  if (view === 'diff') void nextTick(revealCompareView)
+})
+onBeforeUnmount(() => {
+  if (bodyRef.value?.$el) killMotion(bodyRef.value.$el)
+  if (diffRef.value?.$el) killMotion(diffRef.value.$el)
+})
+
 watch(copyActionWorkspacePath, (workspacePath) => {
   activeCopyActionId.value = readCopyOpenActionFromSession(workspacePath)
 })
@@ -783,8 +850,10 @@ onMounted(() => {
   // - 应该在应用级别统一初始化（如 App.vue）
   // - functionMode 有默认值 'basic'，可以正常工作
 
-  // 如果是可编辑模式，默认显示原文
-  if (props.mode === 'editable' && !props.fitContent && props.initialViewMode === 'render') {
+  // 如果是可编辑模式，默认显示原文 — unless the initial view was
+  // explicitly inherited (fullscreen: EU09-02), in which case show what
+  // the user was already looking at instead of forcing source.
+  if (props.mode === 'editable' && !props.fitContent && props.initialViewMode === 'render' && !props.preserveInitialViewMode) {
     internalViewMode.value = 'source';
   }
 });

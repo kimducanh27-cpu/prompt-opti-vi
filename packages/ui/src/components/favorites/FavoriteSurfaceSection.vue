@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NButton, NCard, NIcon } from 'naive-ui'
-import { ChevronDown, ChevronUp } from '@lucide/vue'
+import { PhCaretDown as ChevronDown, PhCaretUp as ChevronUp } from '@phosphor-icons/vue'
 
 const props = withDefaults(defineProps<{
   title?: string

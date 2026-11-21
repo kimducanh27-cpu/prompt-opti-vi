@@ -4,7 +4,6 @@ import { resolve } from 'node:path'
 import enUS from '../../../src/i18n/locales/en-US'
 import zhCN from '../../../src/i18n/locales/zh-CN'
 import zhTW from '../../../src/i18n/locales/zh-TW'
-import viVN from '../../../src/i18n/locales/vi-VN'
 
 const readUiSource = (relativePath: string) =>
   readFileSync(resolve(process.cwd(), relativePath), 'utf8')
@@ -62,7 +61,6 @@ describe('ui runtime english guards', () => {
     expect(enUS.toast.warning.startupRepair).toContain('{count}')
     expect(zhCN.toast.warning.startupRepair).toContain('{count}')
     expect(zhTW.toast.warning.startupRepair).toContain('{count}')
-    expect(viVN.toast.warning.startupRepair).toContain('{count}')
   })
 
   it('keeps template loading failures locale-backed', () => {
@@ -112,7 +110,6 @@ describe('ui runtime english guards', () => {
     expect(enUS.params.reasoning_effort.label).toBe('Reasoning Effort')
     expect(zhCN.params.reasoning_effort.label).toBe('推理强度')
     expect(zhTW.params.reasoning_effort.label).toBe('推理強度')
-    expect(viVN.params.reasoning_effort.label).toBe('Nỗ lực suy luận (Reasoning Effort)')
   })
 
   it('keeps favorites management fallbacks locale-backed', () => {
@@ -210,13 +207,21 @@ describe('ui runtime english guards', () => {
 
     expect(themeConfigSource).toContain("labelKey: 'theme.light'")
     expect(themeConfigSource).toContain("labelKey: 'theme.dark'")
-    expect(themeConfigSource).toContain("labelKey: 'theme.classic'")
+    // Slice 3: only light/dark remain — blue/classic/green/purple were removed.
+    expect(themeConfigSource).not.toContain("labelKey: 'theme.blue'")
+    expect(themeConfigSource).not.toContain("labelKey: 'theme.classic'")
+    expect(themeConfigSource).not.toContain("labelKey: 'theme.green'")
+    expect(themeConfigSource).not.toContain("labelKey: 'theme.purple'")
     expect(themeConfigSource).not.toMatch(/name:\s*'日间模式'/)
     expect(themeConfigSource).not.toMatch(/name:\s*'夜间模式'/)
     expect(themeConfigSource).not.toMatch(/name:\s*'米杏模式'/)
 
     expect(themeToggleSource).toMatch(/t\(`theme\.\$\{themeId\.value\}`\)/)
     expect(themeToggleSource).toMatch(/label:\s*t\(`theme\.\$\{theme\.id\}`\)/)
+    // Slice 3: the toggle offers Light / Dark / Auto only.
+    expect(themeToggleSource).toContain("key: 'auto'")
+    expect(themeToggleSource).toContain("t('theme.auto')")
+    expect(themeToggleSource).not.toMatch(/theme\.blue|theme\.classic|theme\.green|theme\.purple/)
   })
 
   it('keeps test result titles and variable importer feedback locale-backed', () => {

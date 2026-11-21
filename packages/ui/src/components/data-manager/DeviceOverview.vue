@@ -81,7 +81,7 @@
 </template>
 <script setup lang="ts">
 import { computed, toRefs } from 'vue'
-import { HardDrive, RefreshCw } from '@lucide/vue'
+import { PhHardDrive as HardDrive, PhArrowClockwise as RefreshCw } from '@phosphor-icons/vue'
 import { NText, NButton, NCollapse, NCollapseItem, NCheckbox } from 'naive-ui'
 import { useDataManagerContext } from './context'
 const {

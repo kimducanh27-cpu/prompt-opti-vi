@@ -23,7 +23,7 @@
 }
 
 .compact-two-region .conversation-manager .message-card-selected {
-  border-color: var(--compact-accent, #7295c3);
+  border-color: var(--compact-accent);
   box-shadow: none !important;
   background: var(--compact-soft);
 }
@@ -51,8 +51,8 @@
 }
 
 .compact-two-region .conversation-manager .cm-row > .actions .n-button {
-  width: var(--po-touch-target, 44px);
-  height: var(--po-touch-target, 44px);
+  width: 36px;
+  height: 36px;
 }
 
 .compact-two-region .conversation-manager .cm-row .cm-scroller {
@@ -65,7 +65,7 @@
 }
 
 .compact-two-region .conversation-manager .n-button {
-  min-height: var(--po-touch-target, 44px);
+  min-height: 36px;
 }
 
 .compact-two-region .temporary-variable-row {
@@ -90,8 +90,8 @@
 }
 
 .compact-two-region .temporary-variable-actions .n-button {
-  min-width: var(--po-touch-target, 44px);
-  min-height: var(--po-touch-target, 44px);
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .compact-two-region .temporary-variable-value {
@@ -111,7 +111,7 @@
 }
 
 .compact-two-region .temporary-variables-panel .n-card-header__extra .n-button {
-  min-height: var(--po-touch-target, 44px);
+  min-height: 36px;
 }
 
 .workspace-compact .context-editor-modal > .n-card-content > .n-scrollbar {
@@ -140,33 +140,14 @@
   border: 0;
 }
 
-.compact-two-region .multi-optimize-controls .multi-optimize-grid {
-  display: grid !important;
-  align-items: end;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr) var(--compact-submit-width) !important;
-  gap: var(--compact-gap) !important;
-}
-
-.compact-two-region .multi-optimize-controls .multi-optimize-selectors {
-  display: contents !important;
-}
-
-.compact-two-region .multi-optimize-controls .multi-optimize-field {
-  min-width: 0;
-}
-
 .compact-two-region .multi-optimize-controls .n-base-selection {
-  --n-height: var(--po-touch-target, 44px) !important;
-  --n-font-size: 13px !important;
-}
-
-.compact-two-region .multi-optimize-controls .multi-optimize-label {
-  display: none;
+  --n-height: 44px !important;
+  --n-font-size: 16px !important;
 }
 
 .compact-two-region .optimize-original-scroll .multi-optimize-controls .n-button--block {
-  min-height: var(--po-touch-target, 44px);
-  height: var(--po-touch-target, 44px);
+  min-height: 36px;
+  height: 36px;
   font-size: 13px;
   padding: 0 12px;
 }
@@ -186,18 +167,18 @@
 .compact-two-region .compact-empty-variables {
   display: flex;
   justify-content: flex-end;
-  min-height: var(--po-touch-target, 44px);
+  min-height: 28px;
 }
 
 .compact-two-region .compact-empty-variables .n-button {
-  min-height: var(--po-touch-target, 44px);
+  min-height: 28px;
   padding: 0 6px;
   color: var(--compact-muted);
   font-size: 12px;
 }
 
 .compact-two-region .multi-optimize-controls .n-button--block {
-  height: var(--po-touch-target, 44px);
+  height: 36px;
   padding: 0 6px;
   width: 100%;
 }
@@ -223,10 +204,6 @@
 }
 
 @container mobile-pane (min-width: 560px) {
-  .compact-two-region .multi-optimize-controls .multi-optimize-grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 80px !important;
-  }
-
   .compact-two-region .temporary-variable-row {
     grid-template-columns: minmax(100px, .35fr) minmax(0, 1fr) auto;
   }

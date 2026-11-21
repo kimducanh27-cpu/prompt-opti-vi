@@ -3,7 +3,7 @@
     <LocalServiceDiscovery :active="active && modelsReady" :models="manager.models.value"
       :disabled="preparingLocalService || showEditModal" @select="handleLocalService" />
     <TextModelList
-      :models="visibleModels"
+      :models="pagedVisibleModels"
       :is-testing-connection-for="isTestingConnectionFor"
       :is-default-model="manager.isDefaultModel"
       @test="handleTestConnection"
@@ -13,41 +13,57 @@
       @disable="handleDisableModel"
       @delete="handleDeleteModel"
     />
-
-    <TextModelEditModal
-      :show="showEditModal"
-      @update:show="updateEditModalVisibility"
-      @saved="handleModelUpdated"
-    />
+    <!-- P-010: the list rendered ALL models; cap the rendered DOM at 20 per
+         page with "Load more", mirroring the History/Template pagination. -->
+    <NButton v-if="hasMoreModels" block style="margin-top: 8px" @click="loadMoreModels">
+      {{ t('common.loadMore') }}
+    </NButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, provide, ref, h, watch, computed } from 'vue'
+import { onMounted, onBeforeUnmount, ref, h, watch, computed } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 import { isRunningInElectron } from '@prompt-optimizer/core'
 import LocalServiceDiscovery from './LocalServiceDiscovery.vue'
 import { isChromeBuiltInPlaceholder, type DiscoveredLocalService } from '../utils/local-model-discovery'
-import { useTextModelManager } from '../composables/model/useTextModelManager'
+import type { TextModelManager } from '../composables/model/useTextModelManager'
 import TextModelList from './TextModelList.vue'
-import TextModelEditModal from './TextModelEditModal.vue'
-import { useDialog } from 'naive-ui'
+import { NButton } from 'naive-ui'
 import { useToast } from '../composables/ui/useToast'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
 import { getProviderDisplayName } from '../utils/provider-display'
 
-const emit = defineEmits(['modelsUpdated'])
-const props = withDefaults(defineProps<{ active?: boolean }>(), { active: false })
+const emit = defineEmits(['modelsUpdated', 'edit-open', 'edit-close'])
+const props = withDefaults(defineProps<{ active?: boolean, manager: TextModelManager }>(), { active: false })
 const { t } = useI18n()
 const toast = useToast()
-const dialog = useDialog()
 const confirmDialog = useConfirmDialog()
-const manager = useTextModelManager()
-provide('textModelManager', manager)
+// EU06-06: the manager instance is created + provided by ModelManager (the
+// text edit modal now lives there as a sibling of the list sheet, mirroring
+// the image path). This component only consumes it — it used to create the
+// manager and render the modal itself, so hiding the list sheet while the
+// editor was open unmounted the editor too and the whole Model Manager died.
+const manager = props.manager
 const visibleModels = computed(() => manager.models.value.filter(model => !isChromeBuiltInPlaceholder(model)))
 
+// P-010: paginate the model list (20 per page + "Load more") instead of
+// rendering every model. Resets when the underlying list changes length
+// (load/add/delete); enable/disable keeps the length, so the page stays.
+const MODEL_PAGE_SIZE = 20
+const visibleModelCount = ref(MODEL_PAGE_SIZE)
+const pagedVisibleModels = computed(() => visibleModels.value.slice(0, visibleModelCount.value))
+const hasMoreModels = computed(() => visibleModels.value.length > visibleModelCount.value)
+const loadMoreModels = () => { visibleModelCount.value += MODEL_PAGE_SIZE }
+watch(() => visibleModels.value.length, () => { visibleModelCount.value = MODEL_PAGE_SIZE })
+
 const showEditModal = ref(false)
+// Slice 7: tell ModelManager when the text editor sheet is open so it can hide
+// the list sheet — only one sheet layer is ever visible at a time.
+watch(showEditModal, (open) => {
+  emit(open ? 'edit-open' : 'edit-close')
+})
 const modelsReady = ref(false)
 const preparingLocalService = ref(false)
 let localDraftGeneration = 0
@@ -102,17 +118,18 @@ const handleTestConnection = async (id: string) => {
       const isCorsRestricted = !!model.providerMeta?.corsRestricted
       if (isCorsRestricted) {
         const providerName = getProviderDisplayName(model.providerMeta, t, 'Unknown Provider')
-        dialog.warning({
+        // Route through the shared confirm dialog (EU05-01/R3E-04): its
+        // Confirm is primary (white on #1f6bd1 = 5.14:1). A direct
+        // dialog.warning() renders Confirm as type="warning" — white text on
+        // #ffce2f (1.49:1). The dialog closes on click before runTest starts,
+        // so the test still runs without blocking the close.
+        const confirmed = await confirmDialog.warning({
           title: t('modelManager.corsRestrictedTag'),
           content: () => h('div', { style: 'white-space: pre-line;' }, t('modelManager.corsRestrictedConfirm', { provider: providerName })),
           positiveText: t('common.confirm'),
           negativeText: t('common.cancel'),
-          // Don't block dialog close while the async test runs.
-          onPositiveClick: () => {
-            void runTest()
-          }
         })
-        return
+        if (!confirmed) return
       }
     }
   }
@@ -188,6 +205,8 @@ const openAddModal = async () => {
 defineExpose({
   openAddModal,
   openEditModal: handleEditModel,
+  updateEditModalVisibility,
+  handleModelUpdated,
   refresh: manager.loadModels
 })
 

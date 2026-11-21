@@ -21,7 +21,7 @@ describe('TextModelManager deletion updates', () => {
       models: ref([]), testingConnections: ref({}), isDefaultModel: () => false,
       cancelLocalModelRequest: vi.fn(), loadProviders: vi.fn(), loadModels: vi.fn(), prepareForLocalService: vi.fn().mockResolvedValue(true),
     }
-    const wrapper = mount(TextModelManager, { props: { active: true }, global: { stubs: {
+    const wrapper = mount(TextModelManager, { props: { active: true, manager: manager.current }, global: { stubs: {
       TextModelList: true, TextModelEditModal: true, LocalServiceDiscovery: true,
     } } })
     await flushPromises()
@@ -31,12 +31,16 @@ describe('TextModelManager deletion updates', () => {
     discovery.vm.$emit('select', service)
     await flushPromises()
     expect(manager.current.prepareForLocalService).toHaveBeenCalledWith(service)
-    expect(wrapper.findComponent({ name: 'TextModelEditModal' }).props('show')).toBe(true)
+    // EU06-06: the edit modal moved out of TextModelManager into ModelManager
+    // (sibling); this component only signals the open via 'edit-open'.
+    expect(wrapper.emitted('edit-open')).toHaveLength(1)
     expect(wrapper.emitted('modelsUpdated')?.length ?? 0).toBe(before)
-    wrapper.findComponent({ name: 'TextModelEditModal' }).vm.$emit('update:show', false)
+    // Simulate the sibling modal closing (ModelManager calls the exposed
+    // updateEditModalVisibility(false) on close).
+    ;(wrapper.vm as unknown as { updateEditModalVisibility: (value: boolean) => void }).updateEditModalVisibility(false)
     await flushPromises()
     expect(manager.current.cancelLocalModelRequest).toHaveBeenCalledOnce()
-    expect(wrapper.findComponent({ name: 'TextModelEditModal' }).props('show')).toBe(false)
+    expect(wrapper.emitted('edit-close')).toHaveLength(1)
     wrapper.unmount()
   })
 
@@ -46,7 +50,7 @@ describe('TextModelManager deletion updates', () => {
       models: ref([]), testingConnections: ref({}), isDefaultModel: () => false,
       cancelLocalModelRequest: vi.fn(), loadProviders: vi.fn(), loadModels: vi.fn(), prepareForLocalService: vi.fn().mockReturnValue(pending.promise),
     }
-    const wrapper = mount(TextModelManager, { props: { active: true }, global: { stubs: {
+    const wrapper = mount(TextModelManager, { props: { active: true, manager: manager.current }, global: { stubs: {
       TextModelList: true, TextModelEditModal: true, LocalServiceDiscovery: true,
     } } })
     await flushPromises()
@@ -55,7 +59,9 @@ describe('TextModelManager deletion updates', () => {
     expect(manager.current.cancelLocalModelRequest).toHaveBeenCalledOnce()
     pending.resolve(true)
     await flushPromises()
-    expect(wrapper.findComponent({ name: 'TextModelEditModal' }).props('show')).toBe(false)
+    // EU06-06: the late draft must not open the editor — no 'edit-open'
+    // is emitted (the modal itself now lives in ModelManager).
+    expect(wrapper.emitted('edit-open')).toBeUndefined()
     expect(wrapper.findComponent(LocalServiceDiscovery).props('active')).toBe(false)
     wrapper.unmount()
   })
@@ -66,7 +72,7 @@ describe('TextModelManager deletion updates', () => {
       cancelLocalModelRequest: vi.fn(), loadProviders: vi.fn(), loadModels: vi.fn(),
       deleteModel: async (id: string) => { models.value = models.value.filter(model => model.id !== id) },
     }
-    const wrapper = mount(TextModelManager, { global: { stubs: { TextModelList: true, TextModelEditModal: true } } })
+    const wrapper = mount(TextModelManager, { props: { manager: manager.current }, global: { stubs: { TextModelList: true, TextModelEditModal: true } } })
     await flushPromises()
     const before = wrapper.emitted('modelsUpdated')?.length || 0
     wrapper.findComponent({ name: 'TextModelList' }).vm.$emit('delete', 'delete-me')
@@ -83,7 +89,7 @@ describe('Chrome placeholder visibility', () => {
     const placeholder = { id: 'chrome-built-in', providerId: 'chrome-built-in', providerMeta: { id: 'chrome-built-in' }, enabled: false, connectionConfig: {}, activationState: { userConfigured: false } }
     const saved = { ...placeholder, id: 'custom-chrome', activationState: { userConfigured: true } }
     manager.current = { models: ref([placeholder, saved]), testingConnections: ref({}), isDefaultModel: () => false, cancelLocalModelRequest: vi.fn(), loadProviders: vi.fn(), loadModels: vi.fn() }
-    const wrapper = mount(TextModelManager, { global: { stubs: { TextModelList: true, TextModelEditModal: true, LocalServiceDiscovery: true } } })
+    const wrapper = mount(TextModelManager, { props: { manager: manager.current }, global: { stubs: { TextModelList: true, TextModelEditModal: true, LocalServiceDiscovery: true } } })
     await flushPromises()
     expect(wrapper.findComponent({ name: 'TextModelList' }).props('models')).toEqual([saved])
     expect(wrapper.findComponent(LocalServiceDiscovery).props('models')).toHaveLength(2)

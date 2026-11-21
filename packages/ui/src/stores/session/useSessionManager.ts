@@ -479,7 +479,25 @@ export const useSessionManager = defineStore('sessionManager', () => {
     }
   }
 
-  const saveAllSessions = async () => {
+  /**
+   * 保存所有会话。
+   *
+   * @param options.urgent — unload flush (`beforeunload` / `pagehide` /
+   *   `visibilitychange: hidden`). A dying page must not depend on timers:
+   *   the `setTimeout(50)` wait loop stalls when the page is hidden (timers
+   *   throttle to 1s+ or never fire after discard) and the `setTimeout(0)`
+   *   yield between keys is a macrotask hop the page may never run. In urgent
+   *   mode both are skipped: per-key commits are already serialized by
+   *   `queueSnapshotCommit`, and a concurrent in-flight save commits first
+   *   (older snapshot) while this one commits after it (fresher snapshot), so
+   *   skipping the wait cannot lose the newer edit. Non-urgent callers keep
+   *   the old behaviour (wait for the in-flight save, yield between keys).
+   *   EU01-07 / EU-F01 / R3B-01 / EU04-03: the shared debounce-flush fix —
+   *   the active key is saved first, so a mobile browser that suspends the
+   *   page mid-flush still keeps the workspace the user was editing.
+   */
+  const saveAllSessions = async (options?: { urgent?: boolean }) => {
+    const urgent = options?.urgent === true
     if (isRestoring.value) return false
     // ⚠️ 等待当前保存完成（最多等待 5 秒）
     const startTime = Date.now()
@@ -489,15 +507,17 @@ export const useSessionManager = defineStore('sessionManager', () => {
     if (!hasRestoredAllSessions.value || isRestoring.value) return false
     trackDirtySessions()
 
-    while (saveInFlight.value) {
-      if (isRestoring.value) return false
-      if (Date.now() - startTime > MAX_WAIT) {
-        // ⚠️ 超时时直接返回，不要强制执行（避免误解锁）
-        console.warn('[SessionManager] Timed out while waiting for the current save to finish; aborting this save request')
-        return false
+    if (!urgent) {
+      while (saveInFlight.value) {
+        if (isRestoring.value) return false
+        if (Date.now() - startTime > MAX_WAIT) {
+          // ⚠️ 超时时直接返回，不要强制执行（避免误解锁）
+          console.warn('[SessionManager] Timed out while waiting for the current save to finish; aborting this save request')
+          return false
+        }
+        // 等待 50ms 后重试
+        await new Promise(resolve => setTimeout(resolve, 50))
       }
-      // 等待 50ms 后重试
-      await new Promise(resolve => setTimeout(resolve, 50))
     }
 
     if (isRestoring.value) return false
@@ -522,7 +542,10 @@ export const useSessionManager = defineStore('sessionManager', () => {
         if (savedVersions.get(key) === revision) continue
         if (!await _saveSubModeSessionUnsafe(key)) saved = false
         else if (revision === sessionRevision(key)) savedVersions.set(key, revision)
-        await new Promise(resolve => setTimeout(resolve, 0))
+        // Urgent (unload) flush: no macrotask yield between keys — the dying
+        // page may never run the next task. Non-urgent callers keep the yield
+        // to stay responsive during a full 8-key save.
+        if (!urgent) await new Promise(resolve => setTimeout(resolve, 0))
       }
       return saved
     } catch (error) {

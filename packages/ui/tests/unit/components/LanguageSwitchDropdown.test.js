@@ -82,21 +82,21 @@ describe('LanguageSwitchDropdown', () => {
       wrapper = createWrapper()
       const vm = wrapper.vm
       expect(vm.availableLanguages).toHaveLength(4)
-      expect(vm.availableLanguages[0].key).toBe('vi-VN')
-      expect(vm.availableLanguages[0].label).toBe('Tiếng Việt')
-      expect(vm.availableLanguages[1].key).toBe('en-US')
-      expect(vm.availableLanguages[1].label).toBe('English')
-      expect(vm.availableLanguages[2].key).toBe('zh-CN')
-      expect(vm.availableLanguages[2].label).toBe('Chinese (Simplified)')
-      expect(vm.availableLanguages[3].key).toBe('zh-TW')
-      expect(vm.availableLanguages[3].label).toBe('Chinese (Traditional)')
+      expect(vm.availableLanguages[0].key).toBe('zh-CN')
+      expect(vm.availableLanguages[0].label).toBe('Chinese (Simplified)')
+      expect(vm.availableLanguages[1].key).toBe('zh-TW')
+      expect(vm.availableLanguages[1].label).toBe('Chinese (Traditional)')
+      expect(vm.availableLanguages[2].key).toBe('en-US')
+      expect(vm.availableLanguages[2].label).toBe('English')
+      expect(vm.availableLanguages[3].key).toBe('vi-VN')
+      expect(vm.availableLanguages[3].label).toBe('Tiếng Việt')
     })
 
     it('应该通过 locale 生成当前语言提示文案', () => {
       wrapper = createWrapper()
       const vm = wrapper.vm
 
-      expect(vm.currentLanguageLabel).toBe('Switch language (Tiếng Việt)')
+      expect(vm.currentLanguageLabel).toBe('Switch language (English)')
     })
 
     it('应该能够调用语言切换方法', async () => {

@@ -7,9 +7,10 @@ import OutputDisplay from '../../../src/components/OutputDisplay.vue'
 import OutputDisplayFullscreen from '../../../src/components/OutputDisplayFullscreen.vue'
 import { beginOutputStream, type OutputRecord } from '../../../src/utils/output-document'
 
-const { copyTextMock, errorMock, currentRoute } = vi.hoisted(() => ({
+const { copyTextMock, errorMock, successMock, currentRoute } = vi.hoisted(() => ({
   copyTextMock: vi.fn(),
   errorMock: vi.fn(),
+  successMock: vi.fn(),
   currentRoute: {
     value: {
       path: '/basic/system',
@@ -31,6 +32,10 @@ vi.mock('../../../src/composables/ui/useClipboard', () => ({
 
 vi.mock('../../../src/composables/ui/useToast', () => ({
   useToast: () => ({
+    // R3A-04: the real useToast() also exposes success — the mock must mirror
+    // the real API, otherwise the success toast in copyDisplayText throws
+    // (message.success is not a function) and the copy silently fails.
+    success: successMock,
     error: errorMock,
     warning: vi.fn(),
   }),
@@ -209,6 +214,7 @@ describe('OutputDisplayCore copy and open action', () => {
   beforeEach(() => {
     copyTextMock.mockResolvedValue(undefined)
     errorMock.mockClear()
+    successMock.mockClear()
     window.sessionStorage.clear()
     currentRoute.value = { path: '/basic/system' }
     originalElectronAPI = window.electronAPI
@@ -238,6 +244,8 @@ describe('OutputDisplayCore copy and open action', () => {
     expect(copyTextMock).toHaveBeenCalledWith('Hello platform')
     expect(openSpy).not.toHaveBeenCalled()
     expect(wrapper.emitted('copy')).toEqual([[expect.any(String), 'content']])
+    // R3A-04: a successful copy shows a confirmation toast (was silent before).
+    expect(successMock).toHaveBeenCalledWith(expect.any(String))
   })
 
   it('unifies Markdown and HTML preview, preserves source copying and offers only two base views', async () => {

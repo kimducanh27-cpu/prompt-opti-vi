@@ -15,13 +15,18 @@
             />
             </Teleport>
         </div>
+        <!-- Slice 6a (design-system §2.3): compact = stacked single column,
+             Input → Optimize CTA → Output → Test input → Test results in ONE
+             page scroll. No hidden pane, no Optimize/Test region switch.
+             Desktop keeps the 2-pane grid + draggable divider. -->
         <div
             ref="splitRootRef"
             class="basic-system-split compact-workspace-pane"
-            :style="{ gridTemplateColumns: isCompact ? 'minmax(0, 1fr)' : `${mainSplitLeftPct}% 12px 1fr` }"
+            :class="{ 'workspace-stacked': isCompact }"
+            :style="isCompact ? { display: 'flex', flexDirection: 'column', height: 'auto', overflow: 'visible', gap: '12px' } : { gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
         >
             <!-- 左侧：优化区域 -->
-            <div v-show="!isCompact || mobileRegion === 'optimize'" class="split-pane compact-optimize-region" style="min-width: 0; height: 100%; overflow: hidden;">
+            <div class="split-pane compact-optimize-region" :style="isCompact ? { minWidth: 0 } : { minWidth: 0, height: '100%', overflow: 'hidden' }">
                 <OptimizeWorkspaceLayout ref="optimizeLayoutRef" :compact="isCompact"
                     @scroll="rememberOptimizeScroll">
                 <template #original>
@@ -50,11 +55,13 @@
                                 {{ promptSummary }}
                             </NText>
                         </NFlex>
-                        <NButton
-                            type="tertiary"
-                            size="small"
-                            ghost
+                        <PoButton
+                            variant="ghost"
+                            size="sm"
+                            icon-only
                             round
+                            :aria-label="t('common.expand')"
+                            :aria-expanded="!isInputPanelCollapsed"
                             @click="isInputPanelCollapsed = false"
                             :title="t('common.expand')"
                         >
@@ -63,7 +70,7 @@
                                     <UiChevronDown />
                                 </NIcon>
                             </template>
-                        </NButton>
+                        </PoButton>
                     </NFlex>
 
                     <!-- 展开态：完整输入面板 -->
@@ -125,11 +132,13 @@
 
                         <!-- 标题栏折叠按钮 -->
                         <template #header-extra>
-                            <NButton
-                                type="tertiary"
-                                size="small"
-                                ghost
+                            <PoButton
+                                variant="ghost"
+                                size="sm"
+                                icon-only
                                 round
+                                :aria-label="t('common.collapse')"
+                                :aria-expanded="!isInputPanelCollapsed"
                                 @click="isInputPanelCollapsed = true"
                                 :title="t('common.collapse')"
                             >
@@ -138,7 +147,7 @@
                                         <UiChevronUp />
                                     </NIcon>
                                 </template>
-                            </NButton>
+                            </PoButton>
                         </template>
                     </InputPanelUI>
                     </div>
@@ -201,7 +210,7 @@
             />
 
             <!-- 右侧：测试区域 -->
-            <div v-show="!isCompact || mobileRegion === 'test'" ref="testPaneRef" class="split-pane compact-test-region" style="min-width: 0; height: 100%; overflow: hidden;">
+            <div ref="testPaneRef" class="split-pane compact-test-region" :style="isCompact ? { minWidth: 0 } : { minWidth: 0, height: '100%', overflow: 'hidden' }">
                 <TestWorkspaceLayout ref="testLayoutRef" :compact="isCompact" v-model:config-expanded="testConfigExpanded" :running="isAnyVariantRunning" :has-results="activeVariantIds.some(id => variantResults[id].requestPrompt !== undefined)"
                     @scroll="rememberTestScroll">
                     <template #input>
@@ -340,10 +349,10 @@
                     </template>
                     <template #config-actions>
                         <div class="test-run-controls">
-                            <NButton type="primary" :loading="isAnyVariantRunning" :disabled="isAnyVariantRunning"
+                            <PoButton variant="primary" class="disabled-label-readable" :loading="isAnyVariantRunning" :disabled="isAnyVariantRunning"
                                 data-testid="basic-system-test-run-all" @click="runAllVariants">
                                 {{ t('test.layout.runAll') }}
-                            </NButton>
+                            </PoButton>
                         </div>
                     </template>
                     <template #config-summary>{{ t('test.content') }} · {{ testContentModel }}</template>
@@ -440,9 +449,6 @@
 
         <TestSourcePreview v-model:show="sourcePreviewOpen" :title="sourcePreviewTitle"
           :content="sourcePreviewContent" :editable="sourcePreviewEditable" @edit="editPreviewSource" />
-        <WorkspaceRegionSwitch v-if="isCompact" v-model="mobileRegion"
-            :optimizing="unwrappedLogicProps.isOptimizing || unwrappedLogicProps.isIterating"
-            :testing="isAnyVariantRunning" />
         <EvaluationPanel
             v-model:show="evaluation.isPanelVisible.value"
             :is-evaluating="panelProps.isEvaluating"
@@ -483,12 +489,12 @@ import CompareRoleSummary from '../evaluation/CompareRoleSummary.vue'
 import TestWorkspaceToolbar from '../TestWorkspaceToolbar.vue'
 import TestVariantConfig from '../TestVariantConfig.vue'
 import { getTextModelSelectionConfigId } from '../../utils/text-model-selection'
-import { ChevronDown as UiChevronDown, ChevronUp as UiChevronUp, } from '@lucide/vue'
+import { PhCaretDown as UiChevronDown, PhCaretUp as UiChevronUp, } from '@phosphor-icons/vue'
 import TestSourcePreview from '../common/TestSourcePreview.vue'
 import TestWorkspaceLayout from '../common/TestWorkspaceLayout.vue'
 import MobileTestResultHeader from '../common/MobileTestResultHeader.vue'
 import OptimizeWorkspaceLayout from '../common/OptimizeWorkspaceLayout.vue'
-import WorkspaceRegionSwitch from '../common/WorkspaceRegionSwitch.vue'
+import PoButton from '../primitives/PoButton.vue'
 import { useElementSize } from '@vueuse/core'
 import { useWorkspacePresentation } from '../../composables/ui/useWorkspacePresentation'
 import { useWorkspaceSplit } from '../../composables/ui/useWorkspaceSplit'
@@ -496,9 +502,9 @@ import { useTestVariantBindings } from '../../composables/workspaces/useTestVari
 import { useWorkspaceEvaluationActions } from '../../composables/workspaces/useWorkspaceEvaluationActions'
 import { useTestSourcePreview } from '../../composables/workspaces/useTestSourcePreview'
 const {
-  isCompact, mobileRegion, testConfigExpanded, inputCollapsed: isInputPanelCollapsed,
+  isCompact, testConfigExpanded, inputCollapsed: isInputPanelCollapsed,
   optimizeLayoutRef, testLayoutRef, rememberOptimizeScroll, rememberTestScroll,
-  resetTestScroll, showOptimizationSection, resetMobileView,
+  resetTestScroll, showOptimizationSection, revealTestPane, resetMobileView,
 } = useWorkspacePresentation('system')
 
 /**
@@ -527,7 +533,7 @@ import { useWorkspaceTemplateSelection } from '../../composables/workspaces/useW
 import { useEvaluationHandler } from '../../composables/prompt/useEvaluationHandler'
 import { buildCompareEvaluationPayload, useCompareRoleConfig, useTestSourceAreaFeedback, useTestVariantSourceFeedback } from '../../composables/prompt'
 import { provideEvaluation } from '../../composables/prompt/useEvaluationContext'
-import { NButton, NCard, NFlex, NIcon, NText } from 'naive-ui'
+import { NCard, NFlex, NIcon, NText } from 'naive-ui'
 import InputPanelUI from '../InputPanel.vue'
 import PromptPanelUI from '../PromptPanel.vue'
 import WorkspaceUtilityMenu from '../common/WorkspaceUtilityMenu.vue'
@@ -1142,6 +1148,7 @@ const runVariant = async (
 
     if (!opts?.silentSuccess) {
       toast.success(t('toast.success.testComplete'))
+      void revealTestPane()
     }
     return true
   } catch (error) {
@@ -1152,6 +1159,7 @@ const runVariant = async (
         ? getSafeImageProviderErrorMessage(error, inputImages)
         : ''
       toast.error(imageProviderMessage || t('toast.error.testFailed'))
+      void revealTestPane()
     }
     return false
   } finally {
@@ -1199,11 +1207,13 @@ const runAllVariants = useWorkspaceTestBatch({
 
         if (results.every(Boolean)) {
           toast.success(t('toast.success.testComplete'))
+          void revealTestPane()
         } else {
           const imageProviderMessage = sharedInputImages.length > 0
             ? getSafeImageProviderErrorMessage(runErrors[0], sharedInputImages)
             : ''
           toast.error(imageProviderMessage || t('toast.error.testFailed'))
+          void revealTestPane()
         }
       },
     }
@@ -1680,6 +1690,22 @@ defineExpose({
     overflow: visible;
 }
 
+/* Slice 10 — stacked mobile (design-system §2.3), same class fix as
+   BasicUserWorkspace.vue:1567 (EU01-01): let the workspace size to its
+   content so the page scrolls. The desktop frame caps the chain at the
+   viewport height — `.main-content-wrapper > * { flex: 1 }` plus
+   `.basic-system-workspace { height: 100% }` held this div at viewport
+   height, and the split root then shrank so the Test section started
+   inside the Output's box: the "Run All" button painted over the
+   optimized text (probe: 40px live overlap @412, 44–67px @390).
+   `height: auto` + `flex: none` (both beat the frame rules by specificity)
+   release the cap; the inner layouts already flow (Slice 6a). Desktop is
+   unaffected: this rule only matches `.compact-two-region`. */
+.basic-system-workspace.compact-two-region {
+    height: auto;
+    flex: none;
+}
+
 .workspace-page-tools {
     display: contents;
 }
@@ -1694,6 +1720,17 @@ defineExpose({
 
 .split-pane {
     min-height: 0;
+}
+
+/* Slice 6a — stacked mobile (design-system §2.3): un-trap the shared
+   layouts' compact internal scroll so the stacked panes size to their
+   content and the page scrolls. Scoped to .workspace-stacked so the
+   Image workspaces (still hidden-pane until Slice 6b) keep their
+   internal scroll. Desktop panes keep height 100% + overflow hidden. */
+.workspace-stacked :deep(.optimize-workspace-layout--compact),
+.workspace-stacked :deep(.test-workspace-layout--compact) {
+    height: auto;
+    overflow: visible;
 }
 
 .split-divider {

@@ -10,6 +10,7 @@
 
 import { nextTick, type Ref } from 'vue'
 import { useToast } from '../ui/useToast'
+import { releaseCompactOverlayHistory } from '../ui/useCompactModalBack'
 import type { ConversationMessage } from '../../types'
 import type { ProMultiMessageSessionApi } from '../../stores/session/useProMultiMessageSession'
 import type {
@@ -410,6 +411,20 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
         try {
             // 🔧 设置外部数据加载标志，防止模式切换的自动 restore 覆盖外部数据
             isLoadingExternalData.value = true
+
+            // VL-B-OBS4-01: the History sheet closes synchronously with the
+            // reuse emit, and its compact-overlay history.back() races the
+            // restore's router.push — the queued back() pops the just-pushed
+            // entry, so the restore lands on the wrong workspace while the
+            // toasts claim success. Release the overlay history BEFORE any
+            // navigation: this runs in the emit tick (reuse is emitted before
+            // update:show=false), so its back() is the only one — the
+            // sheet-close scheduleSync then early-returns on `returning`.
+            // It must NOT live inside navigateToSubModeKey: by then the
+            // sheet-close back() may already be in flight, and a second
+            // back() would pop one entry too many. No-op on desktop / when
+            // no overlay entry is current.
+            await releaseCompactOverlayHistory()
 
             await handleHistoryReuseImpl(context)
         } catch (error) {

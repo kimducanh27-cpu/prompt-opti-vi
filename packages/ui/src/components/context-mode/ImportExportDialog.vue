@@ -191,7 +191,7 @@
 </template>
 
 <script setup lang="ts">
-import { CloudUpload as UiCloudUpload, Copy as UiCopy, FolderDown as UiFolderDown } from '@lucide/vue'
+import { PhCloudArrowUp as UiCloudUpload, PhCopy as UiCopy, PhFileArrowDown as UiFolderDown } from '@phosphor-icons/vue'
 import { ref, computed, watch } from 'vue'
 import { useI18n } from "vue-i18n";
 import {

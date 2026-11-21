@@ -7,7 +7,7 @@
     <template #results><slot name="results" /></template>
     <template #config-actions>
       <div class="test-run-controls">
-        <NButton type="primary" :loading="running" :disabled="running" data-testid="mobile-config-run-all" @click="$emit('run-all')">
+        <NButton type="primary" class="disabled-label-readable" :loading="running" :disabled="running" :data-testid="runTestId ?? 'mobile-config-run-all'" @click="$emit('run-all')">
           {{ t('test.layout.runAll') }}
         </NButton>
       </div>
@@ -26,6 +26,13 @@ const props = defineProps<{
   compact: boolean
   configExpanded: boolean
   variants: { running: boolean; hasPromptSnapshot?: boolean }[]
+  // V-H-02: the per-workspace Run All testid (e.g. "pro-multi-test-run-all").
+  // The compact Run All previously carried only the shared
+  // "mobile-config-run-all", so every `*-test-run-all` testid was
+  // desktop-only and repo specs clicking it on a mobile project hung until
+  // timeout. When omitted the button keeps "mobile-config-run-all" (the
+  // unit spec mounts without it).
+  runTestId?: string
 }>()
 defineEmits<{
   'update:configExpanded': [value: boolean]

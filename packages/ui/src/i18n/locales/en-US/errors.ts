@@ -131,7 +131,7 @@ const messages = {
     "data": {
       "invalid_json": "Invalid JSON: {details}",
       "invalid_format": "Invalid data format: {details}",
-      "import_partial_failed": "Import completed with {count} errors: {details}",
+      "import_partial_failed": "Import completed with {count} error: {details} | Import completed with {count} errors: {details}",
       "export_failed": "Data export failed: {details}",
       "electron_api_unavailable": "Data service is not available in this environment"
     },

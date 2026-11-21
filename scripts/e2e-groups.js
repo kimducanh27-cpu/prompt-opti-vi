@@ -18,6 +18,10 @@ const groups = {
     'tests/e2e/regression/root-route-bootstrap.spec.ts',
     'tests/e2e/optimize/basic-user.spec.ts',
     'tests/e2e/test/image-text2image-generate.spec.ts',
+    // Slice 10: mobile journey runs on the mobile-412 / mobile-430 projects
+    // only (their testMatch scopes them to tests/e2e/mobile/), so the
+    // desktop specs above are unaffected.
+    'tests/e2e/mobile/basic-user-journey.spec.ts',
     // 单图生图与多图持久化目前仍依赖较脆弱的 provider/VCR 契约，
     // 先降级到 extended，避免把日常 gate 绑死在高维护成本用例上。
   ],

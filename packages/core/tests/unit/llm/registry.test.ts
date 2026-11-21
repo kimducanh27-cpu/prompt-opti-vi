@@ -253,16 +253,16 @@ describe('TextAdapterRegistry', () => {
     };
 
     it('should return static models for providers without dynamic support', async () => {
-      const geminiConfig = {
+      const chromeBuiltInConfig = {
         ...mockConfig,
         providerMeta: {
           ...mockConfig.providerMeta,
-          id: 'gemini',
+          id: 'chrome-built-in',
           supportsDynamicModels: false
         }
       };
 
-      const models = await registry.getModels('gemini', geminiConfig);
+      const models = await registry.getModels('chrome-built-in', chromeBuiltInConfig);
 
       expect(Array.isArray(models)).toBe(true);
       expect(models.length).toBeGreaterThan(0);

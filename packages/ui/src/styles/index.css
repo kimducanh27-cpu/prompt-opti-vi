@@ -1,37 +1,8 @@
 @import "tailwindcss";
+@import "./tokens.css";
 @config "../../tailwind.config.js";
 
-/* 自定义滚动条样式 */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* 隐藏水平滚动条 */
-::-webkit-scrollbar-horizontal {
-  display: none;
-}
-
-/* 自定义select样式 */
-.custom-select {
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
-  background-image: none !important;
-}
-
-.custom-select::-ms-expand {
-  display: none;
-} 
+/* Style entry point. Tokens live in tokens.css (imported first, above) and
+ * are the single source of truth — no colours, sizes or radii here.
+ * Scrollbar rules live in scrollbar.css, .custom-select in common.css;
+ * both were previously duplicated in this file (Slice 2 dedup). */

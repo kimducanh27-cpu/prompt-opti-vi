@@ -270,6 +270,14 @@
   gap: 6px;
   white-space: normal;
   line-height: 1.4;
+  /* FINAL-NIT-01: Naive's NCard sets word-break: break-word on the modal
+   * card, which inherits down to the provider labels and split
+   * "(Recommended)" mid-word, orphaning ")" on its own line (at 16px the
+   * word is ~124px, the space after the check icon is ~122px). Both
+   * break-word AND .task-card's overflow-wrap: anywhere are neutralised
+   * here so labels wrap at spaces only: "Google Drive" / "(Recommended)". */
+  overflow-wrap: normal;
+  word-break: normal;
 }
 :where(.data-manager-modal, .data-manager-code-modal) .cloud-provider-option svg {
   flex-shrink: 0;

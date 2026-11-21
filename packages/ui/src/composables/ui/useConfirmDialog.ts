@@ -59,6 +59,14 @@ export function useConfirmDialog() {
         content: options.content,
         positiveText: options.positiveText,
         negativeText: options.negativeText,
+        // EU05-01/EU05-04/R3E-04: Naive renders dialog buttons size="small"
+        // (28px) and a warning dialog's Confirm as type="warning" — white
+        // text on #ffce2f (1.49:1). The props below are spread AFTER those
+        // defaults (Dialog.mjs), so they win: Confirm becomes the primary
+        // action (white on #1f6bd1 = 5.14:1) and both buttons medium; the
+        // 44px floor is enforced by compact/overlay.css (.n-dialog__action).
+        positiveButtonProps: { type: 'primary', size: 'medium' },
+        negativeButtonProps: { size: 'medium' },
         onPositiveClick: () => settle(true),
         onNegativeClick: () => settle(false),
         onClose: () => settle(false),

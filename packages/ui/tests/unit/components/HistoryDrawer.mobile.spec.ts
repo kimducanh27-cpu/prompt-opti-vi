@@ -38,7 +38,7 @@ describe('HistoryDrawer mobile flow', () => {
     expect(wrapper.get('.mobile-history-body').text()).toBe('poetry latest answer')
     expect(wrapper.get('.mobile-history-restore').text()).toContain('Variable')
 
-    await wrapper.get('.test-modal .test-modal select').setValue('poetry-v1')
+    await wrapper.get('.test-modal select').setValue('poetry-v1')
     expect(wrapper.get('.mobile-history-body').text()).toBe('poetry first answer')
     await wrapper.get('.mobile-history-restore button').trigger('click')
     expect(wrapper.emitted('reuse')).toEqual([[{
@@ -58,7 +58,7 @@ describe('HistoryDrawer mobile flow', () => {
     await filter.setValue('multiimage')
     expect(wrapper.findAll('.mobile-history-open')).toHaveLength(1)
     await wrapper.get('.mobile-history-open').trigger('click')
-    await wrapper.get('.test-modal .test-modal header button').trigger('click')
+    await wrapper.get('.test-modal header button').trigger('click')
     expect(wrapper.find('[data-testid="mobile-history-detail"]').exists()).toBe(false)
     expect(wrapper.get('.mobile-history-open').text()).toContain('pictures')
     expect(wrapper.emitted('reuse')).toBeUndefined()

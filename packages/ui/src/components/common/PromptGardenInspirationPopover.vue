@@ -46,6 +46,8 @@
           '--garden-focus': theme.primaryColor,
           '--garden-title': theme.textColor1,
         },
+        // R3D-02: horizontal clamp shift (see clampPopoverInViewport).
+        { transform: clampShiftX ? `translateX(${clampShiftX}px)` : undefined },
       ]"
       :data-testid="`${rootTestId}-popover`"
       @mouseenter="handlePopoverMouseEnter"
@@ -328,13 +330,13 @@ import {
   useThemeVars,
 } from 'naive-ui'
 import {
-  ExternalLink,
-  FileInput as FileImport,
-  Sprout as Plant2,
-  RefreshCw as Refresh,
-  Search,
-  ChevronDown,
-} from '@lucide/vue'
+  PhArrowSquareOut as ExternalLink,
+  PhFileArrowDown as FileImport,
+  PhPlant as Plant2,
+  PhArrowClockwise as Refresh,
+  PhMagnifyingGlass as Search,
+  PhCaretDown as ChevronDown,
+} from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import { getEnvVar } from '@prompt-optimizer/core'
 import { openExternalUrl } from '../../utils/open-external-url'
@@ -463,6 +465,8 @@ const clearCloseTimer = () => {
 onBeforeUnmount(() => {
   clearOpenTimer()
   clearCloseTimer()
+  clearSettleTimer()
+  window.removeEventListener('resize', handleViewportResize)
   if (searchTimer) clearTimeout(searchTimer)
   ++loadSequence
   ++catalogSequence
@@ -493,14 +497,112 @@ const syncPopoverPosition = () => {
   nextTick(() => {
     popoverInstRef.value?.syncPosition?.()
     if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(() => popoverInstRef.value?.syncPosition?.())
+      requestAnimationFrame(() => {
+        popoverInstRef.value?.syncPosition?.()
+        clampPopoverInViewport()
+        scheduleSettleClamp()
+      })
+    } else {
+      clampPopoverInViewport()
+      scheduleSettleClamp()
     }
   })
+}
+
+// R3D-02 (t2i follow-up): belt-and-braces re-clamp after the follower
+// settles — one extra rAF pass plus a 300ms timeout (covers Naive's
+// ~200ms enter transition). Kept as defense-in-depth only: V-R3 proved
+// the original transient-rect theory WRONG — the t2i overflow was NOT the
+// trigger moving ~25px right after the first clamp. The real cause was
+// the clamp basis: window.innerWidth expands to 436 while the popover is
+// open (the overflowing popover expands the layout viewport), so the
+// clamp computed shift −8 against the expanded viewport and every pass
+// faithfully re-computed the same wrong −8. The real fix is the
+// documentElement.clientWidth basis in clampPopoverInViewport below
+// (shift −32, right edge 404 at 412px, V-R4 live-verified PASS). The
+// clamp is idempotent — it subtracts the current shift before
+// recomputing — so a later pass can only correct the shift, never drift
+// it. Guarded by popoverVisible so a closed popover never re-clamps.
+// Do NOT "fix" this back to a transient-rect story; do NOT delete the
+// machinery without a live re-probe.
+let settleTimer: ReturnType<typeof setTimeout> | null = null
+const clearSettleTimer = () => {
+  if (!settleTimer) return
+  clearTimeout(settleTimer)
+  settleTimer = null
+}
+const scheduleSettleClamp = () => {
+  clearSettleTimer()
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(() => {
+      if (!popoverVisible.value) return
+      popoverInstRef.value?.syncPosition?.()
+      clampPopoverInViewport()
+    })
+  }
+  settleTimer = setTimeout(() => {
+    settleTimer = null
+    if (!popoverVisible.value) return
+    popoverInstRef.value?.syncPosition?.()
+    clampPopoverInViewport()
+  }, 300)
+}
+
+// R3D-02: Naive's follower positions the popover by the trigger (bottom-end)
+// and never clamps it to the viewport — on a 412px screen the 380px popover
+// landed at left:-72, its left ~19% invisible/untappable. Clamp the body
+// horizontally (8px margin) after every follower sync. The transform is
+// applied to the inner body div, so the follower's own measurements are
+// unaffected (transforms don't change layout size — no feedback loop).
+const clampShiftX = ref(0)
+
+const clampPopoverInViewport = () => {
+  const body = popoverBodyRef.value
+  if (!body || typeof window === 'undefined') {
+    clampShiftX.value = 0
+    return
+  }
+  // The rect already includes the current transform — subtract it to get the
+  // unshifted position, so re-clamping is idempotent (no drift).
+  const rect = body.getBoundingClientRect()
+  const unshiftedLeft = rect.left - clampShiftX.value
+  const unshiftedRight = rect.right - clampShiftX.value
+  const margin = 8
+  // R3D-02 (second follow-up): measure against the TRUE visible width.
+  // window.innerWidth is WRONG here — the follower's overflowing container
+  // (unshifted right 436.34 at 412px) expands the document
+  // (documentElement.scrollWidth = 436) and the layout viewport expands
+  // with it (innerWidth = 436 live, measured with the popover open), so
+  // the clamp computed shift = 436 − 8 − 436.34 = −8 — "correct" against
+  // the expanded viewport, still 24px beyond the visible 412px edge — and
+  // every settle pass faithfully re-computed the same wrong −8. Measured
+  // live: document.documentElement.clientWidth = 412 with the popover open
+  // (and == innerWidth == 412 on the plain page / Arena, where nothing
+  // overflows, so the Arena math is unchanged). With vw = 412:
+  // shift = 404 − 436.34 = −32.34 → −33 → right edge 403.34 (8.66px margin).
+  // Rounding is AWAY from the viewport edge on purpose (V-R4 residual):
+  // Math.round(−32.34) = −32 lost 0.34px and landed the right edge at 404.34
+  // (7.66px margin instead of 8px). Same for the left-edge branch: a positive
+  // shift rounds up, so the left edge lands at margin + fraction, never inside it.
+  const vw = document.documentElement.clientWidth
+  let shift = 0
+  if (unshiftedLeft < margin) shift = margin - unshiftedLeft
+  else if (unshiftedRight > vw - margin) shift = vw - margin - unshiftedRight
+  clampShiftX.value = Math.sign(shift) * Math.ceil(Math.abs(shift))
+}
+
+const handleViewportResize = () => {
+  if (popoverVisible.value) syncPopoverPosition()
 }
 
 watch(popoverVisible, (visible) => {
   if (visible) {
     syncPopoverPosition()
+    window.addEventListener('resize', handleViewportResize)
+  } else {
+    window.removeEventListener('resize', handleViewportResize)
+    clearSettleTimer()
+    clampShiftX.value = 0
   }
 })
 

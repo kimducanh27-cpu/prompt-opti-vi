@@ -1,4 +1,5 @@
 import { test, expect, type Locator } from '@playwright/test'
+import { ensureTestRegionVisible } from '../helpers/common'
 
 test.use({ actionTimeout: 10000 })
 test.describe.configure({ timeout: 60000 })
@@ -56,7 +57,9 @@ for (const width of [1440, 390]) {
         await callbacks.onComplete()
       }
     }, source)
-    if (width < 768) await page.getByTestId('workspace-region-test').click()
+    // Slice 6a: stacked mobile has no region switch; the test pane is
+    // already in the page scroll. Reveal it when hidden (Image, until 6b).
+    if (width < 768) await ensureTestRegionVisible(page)
     await page.getByTestId('basic-user-test-run-all').click()
     const output = page.getByTestId('basic-user-test-original-output')
     await expect.poll(() => page.evaluate(() => (window as any).__resumeWrapping.length)).toBe(2)

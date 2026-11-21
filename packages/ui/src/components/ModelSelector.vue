@@ -70,7 +70,7 @@
 import { computed, nextTick, ref, useSlots, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, NInput, NPopover, useThemeVars } from 'naive-ui'
-import { ArrowLeft, Check, ChevronDown, ChevronRight, Image as ImageIcon, MessageSquareText, Search } from '@lucide/vue'
+import { PhArrowLeft as ArrowLeft, PhCheck as Check, PhCaretDown as ChevronDown, PhCaretRight as ChevronRight, PhImage as ImageIcon, PhChatText as MessageSquareText, PhMagnifyingGlass as Search } from '@phosphor-icons/vue'
 import { useSelectMenuViewport } from '../composables/ui/useSelectMenuViewport'
 import type { ModelSelectorGroup, ModelSelectorKind } from '../types/model-selector'
 
@@ -182,14 +182,25 @@ function navigate(event: KeyboardEvent) {
 watch(() => props.disabled, disabled => { if (disabled) open.value = false })
 </script>
 <style scoped>
-.text-model-selector { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; height: 34px; padding: 0 10px; border: 1px solid var(--selector-border); border-radius: 5px; color: var(--selector-text); background: var(--selector-bg); font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
-.text-model-selector--small { height: 28px; font-size: 13px; padding-inline: 8px; }
+.text-model-selector { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; height: 34px; padding: 0 10px; border: 1px solid var(--selector-border); border-radius: 5px; color: var(--selector-text); background: var(--selector-bg); font: inherit; font-size: 16px; text-align: start; cursor: pointer; }
+/* M-C (EU03-03): design-system §1.2 — selects minimum 16px (was 13px, so the
+   test-model selects rendered at 13px). Height stays 28px here; the 44px
+   touch-target floor is another batch's compact-CSS rule, not this one. */
+.text-model-selector--small { height: 28px; font-size: 16px; padding-inline: 8px; }
 .text-model-selector { container-type: inline-size; }
 @container (max-width: 190px) {
   .text-model-selector__config, .text-model-selector__separator { display: none; }
 }
 @container (max-width: 280px) {
   .text-model-selector--with-detail .text-model-selector__config, .text-model-selector--with-detail .text-model-selector__separator { display: none; }
+  /* M-C (EU03-04): on narrow triggers (test rows, ~170-190px) the parameters
+     summary ("Thinking · Off", "1024x1024") took up to 45% of the trigger,
+     squeezing the model name until it truncated mid-word ("Qwen Im···"). Hide
+     the summary below 280px so the name gets the full width; the parameters
+     stay one tap away (open the menu — the parameters section is there, and
+     the trigger keeps its full-name title tooltip). Same progressive
+     disclosure as the config hiding above. */
+  .text-model-selector__detail { display: none; }
 }
 .text-model-selector:hover:not(:disabled) { border-color: var(--selector-muted); }
 .text-model-selector:focus-visible, .text-model-selector.is-open { outline: 1px solid var(--selector-focus); outline-offset: 1px; }

@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCw as UiRefreshCw, X as UiX, Image as UiImage } from '@lucide/vue'
+import { PhArrowClockwise as UiRefreshCw, PhX as UiX, PhImage as UiImage } from '@phosphor-icons/vue'
 import { computed } from 'vue'
 import { NButton, NIcon, NUpload, type UploadFileInfo } from 'naive-ui'
 import { useI18n } from 'vue-i18n'

@@ -35,6 +35,11 @@ export interface ContextUserOptimizationBindings {
   assetBinding?: PromptAssetBinding
   origin?: PromptSessionOrigin
   getSourceBindingSession?: () => SourceBindingSessionLike | null | undefined
+  // EU02-03: the merged variable values (global < temporary < predefined,
+  // same merge the test runs use) so Optimize can pass them to core.
+  // Read lazily at optimize time — the workspace's computed may be
+  // declared after this composable is created.
+  getVariables?: () => Record<string, string>
 }
 
 /**
@@ -168,11 +173,19 @@ export function useContextUserOptimization(
       const stream = outputChannel.begin()
       try {
         // 构建优化请求
+        // EU02-03: pass the defined variable values through. Core reads them
+        // via `request.advancedContext.variables` (OptimizationRequest has NO
+        // top-level `variables` field) into the template context
+        // (resolveOptimizationMessages → createExtendedContext), so custom
+        // templates can use them. Built-in templates keep the `{{...}}`
+        // placeholders verbatim by design — values are for the template,
+        // not a substitution of the original prompt.
         const request: OptimizationRequest = {
           optimizationMode: 'user',  // ContextUser 固定为 user 模式
           targetPrompt: state.prompt,
           templateId: selectedTemplate.value.id,
-          modelKey: selectedOptimizeModel.value
+          modelKey: selectedOptimizeModel.value,
+          advancedContext: { variables: bindings?.getVariables?.() ?? {} },
         }
 
         // 使用流式优化 API
@@ -348,6 +361,10 @@ export function useContextUserOptimization(
             }
           },
           selectedIterateTemplate.value.id,
+          // EU02-03 leftover (M-G): same variables class as Optimize —
+          // core iteratePromptStream takes contextData with variables,
+          // which become customVariables in the iterate template.
+          { variables: bindings?.getVariables?.() ?? {} },
         )
       } catch (error: unknown) {
         console.error('[Iterate] Iteration failed:', error)

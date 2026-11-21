@@ -33,14 +33,19 @@
                     :disabled="isEditing || isBusy"
                     clearable
                 />
-                <template #feedback>
-                    <NText
-                        depth="3"
-                        style="font-size: 12px; display: block; margin-top: 4px"
-                    >
-                        {{ t("variables.editor.variableNameHelp") }}
-                    </NText>
-                </template>
+                <!-- EU10-02: the help text used to live in a #feedback slot,
+                     which Naive renders INSTEAD of the validation errors
+                     (resolveWrappedSlot: slot children replace renderExplains,
+                     and the slot gets no props) — so duplicate/required errors
+                     never showed, only a red border. The help now lives in the
+                     default slot below the input, and the feedback area is
+                     free to show validation messages. -->
+                <NText
+                    depth="3"
+                    style="font-size: 12px; display: block; margin-top: 4px"
+                >
+                    {{ t("variables.editor.variableNameHelp") }}
+                </NText>
             </NFormItem>
 
             <!-- 变量值 -->
@@ -61,14 +66,14 @@
                     :autosize="isCompact ? { minRows: 5, maxRows: 14 } : { minRows: 4, maxRows: 8 }"
                     clearable
                 />
-                <template #feedback>
-                    <NText
-                        depth="3"
-                        style="font-size: 12px; display: block; margin-top: 4px"
-                    >
-                        {{ t("variables.editor.variableValueHelp") }}
-                    </NText>
-                </template>
+                <!-- EU10-02: same as above — help moved out of #feedback so
+                     validation messages can render. -->
+                <NText
+                    depth="3"
+                    style="font-size: 12px; display: block; margin-top: 4px"
+                >
+                    {{ t("variables.editor.variableValueHelp") }}
+                </NText>
             </NFormItem>
         </NForm>
 
@@ -80,7 +85,7 @@
                 <NButton
                     type="primary"
                     @click="save"
-                    :disabled="!isValid || isBusy"
+                    :disabled="isBusy"
                     :loading="isBusy"
                 >
                     {{ isEditing ? t("common.save") : t("common.add") }}
@@ -171,12 +176,6 @@ const formData = ref({
 // 计算属性
 const isEditing = computed(() => !!props.variable);
 
-const isValid = computed(() => {
-    return (
-        formData.value.name.trim() !== "" && formData.value.value.trim() !== ""
-    );
-});
-
 // 表单验证规则
 const formRules: FormRules = {
     name: [
@@ -249,8 +248,11 @@ const save = async () => {
             name: formData.value.name.trim(),
             value: formData.value.value.trim(),
         });
-    } catch (error: unknown) {
-        console.error("[VariableEditor] Validation error:", error);
+    } catch {
+        // EU10-02 (+ EU10-N1): a failed validate() is expected user input, not
+        // an error — do not console.error it (that trips the repo's own
+        // fail-on-console-error E2E guard on every empty/duplicate submit).
+        // The validation messages themselves now render in the feedback area.
     } finally {
         loading.value = false;
     }

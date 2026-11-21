@@ -155,7 +155,7 @@ import type { FavoritePrompt } from '@prompt-optimizer/core'
 
 import { useToast } from '../../composables/ui/useToast'
 import type { AppServices } from '../../types/services'
-import { getI18nErrorMessage } from '../../utils/error'
+import { getUserFacingErrorMessage } from '../../utils/error'
 import {
   DEFAULT_FAVORITE_SHARE_SECTIONS,
   createFavoriteShareHtml,
@@ -272,7 +272,7 @@ const getImageStorageServices = () => {
 
 const buildErrorMessage = (summary: string, error: unknown) => {
   const fallback = t('common.error')
-  const detail = getI18nErrorMessage(error, fallback)
+  const detail = getUserFacingErrorMessage(error, fallback)
   return detail === fallback ? summary : `${summary}: ${detail}`
 }
 

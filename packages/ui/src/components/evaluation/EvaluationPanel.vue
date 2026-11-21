@@ -35,7 +35,7 @@
 
       <!-- 评估结果 -->
       <template v-else-if="result">
-        <NScrollbar style="max-height: calc(100vh - 120px);">
+        <NScrollbar ref="resultScrollRef" style="max-height: calc(100vh - 120px);">
           <NSpace vertical :size="20">
             <NAlert
               v-if="stale"
@@ -428,7 +428,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import OutputSourceView from '../OutputSourceView.vue'
 import { getOutputDocument, type OutputRecord } from '../../utils/output-document'
 import { useI18n } from 'vue-i18n'
@@ -451,7 +451,7 @@ import {
   NTag,
   NTooltip,
 } from 'naive-ui'
-import { ChartNoAxesColumnIncreasing as ChartBar } from '@lucide/vue'
+import { PhChartBar as ChartBar } from '@phosphor-icons/vue'
 import type { EvaluationResponse, EvaluationType, PatchOperation } from '@prompt-optimizer/core'
 import {
   getCompareEvaluationMetadata,
@@ -461,6 +461,7 @@ import InlineDiff from './InlineDiff.vue'
 import FeedbackEditor from './FeedbackEditor.vue'
 import CompareHelpButton from './CompareHelpButton.vue'
 import { useTooltipTheme } from '../../composables/ui/useTooltipTheme'
+import { fadeIn, killMotion } from '../../utils/motion'
 
 type CompareDecisionSummary = {
   recommendation: 'continue' | 'stop' | 'review'
@@ -532,6 +533,42 @@ const {
 // 流式内容滚动条引用
 const feedbackDraft = ref('')
 const activeCompareReasonKey = ref<string | null>(null)
+
+// M6 (step 7): the result section fades in (200ms, opacity + y:8) when a
+// result lands — evaluation finishing, or the drawer re-opening with a
+// cached result. The fade target is the `.n-scrollbar` element resolved
+// from the NScrollbar ref: `$el` alone is NOT reliable — Naive returns
+// the slot content when the content fits (not scrollable), so `$el` can
+// be a text node (S7-MOTION-02: GSAP warned 3x and nothing faded).
+// killMotion first so a re-evaluation never stacks tweens.
+const resultScrollRef = ref<{ $el?: Node } | null>(null)
+const resolveResultTarget = (): HTMLElement | null => {
+  const inst = resultScrollRef.value
+  if (!inst) return null
+  const root = inst.$el
+  if (!root) return null
+  if (root.nodeType === 1) return root as HTMLElement
+  // `$el` is a text node (content fits, not scrollable) — climb to the
+  // scrollbar element; fall back to the text node's parent element.
+  const parent = root.parentElement
+  return parent?.closest('.n-scrollbar') ?? parent ?? null
+}
+const revealEvaluationResult = () => {
+  const el = resolveResultTarget()
+  if (!el) return
+  killMotion(el)
+  fadeIn(el)
+}
+watch(
+  () => [props.show, props.isEvaluating, props.result] as const,
+  ([show, evaluating, result]) => {
+    if (show && result && !evaluating) void nextTick(revealEvaluationResult)
+  },
+)
+onBeforeUnmount(() => {
+  const el = resolveResultTarget()
+  if (el) killMotion(el)
+})
 const isActionDisabled = computed(() => props.isEvaluating || !!props.disableEvaluate)
 const evaluationDisableMessage = computed(() =>
   isActionDisabled.value ? (props.disableEvaluateReason || '').trim() : ''

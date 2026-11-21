@@ -89,6 +89,8 @@
               </n-text>
               <n-dropdown
                 :options="actionMenuOptions"
+                :menu-props="dropdownMenuProps"
+                :node-props="dropdownNodeProps"
                 @select="handleActionSelect"
               >
                 <n-button quaternary size="small">
@@ -121,8 +123,9 @@ import {
   NSpace,
   NDropdown
 } from 'naive-ui';
-import { Copy, Play as PlayerPlay, Eye, EllipsisVertical as DotsVertical, SquarePen as Edit, Trash2 as Trash, Share, Tag } from '@lucide/vue'
+import { PhCopy as Copy, PhPlay as PlayerPlay, PhEye as Eye, PhDotsThreeVertical as DotsVertical, PhPencilSimple as Edit, PhTrash as Trash, PhShareNetwork as Share, PhTag as Tag } from '@phosphor-icons/vue'
 import type { FavoritePrompt, FavoriteCategory } from '@prompt-optimizer/core';
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 
 interface Props {
   favorite: FavoritePrompt;
@@ -134,7 +137,7 @@ const props = withDefaults(defineProps<Props>(), {
   isSelected: false
 });
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'select': [favorite: FavoritePrompt, selected: boolean];
@@ -197,7 +200,7 @@ const formatDate = (timestamp: number) => {
   } else if (days < 7) {
     return t('favorites.library.time.daysAgo', { days });
   } else {
-    return date.toLocaleDateString(String(locale.value || 'vi-VN'));
+    return date.toLocaleDateString();
   }
 };
 

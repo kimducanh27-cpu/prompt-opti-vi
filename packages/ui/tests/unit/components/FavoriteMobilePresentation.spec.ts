@@ -23,6 +23,12 @@ const modalStub = {
   name: 'NModal', props: ['show'], emits: ['update:show'],
   template: '<div v-if="show"><slot /></div>',
 }
+// Slice 7: the panel's overlay is a PoSheet now; stub it exactly like the
+// old NModal so the dismissal tests keep driving update:show the same way.
+const sheetStub = {
+  name: 'PoSheet', props: ['show'], emits: ['update:show'],
+  template: '<div v-if="show"><slot /></div>',
+}
 const formStub = defineComponent({
   name: 'FavoriteEditorForm',
   setup(_, { expose }) {
@@ -66,10 +72,10 @@ describe('favorite mobile presentation boundaries', () => {
     confirmDiscard.mockResolvedValue(false)
     const wrapper = mount(FavoriteAssetPanelDialog, {
       props: { show: true, mode: 'edit' },
-      global: { stubs: { NModal: modalStub, FavoriteEditorForm: formStub,
+      global: { stubs: { NModal: modalStub, PoSheet: sheetStub, FavoriteEditorForm: formStub,
         FavoritePanelShell: { template: '<div><slot /></div>' } } },
     })
-    const modal = wrapper.findComponent({ name: 'NModal' })
+    const modal = wrapper.findComponent({ name: 'PoSheet' })
     const draftNode = wrapper.get('[data-testid="draft"]').element
     modal.vm.$emit('update:show', false)
     await flushPromises()
@@ -92,10 +98,10 @@ describe('favorite mobile presentation boundaries', () => {
     confirmDiscard.mockResolvedValue(true)
     const wrapper = mount(FavoriteAssetPanelDialog, {
       props: { show: true, mode: 'create' },
-      global: { stubs: { NModal: modalStub, FavoriteEditorForm: formStub,
+      global: { stubs: { NModal: modalStub, PoSheet: sheetStub, FavoriteEditorForm: formStub,
         FavoritePanelShell: { template: '<div><slot /></div>' } } },
     })
-    wrapper.findComponent({ name: 'NModal' }).vm.$emit('update:show', false)
+    wrapper.findComponent({ name: 'PoSheet' }).vm.$emit('update:show', false)
     await flushPromises()
     expect(wrapper.emitted('update:show')).toEqual([[false]])
     wrapper.unmount()

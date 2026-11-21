@@ -32,7 +32,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NButton, useThemeVars } from 'naive-ui'
-import { Play } from '@lucide/vue'
+import { PhPlay as Play } from '@phosphor-icons/vue'
 import type { ModelSelectOption } from '../types/select-options'
 import type { TestPanelVersionOption } from '../utils/testPanelVersion'
 import TextModelSelector from './TextModelSelector.vue'

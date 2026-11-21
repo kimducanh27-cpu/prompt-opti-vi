@@ -1,101 +1,117 @@
 /* Shared mobile tokens, viewport budgets and workspace surfaces. Do not add feature-specific descendants here. */
-@import '../tokens.css';
 
+/* --compact-* are ALIASES to the design tokens in styles/tokens.css
+ * (Slice 2) — exactly one value each, resolving light/dark via
+ * light-dark() automatically. The old light/dark literal blocks and the
+ * two conflicting --compact-accent fallbacks (#7295c3 vs #4b5563) are gone.
+ * --compact-accent is var(--color-accent). Slice 3 removed the inline
+ * --compact-accent override PromptOptimizerApp.vue used to set from the
+ * Naive primaryColor when compact: the Naive primary IS the accent now
+ * (#1f6bd1 light / #6d9cfe dark), so the inline value was identical to
+ * the token and the token is the single source of truth. */
+
+/* UIUX-N05 audit (2026-11-19): Naive applies its --n-* theme vars as INLINE
+ * styles on the component root (style: this.cssVars — see Input.mjs,
+ * Button.mjs, SelectMenu.mjs in node_modules/naive-ui/es), so a stylesheet
+ * rule can only override them with !important; naive-theme.ts is global
+ * and cannot express these compact-only values. Counted 64 live --n-
+ * !important declarations repo-wide (plus 8 mentions inside comments),
+ * every one targeting a Naive component (.n-button / .n-base-selection /
+ * .n-input / .n-radio-*) — none was replaceable by a plain rule or a theme
+ * value. Do not re-file; if a new --n- !important appears, check the
+ * selector is a Naive component first. */
+:root {
+  --compact-border: var(--color-border);
+  --compact-muted: var(--color-text-secondary);
+  --compact-ink: var(--color-text-primary);
+  --compact-paper: var(--color-background-surface);
+  --compact-soft: var(--color-background-muted);
+  --compact-accent: var(--color-accent);
+}
+
+/* Slice 6a (design-system §2.3): stacked mobile workspaces scroll WITH the
+ * page — the Slice 5 MainLayout frame has no nested overflow, so this
+ * wrapper must not clip either. `overflow: visible` lets the stacked
+ * panes spill out of the viewport-height frame and the document scrolls.
+ * Desktop is unaffected (this rule only applies under .workspace-compact,
+ * and desktop panes keep their own internal scroll). The Image
+ * workspaces still use the hidden-pane pattern until Slice 6b; their
+ * visible pane keeps its own internal scroll, and this change only
+ * un-clips overflow beyond the viewport for them. */
 .workspace-compact .main-content-wrapper {
-  overflow: hidden;
-  background: var(--po-color-bg-surface);
+  overflow: visible;
+  background: var(--compact-paper);
   container: mobile-viewport / size;
 }
 
-.workspace-compact .n-button,
-.workspace-compact button {
+.workspace-compact .n-button {
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    background-color var(--po-duration-micro) var(--po-ease-standard),
-    border-color var(--po-duration-micro) var(--po-ease-standard),
-    color var(--po-duration-micro) var(--po-ease-standard),
-    transform var(--po-duration-micro) var(--po-ease-standard);
-}
-
-.workspace-compact .n-button:active:not(:disabled),
-.workspace-compact button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.workspace-compact .n-button:focus-visible,
-.workspace-compact button:focus-visible {
-  outline: var(--po-focus-ring);
-  outline-offset: var(--po-focus-offset);
 }
 
 .compact-two-region {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--po-color-bg-surface);
+  background: var(--compact-paper);
   --compact-gap: clamp(6px, 1.5vw, 10px);
   --compact-editor-max: clamp(82px, 18dvh, 164px);
-  --compact-submit-width: clamp(64px, 16cqi, 88px);
+  --compact-submit-width: clamp(56px, 15cqi, 80px);
 }
 
 .compact-two-region .n-card {
-  border-radius: var(--po-radius-lg);
-  border-color: var(--po-color-border);
+  border-radius: 12px;
+  border-color: var(--compact-border);
 }
 
 .compact-two-region textarea,
-.compact-two-region input,
-.compact-two-region .n-input__input-el,
-.compact-two-region .n-input__textarea-el {
-  font-size: var(--po-text-input-mobile) !important;
-  line-height: 1.65 !important;
+.compact-two-region .n-input__input-el {
+  font-size: 16px !important;
+  line-height: 1.7 !important;
 }
 
 .workspace-compact .n-config-provider {
-  font-family: var(--po-font-sans);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 .compact-two-region .n-button {
-  --n-border-radius: var(--po-radius-md) !important;
+  --n-border-radius: 10px !important;
 }
 
+/* UIUX-M01 (M-Ea): the resting border was `1px solid transparent`, so the
+ * compact input/select had NO visible boundary — fill #f1f1f1 vs paper
+ * #ffffff computes to 1.13:1, far under the 3:1 minimum for a non-text UI
+ * boundary. The border is now the tertiary grey token #767676/#9e9e9e
+ * (4.54:1 vs paper light, 5.65:1 vs #262626 dark; 4.02:1 vs the #f1f1f1
+ * fill). CORRECTION to the R3-CODE-X suggestion: --color-border-emphasized
+ * (#d4d4d4) computes to only 1.48:1 on white and does NOT reach 3:1
+ * (naive-theme.ts header says so) — the tertiary grey is the 3:1+ choice.
+ * The fill (--compact-soft) is unchanged, so the compact look is kept. */
 .compact-two-region .n-input {
-  --n-border-radius: var(--po-radius-md) !important;
-  --n-color: var(--po-color-bg-muted) !important;
-  --n-border: 1px solid transparent !important;
-  --n-font-size: var(--po-text-input-mobile) !important;
-  --n-line-height-textarea: 1.65 !important;
+  --n-border-radius: 10px !important;
+  --n-color: var(--compact-soft) !important;
+  --n-border: 1px solid var(--color-text-tertiary) !important;
+  --n-font-size: 16px !important;
+  --n-line-height-textarea: 1.7 !important;
 }
 
 .compact-two-region .n-base-selection {
-  --n-border-radius: var(--po-radius-md) !important;
-  --n-color: var(--po-color-bg-muted) !important;
-  --n-border: 1px solid transparent !important;
+  --n-border-radius: 10px !important;
+  --n-color: var(--compact-soft) !important;
+  --n-border: 1px solid var(--color-text-tertiary) !important;
 }
 
 .compact-two-region .n-input:focus-within {
-  --n-color: var(--po-color-bg-surface) !important;
-  --n-border-focus: 1px solid var(--po-color-border-strong) !important;
+  --n-color: var(--compact-paper) !important;
 }
 
 :root[data-workspace-theme="dark"] .compact-two-region .n-button--primary-type {
-  --n-text-color: var(--po-color-on-accent) !important;
-  --n-text-color-hover: var(--po-color-on-accent) !important;
-  --n-text-color-pressed: var(--po-color-on-accent) !important;
-  --n-text-color-focus: var(--po-color-on-accent) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .workspace-compact *,
-  .workspace-compact *::before,
-  .workspace-compact *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+  /* Text on the primary button = on-accent token. RESOLVED (Slice 3):
+   * the dark primary-button background is now the accent #6d9cfe, so
+   * this pair measures #111111 on #6d9cfe = 7.05:1 (was #111111 on the
+   * old slate #64748b = 3.97:1). */
+  --n-text-color: var(--color-on-accent) !important;
+  --n-text-color-hover: var(--color-on-accent) !important;
+  --n-text-color-pressed: var(--color-on-accent) !important;
+  --n-text-color-focus: var(--color-on-accent) !important;
 }

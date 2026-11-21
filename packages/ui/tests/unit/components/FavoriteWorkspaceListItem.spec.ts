@@ -174,8 +174,8 @@ describe('FavoriteWorkspaceListItem', () => {
 
     await flushPromises()
 
-    expect(wrapper.text()).toContain('1 vars')
-    expect(wrapper.text()).toContain('1 examples')
+    expect(wrapper.text()).toContain('1 var')
+    expect(wrapper.text()).toContain('1 example')
   })
 
   it('keeps quick actions from selecting the card', async () => {

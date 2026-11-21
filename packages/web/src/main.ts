@@ -28,12 +28,27 @@ installPinia(app)
 // 第1步：安装 router 插件
 app.use(router)
 
+// A11Y-M06: the app locales are en-US / zh-CN / zh-TW / vi-VN. Map each to
+// the BCP 47 tag screen readers and hyphenation expect (`zh-Hans`/`zh-Hant`
+// keep the script distinction; vi-VN must NOT collapse to "en").
+const toHtmlLang = (locale: string): string => {
+  const normalized = locale.trim().replace('_', '-')
+  if (/^zh[-_](TW|HK|MO)$/i.test(normalized)) return 'zh-Hant'
+  if (/^zh/i.test(normalized)) return 'zh-Hans'
+  if (/^vi/i.test(normalized)) return 'vi'
+  if (/^en/i.test(normalized)) return 'en'
+  return normalized.split('-')[0]?.toLowerCase() || 'en'
+}
+
 // 同步文档标题和语言属性
 if (typeof document !== 'undefined') {
   const syncDocumentTitle = () => {
     document.title = i18n.global.t('common.appName')
     const currentLocale = String(i18n.global.locale.value || '')
-    const htmlLang = currentLocale.startsWith('zh') ? 'zh' : currentLocale.startsWith('vi') ? 'vi' : 'en'
+    // A11Y-M06: map the app locale to a proper BCP 47 language tag so
+    // screen readers (and Chromium hyphenation) use the right language.
+    // The old `startsWith('zh') ? 'zh' : 'en'` left vi-VN as "en".
+    const htmlLang = toHtmlLang(currentLocale)
     document.documentElement.setAttribute('lang', htmlLang)
   }
 

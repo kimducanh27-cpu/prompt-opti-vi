@@ -4,6 +4,7 @@
     @update:value="handleTemplateSelect"
     :options="selectOptions"
     :placeholder="t('template.select')"
+    :input-props="{ 'aria-label': t('template.select') }"
     :loading="!isReady"
     size="medium"
     @focus="handleFocus"
@@ -30,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { FileText } from '@lucide/vue'
+import { PhFileText as FileText } from '@phosphor-icons/vue'
 import { ref, computed, watch, inject, type Ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'

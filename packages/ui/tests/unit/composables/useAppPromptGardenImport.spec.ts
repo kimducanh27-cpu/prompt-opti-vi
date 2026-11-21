@@ -127,7 +127,7 @@ describe('Garden Arena imports', () => {
     try {
       scope.run(() => useAppPromptGardenImport({
         router, hasRestoredInitialState: ref(true), isLoadingExternalData,
-        gardenBaseUrl: 'http://garden.local', arenaSession: { running: scenario === 'busy', replaceInput },
+        gardenBaseUrl: 'https://garden.local', arenaSession: { running: scenario === 'busy', replaceInput },
         basicSystemSession: useBasicSystemSession(pinia), basicUserSession,
         proMultiMessageSession: useProMultiMessageSession(pinia), proVariableSession: useProVariableSession(pinia),
         imageText2ImageSession: useImageText2ImageSession(pinia), imageImage2ImageSession: useImageImage2ImageSession(pinia),
@@ -256,7 +256,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -277,7 +277,7 @@ describe('useAppPromptGardenImport', () => {
       await waitForCondition(() => isLoadingExternalData.value === false)
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
-      expect(fetchMock.mock.calls[0]?.[0]).toBe('http://garden.local/api/public/prompt-source/NB-001')
+      expect(fetchMock.mock.calls[0]?.[0]).toBe('https://garden.local/api/public/prompt-source/NB-001')
 
       // Navigated to target workspace.
       expect(currentRoute.value.path).toBe('/basic/system')
@@ -426,7 +426,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -445,7 +445,7 @@ describe('useAppPromptGardenImport', () => {
       await waitForCondition(() => isLoadingExternalData.value === false)
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
-      expect(fetchMock.mock.calls[0]?.[0]).toBe('http://garden.local/api/public/prompt-source/NB-PRO-001')
+      expect(fetchMock.mock.calls[0]?.[0]).toBe('https://garden.local/api/public/prompt-source/NB-PRO-001')
 
       // Navigated to target workspace.
       expect(currentRoute.value.path).toBe('/pro/multi')
@@ -606,7 +606,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -625,7 +625,7 @@ describe('useAppPromptGardenImport', () => {
       await waitForCondition(() => isLoadingExternalData.value === false)
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
-      expect(fetchMock.mock.calls[0]?.[0]).toBe('http://garden.local/api/public/prompt-source/NB-PVAR-001')
+      expect(fetchMock.mock.calls[0]?.[0]).toBe('https://garden.local/api/public/prompt-source/NB-PVAR-001')
 
       expect(currentRoute.value.path).toBe('/pro/variable')
 
@@ -760,7 +760,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -858,8 +858,8 @@ describe('useAppPromptGardenImport', () => {
 
     const firstImagePath = '/prompt-assets/NB-MULTI-EXAMPLE-001/examples/ex-001/01.png'
     const secondImagePath = '/prompt-assets/NB-MULTI-EXAMPLE-001/examples/ex-001/02.jpg'
-    const firstImageUrl = `http://garden.local${firstImagePath}`
-    const secondImageUrl = `http://garden.local${secondImagePath}`
+    const firstImageUrl = `https://garden.local${firstImagePath}`
+    const secondImageUrl = `https://garden.local${secondImagePath}`
 
     const v1Payload = {
       schema: 'prompt-garden.prompt.v1',
@@ -881,7 +881,7 @@ describe('useAppPromptGardenImport', () => {
       (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
     >(async (input) => {
       const url = String(input)
-      if (url === 'http://garden.local/api/public/prompt-source/NB-MULTI-EXAMPLE-001') {
+      if (url === 'https://garden.local/api/public/prompt-source/NB-MULTI-EXAMPLE-001') {
         return new Response(JSON.stringify(v1Payload), {
           status: 200,
           headers: { 'content-type': 'application/json' },
@@ -910,7 +910,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1038,7 +1038,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1152,7 +1152,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1169,7 +1169,7 @@ describe('useAppPromptGardenImport', () => {
       await waitForCondition(() => isLoadingExternalData.value === false)
 
       expect(currentRoute.value.path).toBe('/pro/variable')
-      expect(fetchMock.mock.calls[0]?.[0]).toBe('http://garden.local/api/public/prompt-source/NB-PVAR-EX-002')
+      expect(fetchMock.mock.calls[0]?.[0]).toBe('https://garden.local/api/public/prompt-source/NB-PVAR-EX-002')
       expect(proVariableSession.getTemporaryVariable('name')).toBe('Charlie')
 
       // Import params removed from the URL.
@@ -1284,7 +1284,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1408,7 +1408,7 @@ describe('useAppPromptGardenImport', () => {
     }
 
     const inputAssetPath = '/prompt-assets/NB-I2I-001/examples/ex-001/01.png'
-    const inputAssetUrl = `http://garden.local${inputAssetPath}`
+    const inputAssetUrl = `https://garden.local${inputAssetPath}`
 
     const v1Payload = {
       schema: 'prompt-garden.prompt.v1',
@@ -1430,7 +1430,7 @@ describe('useAppPromptGardenImport', () => {
       (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
     >(async (input) => {
       const url = String(input)
-      if (url === 'http://garden.local/api/public/prompt-source/NB-I2I-001') {
+      if (url === 'https://garden.local/api/public/prompt-source/NB-I2I-001') {
         return new Response(JSON.stringify(v1Payload), {
           status: 200,
           headers: { 'content-type': 'application/json' },
@@ -1453,7 +1453,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1574,7 +1574,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1733,7 +1733,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -1774,7 +1774,7 @@ describe('useAppPromptGardenImport', () => {
       const metadata = savedArg.metadata as Record<string, unknown>
       const snapshot = metadata.gardenSnapshot as Record<string, unknown>
       expect(snapshot.importCode).toBe('NB-SAVE-001')
-      expect(snapshot.gardenBaseUrl).toBe('http://garden.local')
+      expect(snapshot.gardenBaseUrl).toBe('https://garden.local')
 
       const media = metadata.media as Record<string, unknown>
       expect(String(media.coverAssetId || '')).toMatch(/^img_/)
@@ -1924,7 +1924,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -2094,7 +2094,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -2119,9 +2119,9 @@ describe('useAppPromptGardenImport', () => {
       const favoriteArg = favoriteManager.addFavorite.mock.calls[0]?.[0]
       expect(favoriteArg?.metadata?.media).toEqual({
         coverAssetId: undefined,
-        coverUrl: 'http://garden.local/prompt-assets/cover.png',
+        coverUrl: 'https://garden.local/prompt-assets/cover.png',
         assetIds: [],
-        urls: ['http://garden.local/prompt-assets/show-1.png'],
+        urls: ['https://garden.local/prompt-assets/show-1.png'],
       })
     } finally {
       scope.stop()
@@ -2231,7 +2231,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -2258,9 +2258,9 @@ describe('useAppPromptGardenImport', () => {
 
       expect(savedArg.prefill?.metadata?.media).toEqual({
         coverAssetId: undefined,
-        coverUrl: 'http://garden.local/prompt-assets/cover.png',
+        coverUrl: 'https://garden.local/prompt-assets/cover.png',
         assetIds: [],
-        urls: ['http://garden.local/prompt-assets/show-1.png'],
+        urls: ['https://garden.local/prompt-assets/show-1.png'],
       })
     } finally {
       scope.stop()
@@ -2355,7 +2355,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -2446,7 +2446,7 @@ describe('useAppPromptGardenImport', () => {
       metadata: {
         gardenSnapshot: {
           importCode: 'NB-SAVE-UPSERT-001',
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
         },
       },
     }
@@ -2506,7 +2506,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,
@@ -2535,7 +2535,7 @@ describe('useAppPromptGardenImport', () => {
           metadata: expect.objectContaining({
             gardenSnapshot: expect.objectContaining({
               importCode: 'NB-SAVE-UPSERT-001',
-              gardenBaseUrl: 'http://garden.local',
+              gardenBaseUrl: 'https://garden.local',
             }),
           }),
         })
@@ -2640,7 +2640,7 @@ describe('useAppPromptGardenImport', () => {
           router,
           hasRestoredInitialState,
           isLoadingExternalData,
-          gardenBaseUrl: 'http://garden.local',
+          gardenBaseUrl: 'https://garden.local',
           basicSystemSession,
           basicUserSession,
           proMultiMessageSession,

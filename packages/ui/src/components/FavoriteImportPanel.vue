@@ -167,14 +167,14 @@ import {
   NUploadDragger,
   type UploadFileInfo,
 } from 'naive-ui'
-import { ExternalLink, Sprout as Plant2, Upload } from '@lucide/vue'
+import { PhArrowSquareOut as ExternalLink, PhPlant as Plant2, PhUpload as Upload } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 
 import { getEnvVar } from '@prompt-optimizer/core'
 import { useToast } from '../composables/ui/useToast'
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
 import type { AppServices } from '../types/services'
-import { getI18nErrorMessage } from '../utils/error'
+import { getUserFacingErrorMessage, isJsonSyntaxError } from '../utils/error'
 import { openExternalUrl } from '../utils/open-external-url'
 import { parsePromptGardenImportInput } from '../utils/prompt-garden-import'
 import {
@@ -265,8 +265,12 @@ const formatFileSize = (size?: number) => {
 }
 
 const buildErrorMessage = (summary: string, error: unknown) => {
+  // JSON 语法错误直接给一句人话：原始 SyntaxError 文案
+  //（"Expected double-quoted property name in JSON at position 123"）
+  // 是技术术语，不应作为主文案展示；原始信息已由 getUserFacingErrorMessage 写进日志。
+  if (isJsonSyntaxError(error)) return t('favorites.manager.importDialog.invalidJsonFile')
   const fallback = t('common.error')
-  const detail = getI18nErrorMessage(error, fallback)
+  const detail = getUserFacingErrorMessage(error, fallback)
   return detail === fallback ? summary : `${summary}: ${detail}`
 }
 

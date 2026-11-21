@@ -102,7 +102,7 @@ const messages = {
       "uploadFailed": "Upload failed",
       "uploadSuccess": "Upload success",
       "preparedSuccess": "Image prepared for model compatibility: {before} → {after}",
-      "preparedBatchSuccess": "Prepared {count} images for model compatibility",
+      "preparedBatchSuccess": "Prepared {count} image for model compatibility | Prepared {count} images for model compatibility",
       "processingFailed": "Image preparation failed. Please try a smaller image.",
       "confirmTitle": "Confirm image processing",
       "confirmDescription": "To meet model input limits, {count} image(s) will be resized or re-encoded. The resulting file size may increase slightly.",
@@ -295,7 +295,7 @@ const messages = {
   },
   "toolCall": {
     "title": "Tool Calls",
-    "count": "{count} calls",
+    "count": "{count} call | {count} calls",
     "arguments": "Arguments",
     "result": "Result",
     "error": "Error",

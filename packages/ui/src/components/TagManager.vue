@@ -49,7 +49,7 @@
                 {{ t('favorites.manager.tagManager.useCount') }} · {{ tag.count }}
               </n-text>
             </button>
-            <n-dropdown trigger="click" :options="mobileActions" @select="handleMobileAction($event, tag)">
+            <n-dropdown trigger="click" :options="mobileActions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="handleMobileAction($event, tag)">
               <n-button quaternary :aria-label="`${t('favorites.manager.tagManager.actions')}: ${tag.name}`">
                 <template #icon><n-icon><DotsVertical /></n-icon></template>
               </n-button>
@@ -131,6 +131,7 @@
           v-model:value="mergeTargetTag"
           :options="mergeTargetOptions"
           :placeholder="t('favorites.manager.tagManager.mergeDialog.targetPlaceholder')"
+          :input-props="{ 'aria-label': t('favorites.manager.tagManager.mergeDialog.targetPlaceholder') }"
           filterable
         />
       </n-space>
@@ -174,12 +175,13 @@ import {
   NPagination,
   type DataTableColumns
 } from 'naive-ui';
-import { Search, SquarePen as Edit, Trash2 as Trash, GitMerge, EllipsisVertical as DotsVertical } from '@lucide/vue'
+import { PhMagnifyingGlass as Search, PhPencilSimple as Edit, PhTrash as Trash, PhGitMerge as GitMerge, PhDotsThreeVertical as DotsVertical } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n';
 import { useToast } from '../composables/ui/useToast';
 import type { AppServices } from '../types/services';
 import { TagTypeConverter, type TagStatistics } from '@prompt-optimizer/core';
 import { getI18nErrorMessage } from '../utils/error';
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y';
 import ThemedTooltip from './common/ThemedTooltip.vue';
 import NModal from './common/AdaptiveModal.vue';
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout';

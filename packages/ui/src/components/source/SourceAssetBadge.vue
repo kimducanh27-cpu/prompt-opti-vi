@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { inject, ref, type Ref } from 'vue'
 import { NAlert, NButton, NIcon, NModal } from 'naive-ui'
-import { GitMerge } from '@lucide/vue'
+import { PhGitMerge as GitMerge } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoritePrompt } from '@prompt-optimizer/core'
 

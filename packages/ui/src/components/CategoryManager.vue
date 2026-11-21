@@ -113,7 +113,16 @@
       :mask-closable="false"
       @positive-click="handleConfirmDelete"
     >
-      <p v-html="t('favorites.categoryManager.deleteWarning', { name: deletingCategory?.name })"></p>
+      <!-- OBS-01: no v-html here — the category name is rendered as text
+        inside <strong>, so a crafted name (e.g. `<img onerror=…>`) can never
+        inject HTML. The bold moves from the locale string into this slot.
+        OBS-01 Nit (V-F): <i18n-t> defaults to scope="parent" and warns
+        "[intlify] Not found parent scope. use the global scope." on EVERY
+        render when no ancestor defines a local scope — the app uses the
+        global composer, so say so explicitly. -->
+      <i18n-t keypath="favorites.categoryManager.deleteWarning" tag="p" scope="global">
+        <template #name><strong>{{ deletingCategory?.name }}</strong></template>
+      </i18n-t>
       <p v-if="deletingCategoryHasChildren" style="color: var(--n-color-error)">
         {{ t('favorites.categoryManager.deleteChildrenWarning', { count: deletingCategoryChildCount }) }}
       </p>
@@ -142,10 +151,11 @@ import {
   type FormInst,
   type FormRules
 } from 'naive-ui';
-import { FolderPlus, Maximize2 as ArrowsMaximize, Minimize2 as ArrowsMinimize, SquarePen as Edit, Trash2 as Trash, Plus, Folder, EllipsisVertical as DotsVertical } from '@lucide/vue'
+import { PhFolderPlus as FolderPlus, PhArrowsOut as ArrowsMaximize, PhArrowsIn as ArrowsMinimize, PhPencilSimple as Edit, PhTrash as Trash, PhPlus as Plus, PhFolder as Folder, PhDotsThreeVertical as DotsVertical } from '@phosphor-icons/vue'
 import { useToast } from '../composables/ui/useToast';
 import { useI18n } from 'vue-i18n';
 import { getI18nErrorMessage } from '../utils/error';
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y';
 import type { FavoriteCategory } from '@prompt-optimizer/core';
 import type { AppServices } from '../types/services';
 import NModal from './common/AdaptiveModal.vue';
@@ -294,6 +304,8 @@ const renderSuffix = ({ option }: { option: TreeOption }): VNodeChild => {
         NDropdown,
         {
           options: dropdownOptions,
+          menuProps: dropdownMenuProps,
+          nodeProps: dropdownNodeProps,
           trigger: isCompact.value ? 'click' : 'hover',
           onSelect: (key: string) => handleNodeAction(key, cat)
         },

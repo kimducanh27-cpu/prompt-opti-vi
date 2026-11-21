@@ -4,29 +4,9 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 
+import ts from 'typescript'
+
 import { toComparableFileUrl } from './direct-execution.mjs'
-
-const rootRequire = createRequire(import.meta.url)
-
-function transpileTypeScriptToCommonJs(source, filePath) {
-  try {
-    const ts = rootRequire('typescript')
-    return ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2020,
-      },
-    }).outputText
-  } catch {
-    // Offline fallback when typescript package is not installed in node_modules:
-    // transform ES module import/export and TypeScript `as const` assertions to CommonJS.
-    let transformed = source
-      .replace(/^\s*import\s+([A-Za-z0-9_$]+)\s+from\s+['"]([^'"]+)['"]\s*;?/gm, 'const $1 = require("$2").default || require("$2");')
-      .replace(/\s+as\s+const\b/g, '')
-      .replace(/^\s*export\s+default\s+/gm, 'module.exports.default = ')
-    return transformed
-  }
-}
 
 export function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -107,7 +87,12 @@ function loadTsModuleExports(filePath, cache = new Map()) {
   }
 
   const source = fs.readFileSync(filePath, 'utf8')
-  const compiled = transpileTypeScriptToCommonJs(source, filePath)
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+    },
+  }).outputText
 
   const require = createRequire(pathToFileURL(filePath))
   const module = { exports: {} }

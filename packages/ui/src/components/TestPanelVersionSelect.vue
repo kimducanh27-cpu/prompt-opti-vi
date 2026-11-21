@@ -28,7 +28,7 @@
     </template>
     <div v-if="previewSource" class="source-hover-preview" data-testid="test-source-hover-preview">
       <div class="source-hover-preview__title">{{ selectedOption?.fullLabel }}</div>
-      <div v-for="line in tooltipLines.filter(line => line !== selectedOption?.fullLabel)" :key="line" class="source-hover-preview__meta">{{ line }}</div>
+      <div v-for="line in tooltipMetaLines" :key="line" class="source-hover-preview__meta">{{ line }}</div>
       <div ref="previewBody" class="source-hover-preview__content">{{ previewContent || t('workspace.emptyPromptReference') }}</div>
       <NButton v-if="previewOverflows" text size="small" class="source-hover-preview__full" @click="requestPreview">{{ t('workspace.viewFullPrompt') }}</NButton>
     </div>
@@ -138,6 +138,13 @@ const tooltipLines = computed(() => {
   return lines
 })
 
+// P-016: the tooltip's meta lines (tooltip lines minus the title line, which
+// is rendered separately above). Was an inline `.filter()` in the template,
+// re-run on every render; now cached in a computed.
+const tooltipMetaLines = computed(() =>
+  tooltipLines.value.filter((line) => line !== selectedOption.value?.fullLabel),
+)
+
 const renderOptionLabel = (
   option: SelectOption & { fullLabel?: string }, selected: boolean
 ): VNodeChild => {
@@ -158,7 +165,11 @@ const handleUpdate = (nextValue: string | number | null) => {
 .test-panel-version-select {
   width: 108px;
 }
-.test-panel-version-select--text :deep(.n-base-selection) { --n-font-size: 13px !important; --n-height: 28px !important; background: transparent; }
+.test-panel-version-select--text :deep(.n-base-selection) { --n-font-size: 16px !important; --n-height: 36px !important; background: transparent; }
+/* 44px touch target on coarse pointers (design-system §1.4); 36px desktop minimum. */
+@media (pointer: coarse) {
+  .test-panel-version-select--text :deep(.n-base-selection) { --n-height: 44px !important; }
+}
 .test-panel-version-select--text :deep(.n-base-selection-label) { background: transparent; }
 .test-panel-version-select--text :deep(.n-base-selection-label .n-base-selection-input) { padding-left: 4px; }
 

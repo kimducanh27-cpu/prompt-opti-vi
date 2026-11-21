@@ -1,4 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
+import { ensureTestRegionVisible } from '../helpers/common'
 
 test.use({ actionTimeout: 10000 })
 test.describe.configure({ timeout: 60000 })
@@ -60,7 +61,7 @@ async function seedSources(page: Page, mode: string, storeId: string) {
 }
 
 async function openSource(page: Page, group: 'A' | 'B') {
-  await page.getByTestId('workspace-region-test').click()
+  await ensureTestRegionVisible(page)
   const toggle = page.getByTestId('test-config-toggle')
   if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click()
   await page.locator('.test-config-group-label').filter({ hasText: new RegExp(`^${group}$`) }).click()
@@ -78,10 +79,11 @@ async function expectReadableThroughLastLine(modal: Locator, source: 'ORIGINAL' 
 }
 
 async function expectSectionAtTop(workspace: Locator, section: 'original' | 'workspace') {
+  // Slices 6a–6b: all workspaces stack in one page scroll, so "go to edit"
+  // puts the section at the viewport top.
   await expect.poll(async () => {
-    const container = (await workspace.locator('.optimize-workspace-layout').boundingBox())!
     const target = (await workspace.locator(`.optimize-${section}-scroll`).boundingBox())!
-    return Math.abs(target.y - container.y)
+    return Math.abs(target.y)
   }).toBeLessThan(32)
 }
 
@@ -125,7 +127,7 @@ for (const [mode, route, storeId] of workspaces) {
     await expectSectionAtTop(workspace, 'workspace')
 
     // A previous-version selection is read-only even when it falls back to V0.
-    await page.getByTestId('workspace-region-test').click()
+    await ensureTestRegionVisible(page)
     const toggle = page.getByTestId('test-config-toggle')
     if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click()
     await page.getByTestId(`${mode}-test-original-version-select`).click()
@@ -189,7 +191,7 @@ test('quick source selection cannot reopen a hover preview over the full prompt 
     await page.keyboard.insertText(originalPrompt)
   }
 
-  await page.getByTestId('workspace-region-test').click()
+  await ensureTestRegionVisible(page)
   const toggle = page.getByTestId('test-config-toggle')
   if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click()
   await page.getByTestId('basic-system-test-original-version-select').click()

@@ -83,6 +83,22 @@ async function closeFavoritesDrawerIfOpen(page: Page): Promise<void> {
   }
 }
 
+async function closeFavoriteAssetPanelIfOpen(page: Page): Promise<void> {
+  // Slice 10: create/edit/detail/import all live inside ONE PoSheet
+  // (.favorite-asset-panel). Saving switches it to detail mode but leaves
+  // it open, and its .n-modal-mask then covers the list and the Add button
+  // — a hash-only SPA navigation does NOT close it, so a second create (or
+  // a click on a list item) is mask-blocked. Close it via its X button.
+  const closeButton = page.locator('.favorite-asset-panel .n-base-close:visible').first();
+  if (await closeButton.count()) {
+    // The sheet may already be closing (e.g. editor Cancel just closed
+    // it): the button detaches mid-click. Swallow that race — the mask
+    // assertion below is the real check.
+    await closeButton.click({ timeout: 5000 }).catch(() => undefined);
+    await expect(page.locator('.n-modal-mask')).toBeHidden({ timeout: 10000 });
+  }
+}
+
 async function createFavoriteWithReproData(
   page: Page,
   data: {
@@ -104,7 +120,7 @@ async function createFavoriteWithReproData(
     exampleInputImageUpload: string;
   }
 ): Promise<void> {
-  await closeFavoritesDrawerIfOpen(page);
+  await closeFavoriteAssetPanelIfOpen(page);
   await page.getByTestId('favorites-manager-add').click();
   await expect(page.getByTestId('favorite-editor-title')).toBeVisible({ timeout: 10000 });
 
@@ -113,7 +129,7 @@ async function createFavoriteWithReproData(
   await fillFieldByTestId(page, 'favorite-editor-content', data.content);
   await uploadFavoriteImage(page, data.image);
 
-  await page.getByTestId('favorite-repro-add-variable-empty').click();
+  await page.getByTestId('favorite-repro-add-variable').click();
   await fillFieldByTestId(page, 'favorite-repro-variable-name', data.variableName);
   await fillFieldByTestId(page, 'favorite-repro-variable-default', data.variableDefault);
   await fillFieldByTestId(page, 'favorite-repro-variable-description', data.variableDescription);
@@ -133,11 +149,31 @@ async function createFavoriteWithReproData(
   await expect(detailPanel).toBeVisible({ timeout: 15000 });
   await expect(detailPanel).toContainText(data.title);
   await expect(detailPanel).toContainText(data.variableName);
-  await expect(detailPanel).toContainText(data.exampleId);
+  await expect(detailPanel).toContainText(data.exampleText);
+}
+
+async function createSimpleFavorite(page: Page, title: string, content: string): Promise<void> {
+  // Close a leftover asset panel first: saving a favorite opens the detail
+  // dialog (FavoriteAssetPanelDialog, an NModal), whose mask covers the
+  // list and the Add button — a second create in the same test would be
+  // blocked by the mask.
+  await closeFavoriteAssetPanelIfOpen(page);
+  await page.getByTestId('favorites-manager-add').click();
+  await expect(page.getByTestId('favorite-editor-title')).toBeVisible({ timeout: 10000 });
+
+  await fillFieldByTestId(page, 'favorite-editor-title', title);
+  await fillFieldByTestId(page, 'favorite-editor-content', content);
+
+  await page.getByTestId('favorite-editor-save').click();
+  const detailPanel = page.getByTestId('favorite-detail-panel');
+  await expect(detailPanel).toBeVisible({ timeout: 15000 });
+  await expect(detailPanel).toContainText(title);
 }
 
 async function selectFavoriteByTitle(page: Page, title: string): Promise<void> {
-  await closeFavoritesDrawerIfOpen(page);
+  // Close a leftover detail dialog first (see createSimpleFavorite): its
+  // mask would cover the search input.
+  await closeFavoriteAssetPanelIfOpen(page);
   await page.locator('.favorites-manager-search input').fill(title);
   const listItem = page.getByTestId('favorite-workspace-list-item').filter({ hasText: title }).first();
   await expect(listItem).toBeVisible({ timeout: 10000 });
@@ -202,92 +238,53 @@ test.describe('收藏管理基础功能', () => {
     await expect(page).toHaveTitle(/提示词优化器|Prompt Optimizer/i);
 
     // 验证主要元素存在
-    const mainContent = page.locator('main, #app, [role="main"]');
+    // Scoped to #app only (Slice 10, same as the Slice 7 gate fix in
+    // helpers/common.ts): the app shell renders both <div id="app"> (the Vue
+    // mount point) and <main class="app-content"> (MainLayout), so the old
+    // 'main, #app, [role="main"]' selector matched 2 elements and tripped
+    // Playwright strict mode.
+    const mainContent = page.locator('#app');
     await expect(mainContent).toBeAttached();
   });
 
   test('能够打开收藏管理器', async ({ page }) => {
-    // 查找并点击收藏管理按钮
-    // 根据实际UI调整选择器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-
-    if (await favoriteButton.count() > 0) {
-      await favoriteButton.first().click();
-
-      // 等待收藏管理器对话框出现
-      const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|favorite/i });
-      await expect(dialog).toBeVisible({ timeout: 5000 });
-
-      // 验证对话框标题
-      const dialogTitle = dialog.locator('h1, h2, .n-card-header__main');
-      await expect(dialogTitle).toContainText(/收藏|Favorites/i);
-    } else {
-      // 如果没有找到收藏按钮,跳过测试
-      test.skip();
-    }
+    // Slice 10: the favorites manager is a PAGE (/#/favorites), not a
+    // dialog. The header Favorites action routes to the page
+    // (useAppFavorite.ts: openFavoritesPage); the legacy manager PoSheet
+    // (showFavoriteManager) is never opened — nothing in the app sets it to
+    // true — so no [role="dialog"] ever appears. Assert the page itself.
+    await openFavoritesPage(page);
+    await expect(page).toHaveURL(/\/#\/favorites$/);
+    await expect(page.locator('.favorites-manager-search input')).toBeVisible();
+    await expect(page.getByTestId('favorites-manager-actions')).toBeVisible();
   });
 
   test('收藏管理器包含必要的UI元素', async ({ page }) => {
-    // 尝试打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+    await openFavoritesPage(page);
 
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
+    // 搜索输入框
+    const searchInput = page.locator('.favorites-manager-search input');
+    await expect(searchInput).toBeVisible();
 
-    await favoriteButton.first().click();
+    // "添加"按钮
+    await expect(page.getByTestId('favorites-manager-add')).toBeVisible();
 
-    // 等待对话框出现
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|favorite/i });
-    await expect(dialog).toBeVisible();
+    // 更多操作菜单按钮
+    await expect(page.getByTestId('favorites-manager-actions')).toBeVisible();
 
-    // 验证搜索输入框
-    const searchInput = dialog.getByPlaceholder(/搜索|search/i);
-    if (await searchInput.count() > 0) {
-      await expect(searchInput.first()).toBeVisible();
-    }
-
-    // 验证"添加"或"创建"按钮
-    const addButton = dialog.getByRole('button', { name: /添加|创建|新建|add|create/i });
-    if (await addButton.count() > 0) {
-      await expect(addButton.first()).toBeVisible();
-    }
+    // 分类/标签筛选区
+    await expect(page.locator('.favorites-manager-filters')).toBeVisible();
   });
 
   test('能够创建新收藏(基础验证)', async ({ page }) => {
-    // 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+    await openFavoritesPage(page);
 
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
+    await createSimpleFavorite(page, 'E2E 基础收藏', '这是一个 E2E 测试创建的基础收藏内容');
 
-    await favoriteButton.first().click();
-
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|favorite/i });
-    await expect(dialog).toBeVisible();
-
-    // 点击添加按钮
-    const addButton = dialog.getByRole('button', { name: /添加|创建|新建|add|create/i });
-
-    if (await addButton.count() === 0) {
-      test.skip();
-      return;
-    }
-
-    await addButton.first().click();
-
-    // 等待创建对话框出现
-    await page.waitForTimeout(500); // 等待动画
-
-    // 验证创建对话框出现(可能是第二个对话框)
-    const dialogs = page.locator('[role="dialog"]');
-    const dialogCount = await dialogs.count();
-
-    // 如果有多个对话框,说明创建对话框已打开
-    expect(dialogCount).toBeGreaterThanOrEqual(1);
+    // 验证收藏出现在列表中
+    await closeFavoriteAssetPanelIfOpen(page);
+    const listItem = page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 基础收藏' }).first();
+    await expect(listItem).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -301,85 +298,41 @@ test.describe('收藏完整 CRUD 流程', () => {
   });
 
   test('完整的创建、编辑、删除收藏流程', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
-    await favoriteButton.first().click();
+    await openFavoritesPage(page);
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
-    await expect(managerDialog).toBeVisible();
+    // 1. 创建收藏
+    await createSimpleFavorite(page, 'E2E 测试收藏', '这是一个 E2E 测试创建的收藏内容');
 
-    // 等待对话框完全加载
-    await page.waitForTimeout(500);
+    // 2. 搜索刚创建的收藏
+    await closeFavoriteAssetPanelIfOpen(page);
+    const searchInput = page.locator('.favorites-manager-search input');
+    await searchInput.fill('E2E 测试收藏');
+    const favoriteCard = page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 测试收藏' }).first();
+    await expect(favoriteCard).toBeVisible({ timeout: 10000 });
 
-    // 2. 点击添加收藏按钮
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
-    await addButton.click();
-    await page.waitForTimeout(500);
+    // 3. 打开详情并编辑描述
+    await favoriteCard.click();
+    const detailPanel = page.getByTestId('favorite-detail-panel');
+    await expect(detailPanel).toContainText('E2E 测试收藏', { timeout: 10000 });
+    await page.getByTestId('favorite-detail-edit').click();
+    await expect(page.getByTestId('favorite-editor-title')).toBeVisible({ timeout: 10000 });
+    await fillFieldByTestId(page, 'favorite-editor-description', 'E2E 测试收藏已编辑');
+    await page.getByTestId('favorite-editor-save').click();
+    await expect(detailPanel).toBeVisible({ timeout: 15000 });
+    await expect(detailPanel).toContainText('E2E 测试收藏已编辑');
 
-    // 3. 填写收藏信息
-    const createDialog = page.locator('[role="dialog"]').last();
+    // 4. 删除收藏。删除用的是自定义确认弹框（useConfirmDialog），不是
+    // window.confirm，所以 page.once('dialog') 永远不会触发——要点弹框里
+    // 的确认按钮（common.confirm = “确认”/“Confirm”）。
+    await page.getByTestId('favorite-detail-delete').click();
+    const deleteConfirmButton = page.getByRole('button', { name: /^(确认|Confirm)$/ });
+    await expect(deleteConfirmButton).toBeVisible({ timeout: 5000 });
+    await deleteConfirmButton.click();
 
-    // 填写标题
-    const titleInput = createDialog.getByPlaceholder(/标题|title/i);
-    if (await titleInput.count() > 0) {
-      await titleInput.fill('E2E 测试收藏');
-    }
-
-    // 填写内容
-    const contentInput = createDialog.locator('textarea').first();
-    if (await contentInput.count() > 0) {
-      await contentInput.fill('这是一个 E2E 测试创建的收藏内容');
-    }
-
-    // 4. 保存收藏
-    const saveButton = createDialog.getByRole('button', { name: /保存|save|确定|ok/i });
-    if (await saveButton.count() > 0) {
-      await saveButton.click();
-
-      // 等待保存完成
-      await page.waitForTimeout(1000);
-
-      // 5. 验证收藏已创建 - 搜索刚创建的收藏
-      const searchInput = managerDialog.getByPlaceholder(/搜索|search/i);
-      if (await searchInput.count() > 0) {
-        await searchInput.fill('E2E 测试收藏');
-        await page.waitForTimeout(500);
-
-        // 验证收藏卡片出现
-        const favoriteCard = managerDialog.locator('text=E2E 测试收藏');
-        if (await favoriteCard.count() > 0) {
-          await expect(favoriteCard.first()).toBeVisible();
-
-          // 6. 删除收藏 - 查找删除按钮
-          const card = favoriteCard.locator('..').locator('..').first();
-          const deleteButton = card.getByRole('button', { name: /删除|delete/i });
-
-          if (await deleteButton.count() > 0) {
-            await deleteButton.click();
-            await page.waitForTimeout(300);
-
-            // 确认删除
-            const confirmButton = page.getByRole('button', { name: /确定|确认|yes|ok/i });
-            if (await confirmButton.count() > 0) {
-              await confirmButton.click();
-              await page.waitForTimeout(500);
-
-              // 7. 验证收藏已删除
-              await searchInput.clear();
-              await searchInput.fill('E2E 测试收藏');
-              await page.waitForTimeout(500);
-
-              const deletedCard = managerDialog.locator('text=E2E 测试收藏');
-              expect(await deletedCard.count()).toBe(0);
-            }
-          }
-        }
-      }
-    }
+    // 5. 验证收藏已删除
+    await expect(page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 测试收藏' })).toHaveCount(0, {
+      timeout: 10000,
+    });
   });
 });
 
@@ -393,64 +346,46 @@ test.describe('搜索和过滤功能', () => {
   });
 
   test('搜索功能能够正常工作', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
-    await favoriteButton.first().click();
+    await openFavoritesPage(page);
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
-    await expect(dialog).toBeVisible();
+    await createSimpleFavorite(page, 'E2E 搜索测试 A', '搜索测试收藏 A 的内容');
+    await createSimpleFavorite(page, 'E2E 搜索其他 B', '搜索测试收藏 B 的内容');
 
-    // 测试搜索功能
-    const searchInput = dialog.getByPlaceholder(/搜索|search/i);
-    if (await searchInput.count() > 0) {
-      // 输入搜索关键词
-      await searchInput.fill('测试');
-      await page.waitForTimeout(800);
+    await closeFavoriteAssetPanelIfOpen(page);
+    const searchInput = page.locator('.favorites-manager-search input');
 
-      // 验证搜索输入框的值已更新
-      const searchValue = await searchInput.inputValue();
-      expect(searchValue).toBe('测试');
+    // 输入搜索关键词，只应剩下 A
+    await searchInput.fill('搜索测试 A');
+    await expect(page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 搜索测试 A' })).toHaveCount(1, { timeout: 10000 });
+    await expect(page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 搜索其他 B' })).toHaveCount(0);
 
-      // 清空搜索
-      await searchInput.clear();
-      await page.waitForTimeout(500);
+    // 验证搜索输入框的值已更新
+    expect(await searchInput.inputValue()).toBe('搜索测试 A');
 
-      // 验证搜索已清空
-      const clearedValue = await searchInput.inputValue();
-      expect(clearedValue).toBe('');
-    }
+    // 清空搜索，两条都回来
+    await searchInput.clear();
+    await expect(page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 搜索测试 A' })).toHaveCount(1, { timeout: 10000 });
+    await expect(page.getByTestId('favorite-workspace-list-item').filter({ hasText: 'E2E 搜索其他 B' })).toHaveCount(1);
+    expect(await searchInput.inputValue()).toBe('');
   });
 
   test('分类过滤能够正常工作', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
-    await favoriteButton.first().click();
+    await openFavoritesPage(page);
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
-    await expect(dialog).toBeVisible();
+    // 分类筛选器在桌面端是 filters 行里的第一个 NSelect
+    const categorySelect = page.locator('.favorites-manager-filters .n-base-selection').first();
+    await expect(categorySelect).toBeVisible({ timeout: 10000 });
+    await categorySelect.click();
 
-    // 查找分类选择器
-    const categorySelect = dialog.locator('.n-base-selection, .n-select').first();
-    if (await categorySelect.count() > 0) {
-      await categorySelect.click();
-      await page.waitForTimeout(300);
+    // 选择第一个分类选项（如果有）
+    const firstOption = page.locator('.n-base-select-option').first();
+    if (await firstOption.count() > 0) {
+      await firstOption.click();
+      await page.waitForTimeout(800);
 
-      // 选择一个分类选项（如果有）
-      const firstOption = page.locator('.n-base-select-option').first();
-      if (await firstOption.count() > 0) {
-        await firstOption.click();
-        await page.waitForTimeout(800);
-
-        // 验证选择器不再显示下拉菜单（已选择）
-        const dropdownHidden = await page.locator('.n-base-select-menu').isHidden().catch(() => true);
-        expect(dropdownHidden).toBe(true);
-      }
+      // 验证选择器不再显示下拉菜单（已选择）
+      const dropdownHidden = await page.locator('.n-base-select-menu').isHidden().catch(() => true);
+      expect(dropdownHidden).toBe(true);
     }
   });
 });
@@ -467,29 +402,18 @@ test.describe('标签管理功能', () => {
   });
 
   test('能够打开标签管理器', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
-    await favoriteButton.first().click();
+    await openFavoritesPage(page);
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
-    await expect(managerDialog).toBeVisible();
-
-    // 打开更多操作下拉菜单（NDropdown 的菜单渲染在 portal 中，不在 dialog DOM 内）
-    // 用 data-testid 精确定位触发按钮，避免误点输入框的 clear icon 等。
-    const moreButton = managerDialog.getByTestId('favorites-manager-actions');
+    // 更多操作下拉菜单（NDropdown 的菜单渲染在 portal 中，不在页面 DOM 内）
+    // 用 data-testid 精确定位触发按钮和菜单项。
+    const moreButton = page.getByTestId('favorites-manager-actions');
     await expect(moreButton).toBeVisible({ timeout: 5000 });
     await moreButton.click();
 
-    // 下拉项文案是“管理标签”(zh) / “Manage Tags”(en)
-    const dropdownMenu = page.locator('.n-dropdown-menu').filter({ hasText: /管理标签|Manage Tags/i }).first();
-    await expect(dropdownMenu).toBeVisible({ timeout: 3000 });
+    await page.getByTestId('favorites-manager-action-manage-tags').click();
 
-    await dropdownMenu.getByText(/管理标签|Manage Tags/i).first().click();
-
-    // 验证标签管理器对话框出现（标题是“标签管理”/“Tag Manager”）
+    // 验证标签管理器对话框出现（标题是“标签管理”/“Tag Manager”）。
+    // 标签管理器是 Naive UI 弹窗，渲染 role="dialog"。
     const tagDialog = page.locator('[role="dialog"]').filter({ hasText: /标签管理|Tag Manager/i }).last();
     await expect(tagDialog).toBeVisible({ timeout: 5000 });
   });
@@ -507,26 +431,14 @@ test.describe('分类管理功能', () => {
   });
 
   test('能够打开分类管理器', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
-    await favoriteButton.first().click();
+    await openFavoritesPage(page);
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
-    await expect(managerDialog).toBeVisible();
-
-    // 打开更多操作下拉菜单（NDropdown 的菜单渲染在 portal 中，不在 dialog DOM 内）
-    const moreButton = managerDialog.getByTestId('favorites-manager-actions');
+    // 打开更多操作下拉菜单（NDropdown 的菜单渲染在 portal 中，不在页面 DOM 内）
+    const moreButton = page.getByTestId('favorites-manager-actions');
     await expect(moreButton).toBeVisible({ timeout: 5000 });
     await moreButton.click();
 
-    // 下拉项文案是“管理分类”(zh) / “Manage Categories”(en)
-    const dropdownMenu = page.locator('.n-dropdown-menu').filter({ hasText: /管理分类|Manage Categories/i }).first();
-    await expect(dropdownMenu).toBeVisible({ timeout: 3000 });
-
-    await dropdownMenu.getByText(/管理分类|Manage Categories/i).first().click();
+    await page.getByTestId('favorites-manager-action-manage-categories').click();
 
     // 验证分类管理器对话框出现（标题是“分类管理”/“Category Manager”）
     const categoryDialog = page.locator('[role="dialog"]').filter({ hasText: /分类管理|Category Manager/i }).last();
@@ -544,39 +456,26 @@ test.describe('导入导出功能', () => {
   });
 
   test('导出按钮能够正常工作', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
-    if (await favoriteButton.count() === 0) {
-      test.skip();
-      return;
-    }
-    await favoriteButton.first().click();
-
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
-    await expect(managerDialog).toBeVisible();
+    await openFavoritesPage(page);
 
     // 查找更多操作菜单
-    const moreButton = managerDialog.getByRole('button').filter({
-      has: page.locator('svg, .n-icon')
-    }).first();
+    const moreButton = page.getByTestId('favorites-manager-actions');
+    await expect(moreButton).toBeVisible({ timeout: 5000 });
+    await moreButton.click();
 
-    if (await moreButton.count() > 0) {
-      await moreButton.click();
-      await page.waitForTimeout(300);
+    // 导出选项（data-testid 在下拉菜单 portal 内）
+    const exportOption = page.getByTestId('favorites-manager-action-export');
+    await expect(exportOption).toBeVisible({ timeout: 5000 });
 
-      // 查找导出选项
-      const exportOption = page.locator('text=/导出|Export/i');
-      if (await exportOption.count() > 0) {
-        // 设置下载监听
-        const downloadPromise = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
+    // 设置下载监听
+    const downloadPromise = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
 
-        await exportOption.click();
+    await exportOption.click();
 
-        // 验证下载开始（如果有）
-        const download = await downloadPromise;
-        if (download) {
-          expect(download).toBeTruthy();
-        }
-      }
+    // 验证下载开始（如果有）
+    const download = await downloadPromise;
+    if (download) {
+      expect(download).toBeTruthy();
     }
   });
 });
@@ -652,7 +551,7 @@ test.describe('收藏夹图片、变量和示例流程', () => {
 
     await selectFavoriteByTitle(page, firstFavorite.title);
     await expect(page.getByTestId('favorite-detail-panel')).toContainText(firstFavorite.variableName);
-    await expect(page.getByTestId('favorite-detail-panel')).toContainText(firstFavorite.exampleId);
+    await expect(page.getByTestId('favorite-detail-panel')).toContainText(firstFavorite.exampleText);
 
     await page.getByTestId('favorite-detail-edit').click();
     await expect(page.getByTestId('favorite-editor-title')).toBeVisible({ timeout: 10000 });
@@ -665,6 +564,9 @@ test.describe('收藏夹图片、变量和示例流程', () => {
     await expect(page.locator('[data-testid="favorite-editor-title"] input')).toHaveValue(secondFavorite.title);
     await expect(page.locator('[data-testid="favorite-editor-content"] textarea')).toHaveValue(secondFavorite.content);
     await expect(page.locator('[data-testid="favorite-repro-variable-name"] input')).toHaveValue(secondFavorite.variableName);
+    // 已保存的示例在编辑器里默认只显示摘要，要点“编辑示例”才会展开 id/
+    // 文本/描述输入框（FavoriteReproducibilityEditor: isExampleEditing）。
+    await page.getByTestId('favorite-repro-edit-example').click();
     await expect(page.locator('[data-testid="favorite-repro-example-id"] input')).toHaveValue(secondFavorite.exampleId);
 
     await fillFieldByTestId(page, 'favorite-editor-description', '蓝色图片收藏已通过 E2E 编辑验证');
@@ -673,7 +575,7 @@ test.describe('收藏夹图片、变量和示例流程', () => {
     await expect(detailPanel).toBeVisible({ timeout: 15000 });
     await expect(detailPanel).toContainText('蓝色图片收藏已通过 E2E 编辑验证');
     await expect(detailPanel).toContainText(secondFavorite.variableName);
-    await expect(detailPanel).toContainText(secondFavorite.exampleId);
+    await expect(detailPanel).toContainText(secondFavorite.exampleText);
 
     await page.getByTestId('favorite-detail-use').click();
     await expect(page).toHaveURL(/\/#\/basic\/system$/, { timeout: 20000 });
@@ -683,10 +585,11 @@ test.describe('收藏夹图片、变量和示例流程', () => {
 
     await openFavoritesPage(page);
     await selectFavoriteByTitle(page, secondFavorite.title);
-    page.once('dialog', async (dialog) => {
-      await dialog.accept();
-    });
+    // 删除用自定义确认弹框（见 CRUD 测试的注释），不是 window.confirm。
     await page.getByTestId('favorite-detail-delete').click();
+    const deleteConfirmButton = page.getByRole('button', { name: /^(确认|Confirm)$/ });
+    await expect(deleteConfirmButton).toBeVisible({ timeout: 5000 });
+    await deleteConfirmButton.click();
     await expect(page.getByTestId('favorite-workspace-list-item').filter({ hasText: secondFavorite.title })).toHaveCount(0, {
       timeout: 10000,
     });

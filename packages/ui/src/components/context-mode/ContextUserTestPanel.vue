@@ -5,7 +5,9 @@
             :manager="variableManager"
             :show-generate-values="true"
             :is-generating="isGenerating"
+            :show-variable-manager="true"
             @generate-values="handleGenerateValues"
+            @open-variable-manager="emit('open-variable-manager')"
         />
 
         <template v-if="mode === 'full'">

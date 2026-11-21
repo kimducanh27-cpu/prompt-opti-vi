@@ -1,13 +1,14 @@
 <template>
-  <NModal
+  <!-- Slice 7: PoSheet — mobile bottom sheet (max 90dvh), desktop card ≤720px
+       (was min(94vw, 1160px)). The detail/edit/create/import modes are
+       already pages inside this one sheet (no nested modal). -->
+  <PoSheet
     :show="show"
-    preset="card"
-    compact-class="favorite-asset-panel--compact"
     :title="dialogTitle"
-    :style="{ width: 'min(94vw, 1160px)' }"
+    class="favorite-asset-panel"
     :mask-closable="true"
-    content-style="padding: 0;"
     @update:show="handleShowUpdate"
+    @after-leave="$emit('after-leave')"
   >
     <FavoritePanelShell surface="dialog" :mode="panelMode" class="favorite-asset-panel__shell">
       <FavoriteDetailPanel
@@ -47,14 +48,14 @@
         @imported="handleImported"
       />
     </FavoritePanelShell>
-  </NModal>
+  </PoSheet>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useWorkspaceLayout } from '../../composables/ui/useWorkspaceLayout'
 import { useConfirmDialog } from '../../composables/ui/useConfirmDialog'
-import NModal from '../common/AdaptiveModal.vue'
+import PoSheet from '../primitives/PoSheet.vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoriteCategory, FavoritePrompt } from '@prompt-optimizer/core'
 
@@ -77,6 +78,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:show': [value: boolean]
+  'after-leave': []
   'copy': [favorite: FavoritePrompt]
   'use': [favorite: FavoritePrompt, options?: { applyExample?: boolean; exampleId?: string; exampleIndex?: number }]
   'share': [favorite: FavoritePrompt]
@@ -140,7 +142,9 @@ const handleImported = () => {
 </script>
 
 <style scoped>
-:global(.workspace-compact .favorite-asset-panel--compact.adaptive-modal-page > .n-card-content) {
+/* Slice 7: PoSheet card hook — the class falls through PoSheet → AdaptiveModal
+   → card. */
+:global(.workspace-compact .favorite-asset-panel.po-sheet--compact.adaptive-modal-sheet > .n-card-content) {
   padding: 0 !important;
   min-height: 0;
   display: flex;
@@ -162,11 +166,10 @@ const handleImported = () => {
   }
 }
 
-:global(.workspace-compact .favorite-asset-panel--compact.adaptive-modal-page > .n-card-header) {
+:global(.workspace-compact .favorite-asset-panel.po-sheet--compact.adaptive-modal-sheet > .n-card-header) {
   padding: 8px 12px;
 }
-:global(.workspace-compact .favorite-asset-panel--compact.adaptive-modal-page > .n-card-header > .n-base-close) {
-  width: 36px;
-  height: 36px;
-}
+/* EU05-01: the sheet close target is 44px via PoSheet
+   (var(--touch-target-min)); the 36px override that used to live here
+   made the Favorite Details close X measure 36x36. Deleted. */
 </style>

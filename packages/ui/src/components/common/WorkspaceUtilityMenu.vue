@@ -20,6 +20,8 @@
         <NDropdown
           trigger="click"
           :options="gardenMenuOptions"
+          :menu-props="dropdownMenuProps"
+          :node-props="dropdownNodeProps"
           placement="bottom-end"
           @select="handleGardenSelect"
         >
@@ -49,6 +51,8 @@
           v-model:show="mobileMenuVisible"
           trigger="click"
           :options="menuOptions"
+          :menu-props="dropdownMenuProps"
+          :node-props="dropdownNodeProps"
           placement="bottom-end"
           @select="handleSelect"
         >
@@ -109,7 +113,7 @@
 import { computed, h, inject, nextTick, onMounted, onUnmounted, ref, type CSSProperties } from 'vue'
 import { routerKey, type LocationQueryRaw } from 'vue-router'
 import { NButton, NDropdown, NIcon, NModal, type DropdownOption } from 'naive-ui'
-import { Bookmark, ListX as ClearAll, EllipsisVertical as DotsVertical, ExternalLink, Sprout as Plant2, FileInput as FileImport } from '@lucide/vue'
+import { PhBookmark as Bookmark, PhEraser as ClearAll, PhDotsThreeVertical as DotsVertical, PhArrowSquareOut as ExternalLink, PhPlant as Plant2, PhFileArrowDown as FileImport, PhFunction as VariableIcon } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import { getEnvVar } from '@prompt-optimizer/core'
 import SourceAssetBadge from '../source/SourceAssetBadge.vue'
@@ -118,21 +122,27 @@ import ThemedTooltip from './ThemedTooltip.vue'
 import { openExternalUrl } from '../../utils/open-external-url'
 import type { PromptGardenImportRequest } from '../../utils/prompt-garden-import'
 import type { SourceAssetRef } from '../../utils/source-asset'
+import { dropdownMenuProps, dropdownNodeProps } from '../../utils/dropdown-a11y'
 
 const props = withDefaults(defineProps<{
   compact?: boolean
   disabled?: boolean
   testId?: string
   source?: SourceAssetRef | null
+  // EU02-03: opt-in — only the Pro workspaces show the Variable Manager
+  // entry (they own the variables). Basic/Image menus are unchanged.
+  showVariableManager?: boolean
 }>(), {
   compact: false,
   disabled: false,
   testId: undefined,
   source: null,
+  showVariableManager: false,
 })
 
 const emit = defineEmits<{
   clear: []
+  'open-variable-manager': []
 }>()
 
 const { t } = useI18n()
@@ -194,6 +204,16 @@ const menuOptions = computed<DropdownOption[]>(() => [
   ...(props.compact && isPromptGardenEnabled.value
     ? [...gardenMenuOptions.value, { type: 'divider' as const, key: 'garden-divider' }]
     : []),
+  // EU02-03: the Variable screen had no path to the Variable Manager — the
+  // workspace ⋮ menu is that path. Opens the app-level manager, where
+  // values for the `{{variables}}` can be entered.
+  ...(props.showVariableManager
+    ? [{
+        key: 'variable-manager',
+        label: t('nav.variableManager'),
+        icon: () => h(NIcon, null, { default: () => h(VariableIcon) }),
+      }]
+    : []),
   {
     key: 'clear-content',
     label: t('common.clearContent'),
@@ -239,6 +259,8 @@ const promptGardenImportDialogHint = computed(() =>
 const handleSelect = (key: string) => {
   if (key === 'clear-content') {
     showClearConfirm.value = true
+  } else if (key === 'variable-manager') {
+    emit('open-variable-manager')
   } else if (props.compact) {
     handleGardenSelect(key)
   }

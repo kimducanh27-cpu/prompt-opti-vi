@@ -1,14 +1,11 @@
 <template>
-  <AdaptiveModal class="image-model-edit-modal"
-    compact-class="image-model-edit-modal--compact"
+  <!-- Slice 7: PoSheet — mobile bottom sheet (max 90dvh, drag-to-close),
+       desktop card ≤720px. The compact header slot below is the Back/close
+       control; closing the sheet returns to the model list page. -->
+  <PoSheet class="image-model-edit-modal"
     :closable="!isCompact"
     :show="show"
-    preset="card"
     :title="isCompact ? undefined : (isEditing ? t('modelManager.editModel') : t('modelManager.addImageModel'))"
-    :style="{ width: '80vw', maxWidth: '820px' }"
-    size="large"
-    :bordered="false"
-    :segmented="true"
     @update:show="(value) => !value && close()"
   >
     <template v-if="isCompact" #header>
@@ -48,6 +45,7 @@
               :options="mobileProviderOptions"
               :loading="isLoadingProviders"
               :aria-label="t('image.provider.label')"
+              :input-props="{ 'aria-label': t('image.provider.label') }"
               filterable
               @update:value="onMobileProviderChange"
               @update:show="providerMenu.onUpdateShow"
@@ -282,13 +280,13 @@
       </NText>
       </template>
     </template>
-  </AdaptiveModal>
+  </PoSheet>
 </template>
 
 <script setup lang="ts">
 import ModelIdSelector from './ModelIdSelector.vue'
-import { ChevronLeft as UiChevronLeft, RefreshCw as UiRefreshCw, Link as UiLink } from '@lucide/vue'
-import AdaptiveModal from './common/AdaptiveModal.vue'
+import { PhCaretLeft as UiChevronLeft, PhArrowClockwise as UiRefreshCw, PhLink as UiLink } from '@phosphor-icons/vue'
+import PoSheet from './primitives/PoSheet.vue'
 import ModelNetworkStatus from './ModelNetworkStatus.vue'
 import { computed, watch, nextTick, h, ref, onBeforeUnmount } from 'vue'
 
@@ -296,7 +294,7 @@ import { useI18n } from 'vue-i18n'
 import {
   NSpace, NInput, NInputNumber,
   NCheckbox, NSelect, NButton, NTag, NText,
-  NDivider, NH4, NForm, NFormItem, useDialog
+  NDivider, NH4, NForm, NFormItem
 } from 'naive-ui'
 import { useImageModelManager } from '../composables/model/useImageModelManager'
 import { useToast } from '../composables/ui/useToast'
@@ -314,7 +312,6 @@ import ThemedTooltip from './common/ThemedTooltip.vue'
 const { t } = useI18n()
 const { isCompact } = useWorkspaceLayout()
 const toast = useToast()
-const dialog = useDialog()
 const confirmDialog = useConfirmDialog()
 const initialDraft = ref<string>()
 const saveError = ref('')
@@ -433,17 +430,18 @@ const handleTestConnection = async () => {
   if (!isRunningInElectron()) {
     if (selectedProvider.value?.corsRestricted) {
       const providerName = selectedProvider.value.name || selectedProvider.value.id || 'Unknown'
-      dialog.warning({
+      // Route through the shared confirm dialog (EU05-01/R3E-04): its
+      // Confirm is primary (white on #1f6bd1 = 5.14:1). A direct
+      // dialog.warning() renders Confirm as type="warning" — white text on
+      // #ffce2f (1.49:1). The dialog closes on click before runTest starts,
+      // so the test still runs without blocking the close.
+      const confirmed = await confirmDialog.warning({
         title: t('modelManager.corsRestrictedTag'),
         content: () => h('div', { style: 'white-space: pre-line;' }, t('modelManager.corsRestrictedConfirm', { provider: providerName })),
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
-        // Don't block dialog close while the async test runs.
-        onPositiveClick: () => {
-          void runTest()
-        }
       })
-      return
+      if (!confirmed) return
     }
   }
   await runTest()
@@ -725,18 +723,18 @@ watch([() => props.show, () => props.configId, () => props.initialConfig], async
 </script>
 
 <style scoped>
-/* The modal card is teleported; use the explicit compact owner for its public slots. */
-:global(.workspace-compact .image-model-edit-modal--compact.adaptive-modal-page > .n-card-header) {
+/* The sheet card is teleported; use the PoSheet compact hook for its public slots. */
+:global(.workspace-compact .po-sheet--compact.adaptive-modal-sheet > .n-card-header) {
   padding: 8px 12px;
   min-height: 56px;
 }
 
-:global(.workspace-compact .image-model-edit-modal--compact.adaptive-modal-page > .n-card-content) {
+:global(.workspace-compact .po-sheet--compact.adaptive-modal-sheet > .n-card-content) {
   padding: 12px !important;
 }
 
-:global(.workspace-compact .image-model-edit-modal--compact.adaptive-modal-page > .n-card__footer),
-:global(.workspace-compact .image-model-edit-modal--compact.adaptive-modal-page > .n-card__action) {
+:global(.workspace-compact .po-sheet--compact.adaptive-modal-sheet > .n-card__footer),
+:global(.workspace-compact .po-sheet--compact.adaptive-modal-sheet > .n-card__action) {
   padding: 10px 12px max(10px, env(safe-area-inset-bottom));
 }
 

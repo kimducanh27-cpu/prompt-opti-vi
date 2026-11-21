@@ -17,6 +17,7 @@ export default {
     "invalidSession": "Invalid arena session; the stored data was not overwritten.",
     "interrupted": "The previous request was interrupted by a reload or close. Run it again.",
     "missingImage": "Image unavailable. Add it or run again.",
+    "imageDeleted": "Reference image deleted",
     "incomplete": "Enter a prompt, connection configuration and actual model.",
     "unavailable": "Model configuration or service is unavailable. Check settings.",
     "emptyOutput": "The model returned no displayable content.",

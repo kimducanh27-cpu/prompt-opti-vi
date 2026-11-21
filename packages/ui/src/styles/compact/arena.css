@@ -1,0 +1,37 @@
+/* Compact Arena touch targets (EU04-01 High + EU04-02 Medium).
+ *
+ * Every Arena button on mobile measured 28px (image move/delete 22px) —
+ * the whole Arena still uses raw `NButton size="small"` / `size="tiny"`
+ * instead of the 44px primitive. The class fix is a floor here, following
+ * the same pattern as input.css / context.css / image.css (`--n-height`):
+ * in compact layout every button inside the Arena workspace is at least
+ * 44x44px. Scoped to `.app-frame--compact` so desktop keeps its dense
+ * 28px buttons; scoped to `.arena-workspace` so other workspaces' toolbars
+ * (Basic / Test panels) are untouched — they have their own findings.
+ */
+.app-frame--compact .arena-workspace .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU04-01 residual (H2 verification): the per-column model-selector trigger
+ * is a raw <button>, not an .n-button, so the floor above never touches it
+ * (370x28 measured). Same 44px floor, arena-scoped. The !important beats
+ * ModelSelector.vue's scoped `.text-model-selector--small { height: 28px }`. */
+.app-frame--compact .arena-workspace .text-model-selector {
+  height: 44px !important;
+  min-height: 44px;
+}
+
+/* EU04-01 residual (H2 verification): the Copy split buttons are NButtons
+ * (height already 44 via the floor) but OutputDisplayCore.vue's scoped CSS
+ * sets min-width/width 28px (primary) / 24px (menu) at specificity 0,4,0,
+ * beating the 0,3,0 floor above. This 0,5,0 arena-scoped override restores
+ * the 44px width. Class names verified in OutputDisplayCore.vue:899-913. */
+.app-frame--compact .arena-workspace .output-copy-split-button .n-button.output-copy-split-primary,
+.app-frame--compact .arena-workspace .output-copy-split-button .n-button.output-copy-split-menu {
+  min-width: 44px !important;
+  width: 44px !important;
+  height: 44px !important;
+}

@@ -6,6 +6,14 @@ const stubs = {
     emits: ['update:show'],
     template: '<section v-if="show" class="test-modal"><header><slot name="header">{{ title }}</slot><slot name="header-extra" /></header><slot /><footer><slot name="footer" /><slot name="action" /></footer></section>',
   },
+  // Slice 7: PoSheet is the management-surface overlay now; stub it exactly
+  // like NModal (same section/header/footer shape) so the mobile specs keep
+  // asserting against one .test-modal per sheet.
+  PoSheet: {
+    props: ['show', 'title', 'maskClosable', 'closable'],
+    emits: ['update:show'],
+    template: '<section v-if="show" class="test-modal"><header><slot name="header">{{ title }}</slot><slot name="header-extra" /></header><slot /><footer><slot name="footer" /><slot name="action" /></footer></section>',
+  },
   NButton: {
     props: ['disabled', 'loading'],
     emits: ['click'],

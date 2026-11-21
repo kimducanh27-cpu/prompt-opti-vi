@@ -1,0 +1,150 @@
+/**
+ * M-B (Medium batch) — test-plan / variant-config touch-target floors.
+ *
+ * Covers: EU09-03 (test-plan header — Collapse 74×36, "More" summary 36px),
+ * R3A-03 (per-column run 34×34, test-groups 2/3/4 buttons 26×28, A/B labels
+ * 22×36), EU03-02 / EU02-04 / EU10-01 (Run All 84×36, run-a/b 34×34, test
+ * model selects 207×28/207×34), A11Y-M03 (2 test-plan model selects 207×34).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches teleported sheets). Run All SIZE only — the Run All
+ * OVERLAP belongs to another worker and is deliberately untouched here.
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* EU09-03 — Collapse toggle. Live rule: TestWorkspaceLayout.vue scoped CSS
+ * :98 `.test-plan-actions .test-config-toggle { min-height: 36px }` (0,2,0)
+ * — this rule is (0,3,0) + !important and wins. */
+.workspace-compact .test-plan-actions .test-config-toggle {
+  min-height: 44px !important;
+  min-width: 44px;
+}
+
+/* EU09-03 — "More" was a <details><summary>, NOT a <button>; M-G converted
+ * it to a real <button class="test-plan-options-toggle"> in
+ * TestWorkspaceLayout.vue, so this floor now targets the button (native
+ * keyboard activation + aria-expanded included). */
+.workspace-compact .test-plan-options .test-plan-options-toggle {
+  min-height: 44px !important;
+  min-width: 44px;
+}
+
+/* EU03-02 / EU02-04 / EU10-01 — Run All (mobile-config-run-all, an NButton
+ * with no size, inside #config-actions → .test-plan-actions .test-run-controls;
+ * VariantTestWorkspaceLayout.vue:10). Live rule: test-result.css:276
+ * `.test-config-scroll .test-run-controls > .n-button { min-height: 36px }`
+ * (0,3,0) — this rule is (0,4,0) + !important and wins. SIZE only; the
+ * overlap with the hint / output placeholder is another worker's item. */
+.workspace-compact .test-plan-actions .test-run-controls .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* V-B new finding — "Continue Optimize" (PromptPanel.vue:186, NButton
+ * primary size="small", data-testid="prompt-panel-continue-optimize"):
+ * a real primary button after optimize, 157.3×36 live at 390/412/430,
+ * never floored by M-B. Same 44px treatment as Run All. */
+.workspace-compact [data-testid="prompt-panel-continue-optimize"] {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* R3A-03 / EU03-02 / EU02-04 — per-column run-a/b (MobileTestResultHeader.vue:13,
+ * NButton quaternary circle size="small",
+ * :data-testid="`mobile-result-run-${variant.id}`").
+ * Live rule: MobileTestResultHeader scoped CSS
+ * `.mobile-result-heading .n-button { min-width: 34px; min-height: 34px }`
+ * (0,2,0)+attr. V-B-FIX: M-B targeted the class `.mobile-result-run-a/b`,
+ * which exists NOWHERE (only the data-testid exists) — the rule never
+ * applied. Targeted by testid instead; !important on the min sizes beats
+ * the scoped 34px rule (this selector is lower specificity, (0,2,0)). */
+.workspace-compact [data-testid="mobile-result-run-a"],
+.workspace-compact [data-testid="mobile-result-run-b"] {
+  --n-height: 44px !important;
+  min-height: 44px !important;
+  min-width: 44px !important;
+}
+
+/* R3A-03 — test-groups 2/3/4 buttons (NRadioButton, 26×28). On mobile they
+ * live inside the closed More menu (.test-plan-options-content, NOT
+ * .test-config-scroll, so test-result.css:148's 40px rule never reaches
+ * them); the second selector covers the same control in the config area.
+ * NRadioButton height is driven by --n-height. */
+.workspace-compact .test-plan-options-content .test-group-count .n-radio-button,
+.workspace-compact .test-config-scroll .test-group-count .n-radio-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* R3A-03 / EU03-02 / EU10-01 — "View prompt A/B" buttons: a real <button
+ * class="test-config-group-label"> showing "A"/"B" (BasicUserWorkspace.vue:293
+ * and the same slot in the other 6 workspaces). Live rule:
+ * test-result.css:253-259 `.test-config-group-label { min-height: 36px }`.
+ * The button is squeezed to 22px wide by the first track of the variant-cell
+ * grid, so the grid track itself is widened to 44px (model select loses
+ * 22px — it is 207px wide and truncates with ellipsis anyway).
+ * Live grid rules: test-result.css:129-130 and :243-244
+ * `.compact-two-region .test-config-scroll .variant-cell__actions
+ * { grid-template-columns: 22px minmax(0, .8fr) minmax(0, 1.2fr) }` —
+ * same selectors, later import wins. */
+.workspace-compact .test-config-group-label {
+  min-height: 44px !important;
+  min-width: 44px;
+}
+
+.compact-two-region .test-config-scroll .variant-cell__actions,
+.compact-two-region .test-config-scroll .variant-cell__actions--stacked {
+  grid-template-columns: 44px minmax(0, 0.8fr) minmax(0, 1.2fr);
+}
+
+/* V-C-FIX (EU03-04): at 390px the 16px model name "Qwen Image 3.0 Pro"
+ * needs 148px but the model column only gives 141px (measured live by V-C;
+ * full at 412/430). The 44px A/B track (M-B, above) is kept — the version
+ * column keeps its 108px floor (the component's own width) and the model
+ * column takes the rest, with the row gap tightened to 3px (same tightening
+ * as the 380px block in test-result.css). Model column 170px -> ~181px at
+ * 390px, so the name fits with ~4px to spare. 412/430 are untouched (the
+ * base rule above still applies there). */
+@media (max-width: 400px) {
+  .compact-two-region .test-config-scroll .variant-cell__actions,
+  .compact-two-region .test-config-scroll .variant-cell__actions--stacked {
+    grid-template-columns: 44px minmax(108px, 0.7fr) minmax(0, 1.3fr);
+    gap: 3px;
+  }
+}
+
+/* EU03-02 / EU02-04 / A11Y-M03 — test model selects (207×28 on image
+ * workspaces, 207×34 on pro-variable): TextModelSelector renders a raw
+ * <button class="text-model-selector"> (ModelSelector.vue:5; base height 34px
+ * at :185, --small 28px at :186). The Optimize-row model selector already
+ * measures 44px live, so this floor changes nothing there; the Arena trigger
+ * is already floored by arena.css to the same 44px. */
+.workspace-compact .text-model-selector {
+  height: 44px !important;
+  min-height: 44px;
+}
+
+/* TestVariantSourceTag (NTag role="button", the A/B source tag in the result
+ * area). Live rule: test-result.css:100 `.test-variant-source-tag
+ * { min-height: 36px }` (0,1,0) — this rule is (0,2,0) and wins. Its width
+ * is content-based ("Original", "V1", …) and already ≥44px. */
+.workspace-compact .test-variant-source-tag {
+  min-height: 44px;
+}
+
+/* TestInputSection header actions (fullscreen + slot buttons,
+ * TestInputSection.vue:11). Live rule: test-result.css:170-171
+ * `.test-input-section__header-actions .n-button
+ * { min-height: 40px; min-width: 40px }` (0,2,0) — this rule is (0,3,0) and
+ * wins. */
+.workspace-compact .test-input-section__header-actions .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}

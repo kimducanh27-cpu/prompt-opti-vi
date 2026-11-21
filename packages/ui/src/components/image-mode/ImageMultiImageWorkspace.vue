@@ -8,12 +8,17 @@
           @clear="handleClearContent"
         /></Teleport>
     </div>
+    <!-- Slice 6b (design-system §2.3): compact = stacked single column,
+         Input (+ multi-image list) → Optimize CTA → Output → Test input →
+         Test results in ONE page scroll. No hidden pane, no Optimize/Test
+         region switch. Desktop keeps the 2-pane grid + draggable divider. -->
     <div
       ref="splitRootRef"
       class="image-multiimage-split compact-workspace-pane"
-      :style="{ gridTemplateColumns: isCompact ? 'minmax(0, 1fr)' : `${mainSplitLeftPct}% 12px 1fr` }"
+      :class="{ 'workspace-stacked': isCompact }"
+      :style="isCompact ? { display: 'flex', flexDirection: 'column', height: 'auto', overflow: 'visible', gap: '12px' } : { gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
     >
-      <div v-show="!isCompact || mobileRegion === 'optimize'" :class="{ 'compact-optimize-region': isCompact }" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
+      <div class="split-pane compact-optimize-region" :style="isCompact ? { minWidth: 0, overflow: 'visible' } : { minWidth: 0, height: '100%', overflow: 'hidden' }">
         <OptimizeWorkspaceLayout ref="optimizeLayoutRef" :compact="isCompact" @scroll="rememberOptimizeScroll">
     <template #original>
           <TestSourceLinkedCard class="compact-original-card"
@@ -39,11 +44,13 @@
                   {{ promptSummary }}
                 </NText>
               </NFlex>
-              <NButton
-                type="tertiary"
-                size="small"
-                ghost
+              <PoButton
+                variant="ghost"
+                size="sm"
+                icon-only
                 round
+                :aria-label="t('common.expand')"
+                :aria-expanded="!sourceCollapsed"
                 :title="t('common.expand')"
                 @click="isInputPanelCollapsed = false; compactAutoFolded = false"
               >
@@ -52,7 +59,7 @@
                     <UiChevronDown />
                   </NIcon>
                 </template>
-              </NButton>
+              </PoButton>
             </NFlex>
 
             <div v-show="!sourceCollapsed" class="workspace-input-panel"><NSpace class="input-panel-stack" vertical :size="16">
@@ -61,11 +68,12 @@
                   {{ t('imageWorkspace.input.originalPrompt') }}
                 </NText>
                 <NFlex class="input-panel-heading-group" align="center" :size="8">
-                  <NButton
-                    type="tertiary"
-                    size="small"
-                    ghost
+                  <PoButton
+                    variant="ghost"
+                    size="sm"
+                    icon-only
                     round
+                    :aria-label="t('common.expand')"
                     :title="t('common.expand')"
                     @click="openFullscreen"
                   >
@@ -74,12 +82,14 @@
                         <UiMaximize2 />
                       </NIcon>
                     </template>
-                  </NButton>
-                  <NButton
-                    type="tertiary"
-                    size="small"
-                    ghost
+                  </PoButton>
+                  <PoButton
+                    variant="ghost"
+                    size="sm"
+                    icon-only
                     round
+                    :aria-label="t('common.collapse')"
+                    :aria-expanded="!sourceCollapsed"
                     :title="t('common.collapse')"
                     @click="isInputPanelCollapsed = true"
                   >
@@ -88,7 +98,7 @@
                         <UiChevronUp />
                       </NIcon>
                     </template>
-                  </NButton>
+                  </PoButton>
                 </NFlex>
               </NFlex>
 
@@ -239,19 +249,19 @@
                       @focus="handleTemplateSelectFocus"
                       @config="() => onOpenTemplateManager('multiimageOptimize')"
                     /></template>
-                <template #actions><NButton v-if="!isCompact"
-                      type="default"
-                      size="medium"
+                <template #actions><PoButton v-if="!isCompact"
+                      variant="secondary"
+                      size="md"
                       data-testid="image-multiimage-analyze-button"
                       :loading="isAnalyzing"
                       :disabled="isAnalyzing || optimizing || isIterating || !originalPrompt.trim()"
                       @click="handleAnalyzePrompt"
                     >
                       {{ isAnalyzing ? t('promptOptimizer.analyzing') : t('promptOptimizer.analyze') }}
-                    </NButton>
-                    <NButton
-                      type="primary"
-                      size="medium"
+                    </PoButton>
+                    <PoButton
+                      variant="primary"
+                      size="md"
                       data-testid="image-multiimage-optimize"
                       :aria-label="isCompact ? t('common.optimize') : undefined"
                       :loading="optimizing"
@@ -259,7 +269,7 @@
                       @click="optimizePrompt"
                     >
                       {{ optimizing && !isCompact ? t('imageWorkspace.input.optimizing') : t('common.optimize') }}
-                    </NButton></template>
+                    </PoButton></template>
               </OptimizationControls>
             </NSpace></div>
           </TestSourceLinkedCard>
@@ -316,9 +326,9 @@
         @keydown="onSplitKeydown"
       />
 
-      <div v-show="!isCompact || mobileRegion === 'test'" :class="{ 'compact-test-region': isCompact }" ref="testPaneRef" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
+      <div class="split-pane compact-test-region" :style="isCompact ? { minWidth: 0, overflow: 'visible' } : { minWidth: 0, height: '100%', overflow: 'hidden' }" ref="testPaneRef">
         <VariantTestWorkspaceLayout ref="testLayoutRef" :compact="isCompact" v-model:config-expanded="testConfigExpanded"
-    :variants="mobileVariants" @run-all="runAllVariants"
+    :variants="mobileVariants" run-test-id="image-multiimage-test-run-all" @run-all="runAllVariants"
     @scroll="rememberTestScroll">
     <template #input><TemporaryVariablesPanel :compact="isCompact"
             :manager="temporaryVariablePanelManager"
@@ -494,7 +504,6 @@
   </VariantTestWorkspaceLayout>
       </div>
     </div>
-    <WorkspaceRegionSwitch v-if="isCompact" v-model="mobileRegion" :optimizing="optimizing" :testing="isAnyVariantRunning" />
     <TestSourcePreview v-model:show="showMobileSource" :title="t('workspace.viewPrompt')" :content="mobileSourceContent"
       :editable="mobileSourceEditable" @edit="editMobileSource" />
 
@@ -562,11 +571,11 @@ import OptimizationControls from '../OptimizationControls.vue'
 import TestWorkspaceToolbar from '../TestWorkspaceToolbar.vue'
 import TestVariantConfig from '../TestVariantConfig.vue'
 import ImageModelSelector from '../ImageModelSelector.vue'
-import { ImagePlus as UiImagePlus, ChevronDown as UiChevronDown, Maximize2 as UiMaximize2, ChevronUp as UiChevronUp, X as UiX, Download as UiDownload, Copy as UiCopy } from '@lucide/vue'
+import { PhImageSquare as UiImagePlus, PhCaretDown as UiChevronDown, PhArrowsOut as UiMaximize2, PhCaretUp as UiChevronUp, PhX as UiX, PhDownload as UiDownload, PhCopy as UiCopy } from '@phosphor-icons/vue'
 import OptimizeWorkspaceLayout from '../common/OptimizeWorkspaceLayout.vue'
 import VariantTestWorkspaceLayout from '../common/VariantTestWorkspaceLayout.vue'
 import MobileTestResultHeader from '../common/MobileTestResultHeader.vue'
-import WorkspaceRegionSwitch from '../common/WorkspaceRegionSwitch.vue'
+import PoButton from '../primitives/PoButton.vue'
 import TestSourcePreview from '../common/TestSourcePreview.vue'
 import { useWorkspacePresentation } from '../../composables/ui/useWorkspacePresentation'
 import { useWorkspaceSplit } from '../../composables/ui/useWorkspaceSplit'
@@ -616,7 +625,7 @@ import { useWorkspaceTestBatch } from '../../composables/workspaces/useWorkspace
 import { buildTestPanelVersionOptions, resolveTestPanelVersionSelection } from '../../utils/testPanelVersion'
 import { buildMultiImageVariantFingerprint } from '../../utils/multiimage-workspace'
 import { downloadImageSource } from '../../utils/image-download'
-import { getI18nErrorMessage } from '../../utils/error'
+import { getUserFacingErrorMessage } from '../../utils/error'
 import { withHistorySourceBindingMetadata } from '../../utils/history-source-binding'
 import { createImagePromptAnalysisVersion } from '../../utils/imagePromptAnalysis'
 import { resolveSourceAssetRef } from '../../utils/source-asset'
@@ -675,9 +684,9 @@ const optimizing = ref(false)
 const isAnalyzing = ref(false)
 const isIterating = ref(false)
 const {
-    isCompact, compactInputRows, mobileRegion, testConfigExpanded, optimizeLayoutRef, testLayoutRef,
+    isCompact, compactInputRows, testConfigExpanded, optimizeLayoutRef, testLayoutRef,
     rememberOptimizeScroll, rememberTestScroll,
-    showOptimization, showOptimizationSection, showTestResult, resetMobileView,
+    showOptimization, showOptimizationSection, showTestResult, revealTestPane, resetMobileView,
   } = useWorkspacePresentation('image-multiimage')
 const splitRootRef = ref<HTMLElement | null>(null)
 const testPaneRef = ref<HTMLElement | null>(null)
@@ -1439,7 +1448,7 @@ const optimizePrompt = async () => {
     toast.success(t('toast.success.optimizeSuccess'))
   } catch (error) {
     console.error('[ImageMultiImageWorkspace] optimize failed:', error)
-    toast.error(getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
+    toast.error(getUserFacingErrorMessage(error, t('toast.error.optimizeFailed')))
   } finally {
     optimizing.value = false
   }
@@ -1517,7 +1526,7 @@ const handleIteratePrompt = async (payload: {
       selectedIterateTemplate.value.id,
     )
   } catch (error) {
-    toast.error(getI18nErrorMessage(error, t('toast.error.iterateFailed')))
+    toast.error(getUserFacingErrorMessage(error, t('toast.error.iterateFailed')))
     optimizedPrompt.value = previousOptimizedPrompt
   } finally {
     isIterating.value = false
@@ -1639,7 +1648,7 @@ const runVariant = async (
       await validateMultiImageRequest(request)
     } catch (error) {
       if (!opts?.silentError) {
-        toast.error(getI18nErrorMessage(error, t('imageWorkspace.generation.validationFailed')))
+        toast.error(getUserFacingErrorMessage(error, t('imageWorkspace.generation.validationFailed')))
       }
       return false
     }
@@ -1657,11 +1666,13 @@ const runVariant = async (
 
     if (!opts?.silentSuccess) {
       toast.success(t('imageWorkspace.generation.generationCompleted'))
+      void revealTestPane()
     }
     return true
   } catch (error) {
     if (!opts?.silentError) {
-      toast.error(getI18nErrorMessage(error, t('imageWorkspace.generation.generateFailed')))
+      toast.error(getUserFacingErrorMessage(error, t('imageWorkspace.generation.generateFailed')))
+      void revealTestPane()
     }
     return false
   } finally {
@@ -1685,8 +1696,10 @@ const runAllVariants = useWorkspaceTestBatch({
 
         if (results.every(Boolean)) {
           toast.success(t('imageWorkspace.generation.generationCompleted'))
+          void revealTestPane()
         } else {
           toast.error(t('imageWorkspace.generation.generateFailed'))
+          void revealTestPane()
         }
       },
     }
@@ -1925,6 +1938,22 @@ defineExpose({
 
 <style scoped>
 .image-multiimage-workspace { position: relative; height: 100%; min-height: 0; overflow: visible; }
+
+/* Slice 10 — stacked mobile (design-system §2.3), same class fix as
+   BasicUserWorkspace.vue:1567 (EU03-01, multiimage): let the workspace
+   size to its content so the page scrolls. The desktop frame caps the
+   chain at the viewport height — `.main-content-wrapper > * { flex: 1 }`
+   plus `.image-multiimage-workspace { height: 100% }` held this div at
+   viewport height, and the split root then shrank so the Test section
+   painted over the Output (Run All covered the mode select + Collapse +
+   "Test plan" heading). `height: auto` + `flex: none` (both beat the
+   frame rules by specificity) release the cap; the inner layouts already
+   flow (Slice 6a). Desktop is unaffected: this rule only matches
+   `.compact-two-region`. */
+.image-multiimage-workspace.compact-two-region {
+    height: auto;
+    flex: none;
+}
 .workspace-page-tools { display: contents; }
 .image-multiimage-split { display: grid; gap: 12px; height: 100%; min-height: 0; overflow: hidden; }
 .split-pane { min-height: 0; min-width: 0; overflow: hidden; }
@@ -1950,8 +1979,9 @@ defineExpose({
   background: rgba(17, 24, 39, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.34);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* P-012: no backdrop-filter on this 30px button — each card's button made
+     its own backdrop-filter layer on the phone GPU. The rgba(17,24,39,0.82)
+     background is already near-opaque, so nothing is lost visually. */
   transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .image-card__remove:hover,
@@ -1998,6 +2028,15 @@ defineExpose({
 .image-upload-card--drop-target { border-color: var(--n-primary-color); box-shadow: 0 0 0 2px var(--n-primary-color-suppl); color: var(--n-primary-color); }
 .image-upload-card__icon { font-size: 28px; line-height: 1; font-weight: 300; }
 .image-upload-card__text { font-size: 13px; line-height: 1.4; }
+/* Slice 6b — stacked mobile (design-system §2.3): un-trap the shared
+   layouts' compact internal scroll so the stacked panes size to their
+   content and the page scrolls. Scoped to .workspace-stacked; desktop
+   panes keep height 100% + overflow hidden. */
+.workspace-stacked :deep(.optimize-workspace-layout--compact),
+.workspace-stacked :deep(.test-workspace-layout--compact) {
+  height: auto;
+  overflow: visible;
+}
 .split-divider {
   cursor: col-resize;
   background: var(--n-divider-color, rgba(0, 0, 0, 0.08));

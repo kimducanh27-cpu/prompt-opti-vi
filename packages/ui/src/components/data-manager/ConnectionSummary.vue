@@ -40,7 +40,7 @@
 </template>
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import { Settings2 } from '@lucide/vue'
+import { PhSlidersHorizontal as Settings2 } from '@phosphor-icons/vue'
 import { useDataManagerContext } from './context'
 import { NText, NButton } from 'naive-ui'
 defineProps<{ statusTestId: string }>()

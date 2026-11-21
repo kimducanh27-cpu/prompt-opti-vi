@@ -5,16 +5,23 @@
                 :disabled="displayAdapter.displayedIsOptimizing.value || isIterating || isAnyVariantRunning"
                 :source="resolveSourceAssetRef(proMultiSession.origin, proMultiSession.assetBinding)"
                 test-id="pro-multi-workspace-utility-menu"
+                :show-variable-manager="true"
                 @clear="handleClearContent"
+                @open-variable-manager="handleOpenVariableManager"
             /></Teleport>
         </div>
+        <!-- Slice 6a (design-system §2.3): compact = stacked single column,
+             Input → Optimize CTA → Output → Test input → Test results in ONE
+             page scroll. No hidden pane, no Optimize/Test region switch.
+             Desktop keeps the 2-pane grid + draggable divider. -->
         <div
             ref="splitRootRef"
             class="context-system-split compact-workspace-pane"
-            :style="{ gridTemplateColumns: isCompact ? 'minmax(0, 1fr)' : `${mainSplitLeftPct}% 12px 1fr` }"
+            :class="{ 'workspace-stacked': isCompact }"
+            :style="isCompact ? { display: 'flex', flexDirection: 'column', height: 'auto', overflow: 'visible', gap: '12px' } : { gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
         >
             <!-- 左侧：优化区域 -->
-            <div v-show="!isCompact || mobileRegion === 'optimize'" :class="{ 'compact-optimize-region': isCompact }" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
+            <div :class="{ 'compact-optimize-region': isCompact }" class="split-pane" :style="isCompact ? { minWidth: 0 } : { minWidth: 0, height: '100%', overflow: 'hidden' }">
                 <OptimizeWorkspaceLayout ref="optimizeLayoutRef" :compact="isCompact" @scroll="rememberOptimizeScroll">
     <template #original>
                     <!-- 会话管理器 (系统模式专属，也是消息输入界面) -->
@@ -83,8 +90,8 @@
                                         @focus="templateSelection.refreshOptimizeTemplates"
                                         @config="handleOpenTemplateManager"
                                     /></template>
-                            <template #actions><NButton
-                                type="primary"
+                            <template #actions><PoButton
+                                variant="primary"
                                 :loading="displayAdapter.displayedIsOptimizing.value"
                                 :disabled="displayAdapter.displayedIsOptimizing.value || !selectedMessageId"
                                 @click="handleOptimizeClick"
@@ -92,7 +99,7 @@
                                 :aria-label="isCompact ? t('promptOptimizer.optimize') : undefined"
                             >
                                 {{ displayAdapter.displayedIsOptimizing.value && !isCompact ? $t('common.loading') : $t('promptOptimizer.optimize') }}
-                            </NButton></template>
+                            </PoButton></template>
                         </OptimizationControls>
                     </NCard>
 
@@ -161,9 +168,9 @@
             />
 
             <!-- 右侧：测试区域（变量共享 + 多列 variants） -->
-            <div v-show="!isCompact || mobileRegion === 'test'" :class="{ 'compact-test-region': isCompact }" ref="testPaneRef" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
+            <div :class="{ 'compact-test-region': isCompact }" ref="testPaneRef" class="split-pane" :style="isCompact ? { minWidth: 0 } : { minWidth: 0, height: '100%', overflow: 'hidden' }">
                 <VariantTestWorkspaceLayout ref="testLayoutRef" :compact="isCompact" v-model:config-expanded="testConfigExpanded"
-    :variants="mobileVariants" @run-all="runAllVariants"
+    :variants="mobileVariants" run-test-id="pro-multi-test-run-all" @run-all="runAllVariants"
     @scroll="rememberTestScroll">
     <template #input><ConversationTestPanel :compact="isCompact"
                         ref="testAreaPanelRef"
@@ -174,6 +181,7 @@
                         :temporary-variables="tempVars.temporaryVariables.value"
                         :input-mode="inputMode"
                         :button-size="buttonSize"
+                        @open-variable-manager="handleOpenVariableManager"
                         @variable-change="handleVariableChange"
                         @save-to-global="handleSaveToGlobal"
                         @temporary-variable-remove="handleVariableRemove"
@@ -370,7 +378,6 @@
   </VariantTestWorkspaceLayout>
             </div>
         </div>
-    <WorkspaceRegionSwitch v-if="isCompact" v-model="mobileRegion" :optimizing="displayAdapter.displayedIsOptimizing.value" :testing="isAnyVariantRunning" />
     <TestSourcePreview v-model:show="showMobileSource" :title="t('workspace.viewPrompt')" :content="mobileSourceContent"
       :editable="mobileSourceEditable" @edit="editMobileSource" />
 
@@ -427,11 +434,10 @@ import CompareRoleSummary from '../evaluation/CompareRoleSummary.vue'
 import TestWorkspaceToolbar from '../TestWorkspaceToolbar.vue'
 import TestVariantConfig from '../TestVariantConfig.vue'
 import { getTextModelSelectionConfigId, findTextModelSelection } from '../../utils/text-model-selection'
-import { } from '@lucide/vue'
 import OptimizeWorkspaceLayout from '../common/OptimizeWorkspaceLayout.vue'
 import VariantTestWorkspaceLayout from '../common/VariantTestWorkspaceLayout.vue'
 import MobileTestResultHeader from '../common/MobileTestResultHeader.vue'
-import WorkspaceRegionSwitch from '../common/WorkspaceRegionSwitch.vue'
+import PoButton from '../primitives/PoButton.vue'
 import TestSourcePreview from '../common/TestSourcePreview.vue'
 import { useWorkspacePresentation } from '../../composables/ui/useWorkspacePresentation'
 import { useWorkspaceSplit } from '../../composables/ui/useWorkspaceSplit'
@@ -462,7 +468,6 @@ import {
 import {
     NCard,
     NFlex,
-    NButton,
     NText,
     NEmpty,
     } from "naive-ui";
@@ -812,7 +817,10 @@ const templateSelection = useWorkspaceTemplateSelection(
      computed(() => optimizationMode),
      modelSelection.selectedOptimizeModelKey,
      templateSelection.selectedTemplate,
-     templateSelection.selectedIterateTemplate
+     templateSelection.selectedIterateTemplate,
+     // EU02-03: pass the merged variable values to Optimize (same merge
+     // the test runs use: global < temporary < predefined).
+     () => mergedTestVariables.value
  )
 
 // 暴露给子组件（虽然目前主要通过 Props 传递给 ConversationManager，但保持 Provide 以防万一）
@@ -898,9 +906,9 @@ const refreshTemplatesHandler = async () => {
 // ==================== 主布局：可拖拽分栏（左侧 25%~50%） ====================
 
 const {
-    isCompact, mobileRegion, testConfigExpanded, optimizeLayoutRef, testLayoutRef,
+    isCompact, testConfigExpanded, optimizeLayoutRef, testLayoutRef,
     rememberOptimizeScroll, rememberTestScroll,
-    showOptimization, showOptimizationSection, showTestResult, resetMobileView,
+    showOptimization, showOptimizationSection, showTestResult, revealTestPane, resetMobileView,
   } = useWorkspacePresentation('pro-multi')
 const splitRootRef = ref<HTMLElement | null>(null)
 const testPaneRef = ref<HTMLElement | null>(null)
@@ -1383,12 +1391,14 @@ const runVariant = async (
 
         if (!opts?.silentSuccess) {
             toast.success(t('toast.success.testComplete'))
+            void revealTestPane()
         }
         return true
     } catch (_error) {
         failed = true
         if (!opts?.silentError && !stream.signal.aborted) {
             toast.error(t('toast.error.testFailed'))
+            void revealTestPane()
         }
         return false
     } finally {
@@ -1424,8 +1434,10 @@ const runAllVariants = useWorkspaceTestBatch({
 
         if (results.every(Boolean)) {
           toast.success(t('toast.success.testComplete'))
+          void revealTestPane()
         } else {
           toast.error(t('toast.error.testFailed'))
+          void revealTestPane()
         }
       },
     }
@@ -2031,6 +2043,25 @@ watch(() => displayAdapter.displayedIsOptimizing.value, (running, previous) => {
     overflow: visible;
 }
 
+/* Slice 10 — stacked mobile (design-system §2.3), same class fix as
+   BasicUserWorkspace.vue:1567 (EU02-02(b), EU10-05, R3E-01, R3E-06): let
+   the workspace size to its content so the page scrolls. The desktop
+   frame caps the chain at the viewport height — `.main-content-wrapper >
+   * { flex: 1 }` plus `.context-system-workspace { height: 100% }` held
+   this div at viewport height, and the optimize region then shrank below
+   its content (`.compact-optimize-region` clientH 361 vs scrollH 447):
+   the Test section painted over the Output/hint (Run All vs hint
+   84×32px @390, 84×36px @360), and a half-clipped "+ Add Message"
+   button's centre landed where Run All is painted, so a tap fired Run
+   All instead of opening the role menu. `height: auto` + `flex: none`
+   (both beat the frame rules by specificity) release the cap; the inner
+   layouts already flow (Slice 6a). Desktop is unaffected: this rule only
+   matches `.compact-two-region`. */
+.context-system-workspace.compact-two-region {
+    height: auto;
+    flex: none;
+}
+
 .workspace-page-tools {
     display: contents;
 }
@@ -2045,6 +2076,17 @@ watch(() => displayAdapter.displayedIsOptimizing.value, (running, previous) => {
 
 .split-pane {
     min-height: 0;
+}
+
+/* Slice 6a — stacked mobile (design-system §2.3): un-trap the shared
+   layouts' compact internal scroll so the stacked panes size to their
+   content and the page scrolls. Scoped to .workspace-stacked so the
+   Image workspaces (still hidden-pane until Slice 6b) keep their
+   internal scroll. Desktop panes keep height 100% + overflow hidden. */
+.workspace-stacked :deep(.optimize-workspace-layout--compact),
+.workspace-stacked :deep(.test-workspace-layout--compact) {
+    height: auto;
+    overflow: visible;
 }
 
 .split-divider {

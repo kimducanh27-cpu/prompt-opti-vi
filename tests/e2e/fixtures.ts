@@ -34,11 +34,22 @@ function formatConsoleMessage(msg: ConsoleMessage): string {
  */
 export const test = base.extend<{ context: BrowserContext; page: Page }>({
   // 为每个测试创建独立的 BrowserContext
-  context: async ({ browser }, use) => {
+  // Slice 10: forward the project's `use` options (viewport / isMobile /
+  // hasTouch / deviceScaleFactor / userAgent) into the manually created
+  // context. Without this the override below would silently reset every
+  // project — including the mobile-412 / mobile-430 projects — to the
+  // default 1280x720 desktop viewport, and mobile specs would not test
+  // mobile at all. Desktop Chrome passes its own options through unchanged.
+  context: async ({ browser, viewport, isMobile, hasTouch, deviceScaleFactor, userAgent }, use) => {
     // ✅ 创建新的 BrowserContext，禁用所有存储（避免测试间状态泄漏）
     const context = await browser.newContext({
       // 禁用 localStorage 和 sessionStorage
       storageState: undefined, // 不加载任何存储状态
+      viewport: viewport ?? undefined,
+      isMobile,
+      hasTouch,
+      deviceScaleFactor,
+      userAgent,
       // 可以在这里添加其他 context 级别的配置
     })
     // These workflow tests do not depend on services installed on the test host.

@@ -80,7 +80,7 @@
             </NButton>
           </NSpace>
 
-          <NDropdown trigger="click" :options="menuOptions" @select="handleMenuSelect">
+          <NDropdown trigger="click" :options="menuOptions" :menu-props="dropdownMenuProps" :node-props="dropdownNodeProps" @select="handleMenuSelect">
             <NButton data-testid="favorite-workspace-item-menu" quaternary circle size="small" @click.stop>
               <template #icon>
                 <NIcon :size="16"><DotsVertical /></NIcon>
@@ -152,7 +152,7 @@ import {
   NText,
   NThing,
 } from 'naive-ui'
-import { Copy, EllipsisVertical as DotsVertical, SquarePen as Edit, Play as PlayerPlay, Trash2 as Trash } from '@lucide/vue'
+import { PhCopy as Copy, PhDotsThreeVertical as DotsVertical, PhPencilSimple as Edit, PhPlay as PlayerPlay, PhTrash as Trash } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import type { FavoriteCategory, FavoritePrompt } from '@prompt-optimizer/core'
 
@@ -161,6 +161,7 @@ import { resolveAssetIdToDataUrl } from '../utils/image-asset-storage'
 import { parseFavoriteMediaMetadata } from '../utils/favorite-media'
 import { normalizeFavoriteFunctionMode } from '../utils/favorite-mode'
 import { parseFavoriteReproducibility } from '../utils/favorite-reproducibility'
+import { dropdownMenuProps, dropdownNodeProps } from '../utils/dropdown-a11y'
 import AppPreviewImage from './media/AppPreviewImage.vue'
 
 interface Props {
@@ -183,7 +184,7 @@ const emit = defineEmits<{
   'use': [favorite: FavoritePrompt]
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const services = inject<Ref<AppServices | null> | null>('services', null)
 
 const coverImageSrc = ref<string | null>(null)
@@ -399,7 +400,7 @@ const formatDate = (timestamp: number) => {
     return t('favorites.manager.time.daysAgo', { days })
   }
 
-  return date.toLocaleDateString(String(locale.value || 'vi-VN'))
+  return date.toLocaleDateString()
 }
 </script>
 
@@ -589,6 +590,19 @@ const formatDate = (timestamp: number) => {
   .favorite-workspace-list-item__header-actions {
     flex-direction: column-reverse;
     align-items: flex-end;
+  }
+}
+
+/* Slice 8: on mobile the page-grid card variant becomes a PoRow-style row —
+   edge-to-edge with a divider, no card chrome. The list variant was
+   already a row. Card styling (border + radius + padding) survives on
+   desktop only. */
+@media (max-width: 1023px) {
+  .favorite-workspace-list-item--card {
+    border: 0;
+    border-bottom: 1px solid var(--n-border-color);
+    border-radius: 0;
+    padding: 12px 0;
   }
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
-  <NModal
+  <!-- Slice 7: PoSheet — mobile bottom sheet (max 90dvh), desktop card ≤720px.
+       No close-on-esc while saving/restarting is NOT enforceable through
+       PoSheet (open item): Esc can still close the sheet; the save itself
+       continues and the dialog reloads its state on reopen. -->
+  <PoSheet
     :show="show"
-    preset="card"
     :title="t('networkSettings.title')"
-    :style="{ width: 'min(560px, 92vw)', maxHeight: '90vh' }"
-    content-style="overflow: auto"
     :mask-closable="!saving && !restarting"
     :closable="!saving && !restarting"
-    :close-on-esc="!saving && !restarting"
     @update:show="close"
   >
     <NSpace vertical :size="16" data-testid="network-settings-dialog">
@@ -54,34 +54,36 @@
     </NSpace>
     <template #action>
       <NSpace justify="end">
-        <NButton :disabled="saving || restarting" @click="close">
+        <PoButton :disabled="saving || restarting" @click="close">
           {{ t(state?.restartRequired ? 'networkSettings.restartLater' : 'common.cancel') }}
-        </NButton>
-        <NButton
+        </PoButton>
+        <PoButton
           v-if="state?.restartRequired && !dirty"
-          type="primary"
+          variant="primary"
           :loading="restarting"
           @click="restart"
           data-testid="network-restart"
-        >{{ t('networkSettings.restartNow') }}</NButton>
-        <NButton
+        >{{ t('networkSettings.restartNow') }}</PoButton>
+        <PoButton
           v-else
-          type="primary"
+          variant="primary"
           :loading="saving"
           :disabled="!dirty || loading || !state"
           @click="save"
           data-testid="network-save"
-        >{{ t('common.save') }}</NButton>
+        >{{ t('common.save') }}</PoButton>
       </NSpace>
     </template>
-  </NModal>
+  </PoSheet>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NAlert, NButton, NCollapse, NCollapseItem, NForm, NFormItem, NInput, NModal,
+import { NAlert, NCollapse, NCollapseItem, NForm, NFormItem, NInput,
   NRadio, NRadioGroup, NSpace, NSpin, NText } from 'naive-ui'
+import PoSheet from './primitives/PoSheet.vue'
+import PoButton from './primitives/PoButton.vue'
 import type { ModelNetworkSettings, ModelNetworkState } from '../types/model-network'
 import { useConfirmDialog } from '../composables/ui/useConfirmDialog'
 

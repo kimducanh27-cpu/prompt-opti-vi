@@ -1,27 +1,47 @@
 <template>
-    <AdaptiveModal
+    <!-- Slice 7: ONE PoSheet (mobile bottom sheet, max 90dvh; desktop card
+         <=720px). The variable editor becomes an in-place sheet page; the
+         import/export dialogs are siblings — the sheet hides while one is
+         open (swap), never a second modal stacked on the first. -->
+    <PoSheet
         class="context-editor-modal"
-        v-model:show="localVisible"
-        preset="card"
-        :title="modalTitle"
-        :style="modalStyle"
-        size="huge"
-        :bordered="false"
-        :segmented="false"
-        :mask-closable="true"
+        :show="localVisible && !showImportDialog && !showExportDialog"
+        :title="isCompact && variableEditState.show ? undefined : modalTitle"
         :class="accessibilityClasses"
         role="dialog"
         :aria-label="aria.getLabel('contextEditor')"
         :aria-describedby="aria.getDescription('contextEditor')"
         aria-modal="true"
-        @update:show="handleVisibilityChange"
-        @after-enter="handleModalOpen"
-        @after-leave="handleModalClose"
+        @update:show="onSheetUpdateShow"
     >
+        <!-- R3C-04: Naive Card renders `title` INSTEAD of the #header slot, so
+             with :title always set this back button never rendered. The title
+             is undefined exactly while the variable editor page is open in
+             compact; desktop keeps its title, byte-identical. Same class as
+             the Tool editor back-chevron (H3-NEW-01). -->
+        <template v-if="isCompact && variableEditState.show" #header>
+            <div class="po-sheet-page-heading">
+                <PoButton
+                    variant="ghost"
+                    icon-only
+                    :aria-label="modalTitle"
+                    @click="cancelVariableEdit"
+                >
+                    <template #icon>
+                        <UiChevronLeft />
+                    </template>
+                </PoButton>
+                <span class="po-sheet-page-title">{{
+                    variableEditState.isEditing
+                        ? t('contextEditor.editVariable')
+                        : t('contextEditor.addVariable')
+                }}</span>
+            </div>
+        </template>
         <!-- 顶部工具栏 -->
         <template #header-extra>
             <NSpace
-                v-if="!onlyShowTab"
+                v-if="!onlyShowTab && !variableEditState.show"
                 :size="buttonSize"
                 role="toolbar"
                 :aria-label="aria.getLabel('statisticsToolbar')"
@@ -68,6 +88,7 @@
             </NSpace>
         </template>
 
+        <div v-show="!variableEditState.show">
         <!-- 空状态 -->
         <NEmpty
             v-if="localState.messages.length === 0"
@@ -79,15 +100,14 @@
                 <UiMessageSquare role="img" :aria-label="aria.getLabel('messageIcon')" :aria-hidden="false" :size="48" />
             </template>
             <template #extra>
-                <NButton
+                <PoButton
+                    variant="primary"
                     @click="addMessage"
-                    :size="buttonSize"
-                    type="primary"
                     :aria-label="aria.getLabel('addFirstMessage')"
                     :aria-describedby="aria.getDescription('addFirstMessage')"
                 >
                     {{ t("contextEditor.addFirstMessage") }}
-                </NButton>
+                </PoButton>
             </template>
         </NEmpty>
 
@@ -206,42 +226,111 @@
                 </NCard>
 
                 <!-- 添加消息按钮 -->
-                <NButton
+                <PoButton
+                    variant="primary"
                     @click="addMessage"
-                    :size="buttonSize"
-                    dashed
-                    type="primary"
                     :disabled="disabled"
                 >
                     <template #icon>
                         <UiPlus />
                     </template>
                     {{ t("contextEditor.addMessage") }}
-                </NButton>
+                </PoButton>
             </NSpace>
         </NScrollbar>
+        </div>
+
+        <!-- 变量编辑页 (was a nested modal; now an in-place sheet page) -->
+        <div v-if="variableEditState.show">
+            <NSpace vertical>
+                <!-- 变量名 -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">{{
+                        t("contextEditor.variableName")
+                    }}</label>
+                    <NInput
+                        v-model:value="variableEditState.name"
+                        :placeholder="t('contextEditor.variableNamePlaceholder')"
+                        :disabled="
+                            variableEditState.isEditing ||
+                            variableEditState.isFromMissing
+                        "
+                        @keydown.enter="saveVariable"
+                    />
+                    <NText
+                        depth="3"
+                        class="text-xs mt-1"
+                        v-if="isPredefinedVariable(variableEditState.name)"
+                    >
+                        <span class="text-red-500">{{
+                            t("contextEditor.predefinedVariableWarning")
+                        }}</span>
+                    </NText>
+                </div>
+
+                <!-- 变量类型 -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">{{
+                        t("contextEditor.variableType")
+                    }}</label>
+                    <NRadioGroup v-model:value="variableEditState.type">
+                        <NSpace>
+                            <NRadio value="temporary">
+                                <NSpace :size="4" align="center">
+                                    <span>{{ t("contextEditor.variableSourceLabels.temporary") }}</span>
+                                    <NText depth="3" class="text-xs">
+                                        {{ t("contextEditor.temporaryVariableHint") }}
+                                    </NText>
+                                </NSpace>
+                            </NRadio>
+                            <NRadio value="global">
+                                <NSpace :size="4" align="center">
+                                    <span>{{ t("contextEditor.variableSourceLabels.global") }}</span>
+                                    <NText depth="3" class="text-xs">
+                                        {{ t("contextEditor.globalVariableHint") }}
+                                    </NText>
+                                </NSpace>
+                            </NRadio>
+                        </NSpace>
+                    </NRadioGroup>
+                </div>
+
+                <!-- 变量值 -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">{{
+                        t("contextEditor.variableValue")
+                    }}</label>
+                    <NInput
+                        ref="variableValueInputRef"
+                        v-model:value="variableEditState.value"
+                        type="textarea"
+                        :placeholder="t('contextEditor.variableValuePlaceholder')"
+                        :autosize="{ minRows: 3, maxRows: 8 }"
+                        @keydown.ctrl.enter="saveVariable"
+                    />
+                </div>
+            </NSpace>
+        </div>
 
         <!-- 底部操作栏 -->
         <template #action>
-            <NSpace justify="space-between">
+            <NSpace v-if="!variableEditState.show" justify="space-between">
                 <NSpace>
                     <!-- 导入导出按钮 -->
-                    <NButton
+                    <PoButton
+                        variant="secondary"
                         @click="handleImport"
-                        :size="buttonSize"
-                        secondary
                         :disabled="disabled || loading"
                     >
                         <template #icon>
                             <UiCloudDownload />
                         </template>
                         {{ t("common.import") }}
-                    </NButton>
+                    </PoButton>
 
-                    <NButton
+                    <PoButton
+                        variant="secondary"
                         @click="handleExport"
-                        :size="buttonSize"
-                        secondary
                         :disabled="
                             disabled ||
                             loading ||
@@ -253,29 +342,47 @@
                             <UiCloudUpload />
                         </template>
                         {{ t("common.export") }}
-                    </NButton>
+                    </PoButton>
                 </NSpace>
 
                 <NSpace>
-                    <NButton
+                    <PoButton
+                        variant="secondary"
                         @click="handleCancel"
-                        :size="buttonSize"
                         :disabled="loading"
                     >
                         {{ t("common.cancel") }}
-                    </NButton>
-                    <NButton
+                    </PoButton>
+                    <PoButton
+                        variant="primary"
                         @click="handleSave"
-                        :size="buttonSize"
-                        type="primary"
                         :loading="loading"
                     >
                         {{ t("common.save") }}
-                    </NButton>
+                    </PoButton>
                 </NSpace>
             </NSpace>
+            <NSpace v-else justify="end">
+                <PoButton variant="secondary" @click="cancelVariableEdit">
+                    {{ t("common.cancel") }}
+                </PoButton>
+                <PoButton
+                    variant="primary"
+                    @click="saveVariable"
+                    :disabled="
+                        !variableEditState.name.trim() ||
+                        isPredefinedVariable(variableEditState.name)
+                    "
+                >
+                    {{
+                        variableEditState.isEditing
+                            ? t("common.save")
+                            : t("common.add")
+                    }}
+                </PoButton>
+            </NSpace>
         </template>
-    </AdaptiveModal>
+    </PoSheet>
 
     <!-- 导入对话框 -->
     <ImportExportDialog
@@ -296,110 +403,7 @@
         @export-error="handleExportError"
     />
 
-    <!-- 变量编辑对话框 -->
-    <AdaptiveModal
-        v-model:show="variableEditState.show"
-        preset="card"
-        :title="
-            variableEditState.isEditing
-                ? t('contextEditor.editVariable')
-                : t('contextEditor.addVariable')
-        "
-        style="width: 500px"
-        :mask-closable="false"
-    >
-        <NSpace vertical>
-            <!-- 变量名 -->
-            <div>
-                <label class="block text-sm font-medium mb-2">{{
-                    t("contextEditor.variableName")
-                }}</label>
-                <NInput
-                    v-model:value="variableEditState.name"
-                    :placeholder="t('contextEditor.variableNamePlaceholder')"
-                    :disabled="
-                        variableEditState.isEditing ||
-                        variableEditState.isFromMissing
-                    "
-                    @keydown.enter="saveVariable"
-                />
-                <NText
-                    depth="3"
-                    class="text-xs mt-1"
-                    v-if="isPredefinedVariable(variableEditState.name)"
-                >
-                    <span class="text-red-500">{{
-                        t("contextEditor.predefinedVariableWarning")
-                    }}</span>
-                </NText>
-            </div>
 
-            <!-- 变量类型 -->
-            <div>
-                <label class="block text-sm font-medium mb-2">{{
-                    t("contextEditor.variableType")
-                }}</label>
-                <NRadioGroup v-model:value="variableEditState.type">
-                    <NSpace>
-                        <NRadio value="temporary">
-                            <NSpace :size="4" align="center">
-                                <span>{{ t("contextEditor.variableSourceLabels.temporary") }}</span>
-                                <NText depth="3" class="text-xs">
-                                    {{ t("contextEditor.temporaryVariableHint") }}
-                                </NText>
-                            </NSpace>
-                        </NRadio>
-                        <NRadio value="global">
-                            <NSpace :size="4" align="center">
-                                <span>{{ t("contextEditor.variableSourceLabels.global") }}</span>
-                                <NText depth="3" class="text-xs">
-                                    {{ t("contextEditor.globalVariableHint") }}
-                                </NText>
-                            </NSpace>
-                        </NRadio>
-                    </NSpace>
-                </NRadioGroup>
-            </div>
-
-            <!-- 变量值 -->
-            <div>
-                <label class="block text-sm font-medium mb-2">{{
-                    t("contextEditor.variableValue")
-                }}</label>
-                <NInput
-                    ref="variableValueInputRef"
-                    v-model:value="variableEditState.value"
-                    type="textarea"
-                    :placeholder="t('contextEditor.variableValuePlaceholder')"
-                    :autosize="{ minRows: 3, maxRows: 8 }"
-                    @keydown.ctrl.enter="saveVariable"
-                />
-            </div>
-        </NSpace>
-
-        <template #action>
-            <NSpace justify="end">
-                <NButton @click="cancelVariableEdit" :size="buttonSize">
-                    {{ t("common.cancel") }}
-                </NButton>
-                <NButton
-                    @click="saveVariable"
-                    type="primary"
-                    :size="buttonSize"
-                    :disabled="
-                        !variableEditState.name.trim() ||
-                        isPredefinedVariable(variableEditState.name)
-                    "
-                >
-                    {{
-                        variableEditState.isEditing
-                            ? t("common.save")
-                            : t("common.add")
-                    }}
-                </NButton>
-            </NSpace>
-        </template>
-    </AdaptiveModal>
 
     <!-- 实时区域用于屏幕阅读器 -->
     <div
@@ -425,8 +429,9 @@
 </template>
 
 <script setup lang="ts">
-import { MessageSquare as UiMessageSquare, Eye as UiEye, ChevronUp as UiChevronUp, ChevronDown as UiChevronDown, Trash2 as UiTrash2, Plus as UiPlus, CloudDownload as UiCloudDownload, CloudUpload as UiCloudUpload } from '@lucide/vue'
-import AdaptiveModal from '../common/AdaptiveModal.vue'
+import { PhChat as UiMessageSquare, PhEye as UiEye, PhCaretUp as UiChevronUp, PhCaretDown as UiChevronDown, PhCaretLeft as UiChevronLeft, PhTrash as UiTrash2, PhPlus as UiPlus, PhCloudArrowDown as UiCloudDownload, PhCloudArrowUp as UiCloudUpload } from '@phosphor-icons/vue'
+import PoSheet from '../primitives/PoSheet.vue'
+import PoButton from '../primitives/PoButton.vue'
 import {
     ref,
     computed,
@@ -549,7 +554,6 @@ const aggregatedVars = useAggregatedVariables(variableManager);
 
 // 响应式配置
 const {
-    modalWidth,
     buttonSize: responsiveButtonSize,
     isMobile,
 } = useResponsive();
@@ -662,11 +666,6 @@ const cardSize = computed(() => {
     } as const;
     return sizeMap[responsiveButtonSize.value] || "small";
 });
-
-const modalStyle = computed(() => ({
-    width: modalWidth.value,
-    height: isMobile.value ? "95vh" : props.height || "85vh",
-}));
 
 const scrollbarStyle = computed(() => ({
     maxHeight: isMobile.value ? "40vh" : "60vh",
@@ -821,6 +820,17 @@ const togglePreview = throttle(
 const handleVisibilityChange = (visible: boolean) => {
     localVisible.value = visible;
     emit("update:visible", visible);
+};
+
+// Slice 7: a close request from the variable-edit page goes back to the
+// list; only from the list page does it close the editor.
+const onSheetUpdateShow = (visible: boolean) => {
+    if (visible) return;
+    if (variableEditState.value.show) {
+        cancelVariableEdit();
+        return;
+    }
+    handleVisibilityChange(false);
 };
 
 const handleStateChange = () => {
@@ -987,6 +997,10 @@ watch(
     (newVisible) => {
         localVisible.value = newVisible;
         activeTab.value = resolveDefaultTab();
+        // Slice 7: PoSheet does not forward @after-enter/@after-leave, so
+        // the aria announcements the old modal emitted there fire here.
+        if (newVisible) handleModalOpen();
+        else handleModalClose();
     },
 );
 
@@ -1084,5 +1098,19 @@ const handleExportError = (message?: string) => {
 .focused-card {
     box-shadow: 0 0 0 2px var(--n-color-target, #18a058) inset;
     transition: box-shadow 0.2s ease;
+}
+
+.po-sheet-page-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.po-sheet-page-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
 }
 </style>

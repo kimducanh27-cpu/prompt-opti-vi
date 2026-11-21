@@ -64,11 +64,44 @@ export { default as HistoryDrawerUI } from "./components/HistoryDrawer.vue";
 export { default as InputPanelUI } from "./components/InputPanel.vue";
 export { default as MainLayoutUI } from "./components/MainLayout.vue";
 export { default as ContentCardUI } from "./components/ContentCard.vue";
-export { default as ActionButtonUI } from "./components/ActionButton.vue";
+// Primitives (design-system §3, Slice 4) — the only button / input / select /
+// card / row / modal / sheet / toast / banner / tab / status / badge /
+// feedback components app code may use. Each wraps Naive UI + the tokens.
+// ActionButton was DELETED in Slice 8: its only importers were the two
+// test files, both converted to PoButton (tests/unit/components.test.js,
+// tests/unit/components/PoButton.spec.ts). Do not re-add it — use PoButton.
+export { default as PoButtonUI } from "./components/primitives/PoButton.vue";
+export { default as PoInputUI } from "./components/primitives/PoInput.vue";
+export { default as PoTextareaUI } from "./components/primitives/PoTextarea.vue";
+export { default as PoSelectUI } from "./components/primitives/PoSelect.vue";
+export { default as PoCardUI } from "./components/primitives/PoCard.vue";
+export { default as PoRowUI } from "./components/primitives/PoRow.vue";
+export { default as PoTableUI } from "./components/primitives/PoTable.vue";
+export { default as PoModalUI } from "./components/primitives/PoModal.vue";
+export { default as PoSheetUI } from "./components/primitives/PoSheet.vue";
+export { default as PoToastUI } from "./components/primitives/PoToast.vue";
+export { default as PoBannerUI } from "./components/primitives/PoBanner.vue";
+export { default as PoTabsUI } from "./components/primitives/PoTabs.vue";
+export { default as PoSegmentedUI } from "./components/primitives/PoSegmented.vue";
+export { default as PoStatusUI } from "./components/primitives/PoStatus.vue";
+export { default as PoBadgeUI } from "./components/primitives/PoBadge.vue";
+export { default as PoEmptyUI } from "./components/primitives/PoEmpty.vue";
+export { default as PoLoadingUI } from "./components/primitives/PoLoading.vue";
+export { default as PoErrorUI } from "./components/primitives/PoError.vue";
+// PoToast reuses the existing message provider (composables/ui/useToast) —
+// no second provider is created. usePoToast is that same API.
+export { useToast as usePoToast } from "./composables/ui/useToast";
+export type { PoButtonVariant, PoButtonSize } from "./components/primitives/PoButton.vue";
+export type { PoTableColumn, PoTableRow } from "./components/primitives/PoTable.vue";
+export type { PoSelectOption } from "./components/primitives/PoSelect.vue";
+export type { PoBannerType } from "./components/primitives/PoBanner.vue";
+export type { PoTabOption } from "./components/primitives/PoTabs.vue";
+export type { PoSegmentedOption } from "./components/primitives/PoSegmented.vue";
+export type { PoStatusKind } from "./components/primitives/PoStatus.vue";
+export type { PoLoadingShape } from "./components/primitives/PoLoading.vue";
 export { default as ThemeToggleUI } from "./components/ThemeToggleUI.vue";
 // TestPanel.vue - 已替换为TestAreaPanel
 export { default as ModalUI } from "./components/Modal.vue";
-export { default as PanelUI } from "./components/Panel.vue";
 
 export { default as VariableManagerModal } from "./components/variable/VariableManagerModal.vue";
 export { default as VariableEditor } from "./components/variable/VariableEditor.vue";
@@ -76,7 +109,6 @@ export { default as VariableImporter } from "./components/variable/VariableImpor
 export { default as ToolManagerModal } from "./components/tool/ToolManagerModal.vue";
 export { default as ConversationManager } from "./components/context-mode/ConversationManager.vue";
 export { default as ContextEditor } from "./components/context-mode/ContextEditor.vue";
-export { default as TestAreaPanel } from "./components/TestAreaPanel.vue";
 export { default as TestInputSection } from "./components/TestInputSection.vue";
 export { default as TestControlBar } from "./components/TestControlBar.vue";
 export { default as TestResultSection } from "./components/TestResultSection.vue";
@@ -91,7 +123,6 @@ export { default as OutputDisplayCore } from "./components/OutputDisplayCore.vue
 export { default as UpdaterIcon } from "./components/UpdaterIcon.vue";
 export { default as UpdaterModal } from "./components/UpdaterModal.vue";
 export { default as FullscreenDialog } from "./components/FullscreenDialog.vue";
-export { default as InputWithSelect } from "./components/InputWithSelect.vue";
 export { default as MarkdownRenderer } from "./components/MarkdownRenderer.vue";
 export { default as XmlRenderer } from "./components/XmlRenderer.vue";
 export { default as ToolCallDisplay } from "./components/ToolCallDisplay.vue";

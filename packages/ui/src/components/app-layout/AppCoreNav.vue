@@ -6,6 +6,10 @@
         - 功能模式选择器 (Basic / Pro / Image)
         - 各模式的子模式选择器
 
+        Slice 5: no styles / hex / px in this file to restyle — the NSpace
+        gap (12) is the spacing-3 token value, and the mode selectors keep
+        their behaviour and route logic untouched (item 3).
+
         🔧 路由架构：直接使用 router.push 进行导航
         - 从路由参数计算当前模式
         - 导航操作直接调用 router.push

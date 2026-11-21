@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { computed, ref, nextTick } from 'vue'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 
 // Capture dialog options without relying on DOM rendering.
 const dialogWarningSpy = vi.hoisted(() => vi.fn())
@@ -361,6 +361,12 @@ describe('TemporaryVariablesPanel', () => {
 
     // Simulate user confirming.
     opts?.onPositiveClick?.()
+    // The Mediums-phase confirm-dialog unification made the clear async
+    // (promise-based useConfirmDialog.warning()): the component awaits the
+    // promise, then calls handleClearAllVariables() in a later microtask.
+    // A single nextTick() resumes before the state change lands, so flush
+    // pending promises first, then let Vue flush the DOM.
+    await flushPromises()
     await nextTick()
 
     expect(fixture.handleClearAllVariables).toHaveBeenCalledTimes(1)

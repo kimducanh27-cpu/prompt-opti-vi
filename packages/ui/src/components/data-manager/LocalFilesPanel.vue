@@ -77,7 +77,7 @@
 </template>
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import { Download, Upload } from '@lucide/vue'
+import { PhDownload as Download, PhUpload as Upload } from '@phosphor-icons/vue'
 import { NText, NButton, NUpload, NUploadDragger } from 'naive-ui'
 import { useDataManagerContext } from './context'
 import RestoreConfirmation from './RestoreConfirmation.vue'

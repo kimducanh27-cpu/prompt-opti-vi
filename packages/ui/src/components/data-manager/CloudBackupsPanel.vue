@@ -127,7 +127,7 @@
 </template>
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import { Check, CloudUpload, RefreshCw } from '@lucide/vue'
+import { PhCheck as Check, PhCloudArrowUp as CloudUpload, PhArrowClockwise as RefreshCw } from '@phosphor-icons/vue'
 import { NText, NButton, NInput } from 'naive-ui'
 import { useDataManagerContext } from './context'
 import ConnectionSummary from './ConnectionSummary.vue'

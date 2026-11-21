@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
 import { NButton, NIcon } from 'naive-ui'
-import { Star } from '@lucide/vue'
+import { PhStar as Star } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import {
   promptExampleFromTestRun,

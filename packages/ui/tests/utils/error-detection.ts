@@ -15,7 +15,13 @@ interface SetupErrorDetectionOptions {
 
 const DEFAULT_IGNORE_PATTERNS: RegExp[] = [
   /ResizeObserver loop limit exceeded/i,
-  /ResizeObserver loop completed with undelivered notifications/i
+  /ResizeObserver loop completed with undelivered notifications/i,
+  // L-A deliberate design: getUserFacingErrorMessage() warns with the raw
+  // detail for uncoded errors (src/utils/error.ts). The image-request
+  // failure in workspace-run-all-parallel.e2e.spec.ts is a deliberate
+  // failure variant, so this EXACT warn is expected there. Scoped to this
+  // one message string only — no other suppressed-detail warns are ignored.
+  /^\[error\] suppressed raw error detail: image request failed$/,
 ]
 
 let currentIgnorePatterns: RegExp[] = [...DEFAULT_IGNORE_PATTERNS]

@@ -35,7 +35,13 @@ async function mountEditor(compact = true) {
     global: {
       renderStubDefaultSlot: true,
       stubs: {
+        // Slice 7: ContextEditor's overlay is a PoSheet now.
+        PoSheet: { template: '<div><slot /><slot name="action" /></div>' },
         AdaptiveModal: { template: '<div><slot /><slot name="action" /></div>' },
+        // Slice 7: the footer buttons are PoButton now; render them as real
+        // <button> elements (like the old NButton stub) so save() can find
+        // the Save button by its label.
+        PoButton: { emits: ['click'], template: '<button @click="$emit(\'click\')"><slot /></button>' },
         Button: { emits: ['click'], template: '<button @click="$emit(\'click\')"><slot /></button>' },
         VariableAwareInput: { name: 'VariableAwareInput', props: ['modelValue'], emits: ['update:modelValue'], template: '<textarea :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />' },
       },

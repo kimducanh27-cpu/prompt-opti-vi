@@ -132,7 +132,12 @@ onBeforeUnmount(() => { disposed = true; generation++; client?.dispose(); previe
     line-height: 1.5;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    hyphens: auto;
+    /* EU04-07: `hyphens: auto` made Chromium split long words mid-word at
+       dictionary points ("deter-/ministic"). `manual` keeps hyphenation
+       off unless the content itself contains a hyphen — do NOT "fix" this
+       with word-break/overflow-wrap (ablation proved those are not the
+       mechanism). */
+    hyphens: manual;
     /* Pure Naive UI theme - remove custom CSS variables */
     padding: 0.75rem; /* 提供合适的内边距，与其他组件保持一致 */
 }

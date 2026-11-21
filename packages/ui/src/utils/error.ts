@@ -177,6 +177,51 @@ export function getI18nErrorMessage(error: unknown, fallback = 'Unknown error'):
   return message
 }
 
+/**
+ * 检查错误链中是否包含 JSON 解析错误（SyntaxError）。
+ * importFavorites 会把原始错误包装进 FavoriteImportExportError，
+ * 因此需要沿 error.cause 逐层查找；循环引用用 Set 兜底。
+ */
+export function isJsonSyntaxError(error: unknown): boolean {
+  const seen = new Set<unknown>()
+  let current: unknown = error
+  while (current && typeof current === 'object' && !seen.has(current)) {
+    seen.add(current)
+    if (current instanceof SyntaxError) return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
+}
+
+/**
+ * 用户可见的错误文案。与 getI18nErrorMessage 的区别在于：未知错误
+ * 不再原样返回技术细节（如 "Expected double-quoted property name in
+ * JSON at position 123"、VCR fixture hash、API 原始报文），而是返回
+ * 调用方给出的 fallback；原始信息只写进 console.warn，方便排障。
+ *
+ * 规则：
+ * - 结构化错误（code + params）且 i18n 有对应 key：返回翻译文案
+ * - 其余情况：返回 fallback
+ */
+export function getUserFacingErrorMessage(error: unknown, fallback = 'Unknown error'): string {
+  if (isRecord(error)) {
+    const code = typeof error.code === 'string' ? error.code : undefined
+    const params = isRecord(error.params) ? error.params : undefined
+    if (code && i18n.global.te(code)) {
+      try {
+        return i18n.global.t(code, normalizeI18nParams(params) ?? {})
+      } catch {
+        // 插值失败时同样回落到 fallback，不暴露原始信息。
+      }
+    }
+  }
+  const rawDetail = getErrorMessage(error, fallback)
+  if (rawDetail && rawDetail !== fallback) {
+    console.warn('[error] suppressed raw error detail:', rawDetail)
+  }
+  return fallback
+}
+
 export function formatErrorSummary(summary: string, error: unknown, fallback = 'Unknown error'): string {
   const normalizedSummary = summary.trim()
   const detail = getI18nErrorMessage(error, fallback).trim()

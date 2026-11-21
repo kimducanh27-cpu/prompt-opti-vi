@@ -1,16 +1,5 @@
-/* 自定义滚动条样式 */
-.custom-select {
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
-  background-image: none !important;
-}
-
-.custom-select::-ms-expand {
-  display: none;
-}
-
-/* 优化滚动条样式 */
+/* Scrollbar styling — canonical home for ::-webkit-scrollbar rules.
+ * (Previously duplicated in styles/index.css; deduped Slice 2.) */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -31,4 +20,4 @@
 /* 隐藏水平滚动条 */
 ::-webkit-scrollbar-horizontal {
   display: none;
-} 
+}

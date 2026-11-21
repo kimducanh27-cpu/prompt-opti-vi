@@ -213,16 +213,16 @@ vi.mock('naive-ui', () => ({
   }),
 }))
 
-vi.mock('@lucide/vue', () => ({
-  ExternalLink: defineComponent({
+vi.mock('@phosphor-icons/vue', () => ({
+  PhArrowSquareOut: defineComponent({
     name: 'ExternalLink',
     setup: () => () => h('i'),
   }),
-  FileInput: defineComponent({ name: 'FileImport', setup: () => () => h('i') }),
-  Sprout: defineComponent({ name: 'Plant2', setup: () => () => h('i') }),
-  Search: defineComponent({ setup: () => () => h('i') }),
-  ChevronDown: defineComponent({ setup: () => () => h('i') }),
-  RefreshCw: defineComponent({ name: 'Refresh', setup: () => () => h('i') }),
+  PhFileArrowDown: defineComponent({ name: 'FileImport', setup: () => () => h('i') }),
+  PhPlant: defineComponent({ name: 'Plant2', setup: () => () => h('i') }),
+  PhMagnifyingGlass: defineComponent({ setup: () => () => h('i') }),
+  PhCaretDown: defineComponent({ setup: () => () => h('i') }),
+  PhArrowClockwise: defineComponent({ name: 'Refresh', setup: () => () => h('i') }),
 }))
 
 import PromptGardenInspirationPopover from '../../../src/components/common/PromptGardenInspirationPopover.vue'

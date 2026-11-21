@@ -336,7 +336,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, type PropType } from 'vue'
-import { RotateCcw } from '@lucide/vue'
+import { PhArrowCounterClockwise as RotateCcw } from '@phosphor-icons/vue'
 
 import { useI18n } from 'vue-i18n'
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'

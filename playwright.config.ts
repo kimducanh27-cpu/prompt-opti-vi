@@ -89,7 +89,47 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      // Slice 10: the group runner passes spec paths explicitly, and a
+      // project without testMatch matches ANY passed path — so without
+      // this, the mobile journey specs would also run on the desktop
+      // project (compact UI hidden at desktop width) and fail. The mobile
+      // projects are scoped the other way via testMatch.
+      testIgnore: 'mobile/*.spec.ts',
       use: { ...devices['Desktop Chrome'] },
+    },
+
+    // Slice 10 — mobile journey projects (Honor Magic6 viewports).
+    // testMatch is scoped to tests/e2e/mobile/ ONLY, so the existing 48
+    // desktop specs never run on mobile and the suite does not double.
+    // Explicit Chromium options (no iPhone/Pixel device preset): the iPhone
+    // preset defaults to WebKit, which is not installed on this VM, and the
+    // viewport must be exactly 412x915 / 430x932. isMobile/hasTouch drive
+    // pointer:coarse + touch; deviceScaleFactor matches the real phones.
+    {
+      name: 'mobile-412',
+      testMatch: 'mobile/*.spec.ts',
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 412, height: 915 },
+        isMobile: true,
+        hasTouch: true,
+        deviceScaleFactor: 2.625,
+        userAgent:
+          'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+      },
+    },
+    {
+      name: 'mobile-430',
+      testMatch: 'mobile/*.spec.ts',
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 430, height: 932 },
+        isMobile: true,
+        hasTouch: true,
+        deviceScaleFactor: 3,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      },
     },
 
     // 如果需要测试其他浏览器,可以取消注释

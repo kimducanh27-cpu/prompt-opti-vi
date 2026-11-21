@@ -1,39 +1,82 @@
 <template>
-  <NModal
+  <!-- Slice 7: ONE PoSheet (mobile bottom sheet, max 90dvh; desktop card
+       ≤720px, was 90vw / max 1200px) with sheet pages instead of the 4 nested
+       modals (editor, syntax guide, migration, fullscreen). Pages are v-if'd
+       so a closed page unmounts like the old modal did; closing the sheet
+       from a sub-page goes back to the list (the editor's guarded
+       requestCancelEdit runs), closing from the list closes the manager. -->
+  <PoSheet
     :show="show"
-    compact-class="template-manager--compact"
-    :auto-focus="!isCompact"
-    preset="card"
-    :style="{ width: '90vw', maxWidth: '1200px' }"
-    :title="t('templateManager.title')"
-    size="large"
-    :bordered="false"
-    :segmented="true"
-    @update:show="(value: boolean) => !value && close()"
+    :title="isCompact && sheetPage !== 'list' ? undefined : sheetTitle"
+    class="template-editor-modal"
+    @update:show="onSheetUpdateShow"
   >
+    <!-- R3C-04: Naive Card renders `title` INSTEAD of the #header slot, so
+         with :title always set this back button never rendered. The title is
+         undefined exactly while a sub-page is open in compact (the header
+         slot only exists then); desktop keeps its title, byte-identical.
+         Same class as the Tool editor back-chevron (H3-NEW-01). -->
+    <template v-if="isCompact && sheetPage !== 'list'" #header>
+      <div class="po-sheet-page-heading">
+        <PoButton variant="ghost" icon-only :aria-label="t('templateManager.title')" @click="goBackFromSheetPage">
+          <template #icon>
+            <UiChevronLeft :size="20" />
+          </template>
+        </PoButton>
+        <span class="po-sheet-page-title">{{ sheetTitle }}</span>
+      </div>
+    </template>
     <template #header-extra>
-      <NSpace>
-        <NButton
+      <NSpace v-if="sheetPage === 'list'">
+        <PoButton
           v-if="!isCompact"
-          quaternary
-          circle
+          variant="ghost"
+          icon-only
+          :aria-label="t('templateManager.syntaxGuide')"
           @click="showSyntaxGuide = true"
-          :title="t('templateManager.syntaxGuide')"
         >
           <template #icon>
             <UiCircleHelp />
           </template>
-        </NButton>
+        </PoButton>
         <BuiltinTemplateLanguageSwitch @language-changed="handleLanguageChanged" />
       </NSpace>
+      <NSpace v-else-if="sheetPage === 'editor' && !isCompact">
+        <!-- 在查看或编辑时显示模板类型 -->
+        <NTag
+          v-if="viewingTemplate || editingTemplate"
+          :type="(viewingTemplate || editingTemplate) && TemplateProcessor.isSimpleTemplate((viewingTemplate || editingTemplate)!) ? 'info' : 'warning'"
+          size="small"
+        >
+          {{ (viewingTemplate || editingTemplate) && TemplateProcessor.isSimpleTemplate((viewingTemplate || editingTemplate)!)
+            ? t('templateManager.simpleTemplate')
+            : t('templateManager.advancedTemplate') }}
+        </NTag>
+        <!-- Template Syntax Guide Toggle -->
+        <PoButton
+          variant="ghost"
+          icon-only
+          :aria-label="t('templateManager.syntaxGuide')"
+          @click="showSyntaxGuide = true"
+        >
+          <template #icon>
+            <UiCircleHelp />
+          </template>
+        </PoButton>
+      </NSpace>
     </template>
+
+    <!-- List page (v-show: stays mounted so a replacement edit session can
+         arrive from the list while a discard confirmation is pending) -->
+    <div v-show="sheetPage === 'list'">
 
     <!-- 类型切换：一行网格自动分两行，每行三列，按钮全宽（更易扩展） -->
     <MobileTemplateList
       v-if="isCompact"
       v-model:category="currentCategory"
       v-model:search="mobileSearch"
-      :templates="mobileFilteredTemplates"
+      :templates="visibleMobileTemplates"
+      :total-count="mobileFilteredTemplates.length"
       :categories="mobileCategoryOptions"
       :selected-id="getSelectedTemplateId()"
       @add="addMobileTemplate"
@@ -43,69 +86,78 @@
       @migrate="showMigrationDialog"
       @delete="template => confirmDelete(template.id)"
     />
+    <!-- P-009: paginated — "Load more" appends the next 20 templates. The
+         label uses common.loadMore (M-G added the key in all 4 locales;
+         same string as promptGarden.loadMore). The count line inside
+         MobileTemplateList now shows the TOTAL count via its totalCount
+         prop (it used to read the passed array's visible length). -->
+    <PoButton
+      v-if="isCompact && hasMoreTemplates"
+      block
+      variant="secondary"
+      @click="loadMoreTemplates"
+    >
+      {{ t('common.loadMore') }}
+    </PoButton>
     <NGrid v-else class="compact-template-categories" :cols="3" :x-gap="8" :y-gap="8">
       <NGridItem>
-        <NButton block :type="currentCategory==='system-optimize' ? 'primary' : 'default'" @click="currentCategory='system-optimize'">
+        <PoButton block :variant="currentCategory==='system-optimize' ? 'primary' : 'secondary'" @click="currentCategory='system-optimize'">
           <template #icon><CategoryTarget /></template>
           {{ t('templateManager.optimizeTemplates') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
       <NGridItem>
-        <NButton block :type="currentCategory==='user-optimize' ? 'primary' : 'default'" @click="currentCategory='user-optimize'">
+        <PoButton block :variant="currentCategory==='user-optimize' ? 'primary' : 'secondary'" @click="currentCategory='user-optimize'">
           <template #icon><CategoryUser /></template>
           {{ t('templateManager.userOptimizeTemplates') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
       <NGridItem>
-        <NButton
-          block
-          :type="(currentCategory==='basic-system-iterate' || currentCategory==='basic-user-iterate') ? 'primary' : 'default'"
-          @click="currentCategory = props.basicSubMode === 'system' ? 'basic-system-iterate' : 'basic-user-iterate'"
-        >
+        <PoButton block :variant="(currentCategory==='basic-system-iterate' || currentCategory==='basic-user-iterate') ? 'primary' : 'secondary'" @click="currentCategory = props.basicSubMode === 'system' ? 'basic-system-iterate' : 'basic-user-iterate'">
           <template #icon><CategoryRefreshCw /></template>
           {{ t('templateManager.iterateTemplates') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
 
       <NGridItem>
-        <NButton block :type="currentCategory==='context-system-optimize' ? 'primary' : 'default'" @click="currentCategory='context-system-optimize'">
+        <PoButton block :variant="currentCategory==='context-system-optimize' ? 'primary' : 'secondary'" @click="currentCategory='context-system-optimize'">
           <template #icon><CategoryTarget /></template>
           {{ t('templateManager.optimizeTemplatesContext') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
       <NGridItem>
-        <NButton block :type="currentCategory==='context-user-optimize' ? 'primary' : 'default'" @click="currentCategory='context-user-optimize'">
+        <PoButton block :variant="currentCategory==='context-user-optimize' ? 'primary' : 'secondary'" @click="currentCategory='context-user-optimize'">
           <template #icon><CategoryUser /></template>
           {{ t('templateManager.userOptimizeTemplatesContext') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
       <NGridItem>
-        <NButton block :type="currentCategory==='context-iterate' ? 'primary' : 'default'" @click="currentCategory='context-iterate'">
+        <PoButton block :variant="currentCategory==='context-iterate' ? 'primary' : 'secondary'" @click="currentCategory='context-iterate'">
           <template #icon><CategoryRefreshCw /></template>
           {{ t('templateManager.iterateTemplatesContext') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
 
       <!-- 图像 · 文生图 -->
       <NGridItem>
-        <NButton block :type="currentCategory==='image-text2image-optimize' ? 'primary' : 'default'" @click="currentCategory='image-text2image-optimize'">
+        <PoButton block :variant="currentCategory==='image-text2image-optimize' ? 'primary' : 'secondary'" @click="currentCategory='image-text2image-optimize'">
           <template #icon><CategoryImage /></template>
           {{ t('templateManager.imageText2ImageTemplates') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
       <!-- 图像 · 图生图 -->
       <NGridItem>
-        <NButton block :type="currentCategory==='image-image2image-optimize' ? 'primary' : 'default'" @click="currentCategory='image-image2image-optimize'">
+        <PoButton block :variant="currentCategory==='image-image2image-optimize' ? 'primary' : 'secondary'" @click="currentCategory='image-image2image-optimize'">
           <template #icon><CategoryCamera /></template>
           {{ t('templateManager.imageImage2ImageTemplates') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
       <!-- 图像 · 迭代 -->
       <NGridItem>
-        <NButton block :type="currentCategory==='image-iterate' ? 'primary' : 'default'" @click="currentCategory='image-iterate'">
+        <PoButton block :variant="currentCategory==='image-iterate' ? 'primary' : 'secondary'" @click="currentCategory='image-iterate'">
           <template #icon><CategoryRefreshCw /></template>
           {{ t('templateManager.imageIterateTemplates') }}
-        </NButton>
+        </PoButton>
       </NGridItem>
     </NGrid>
 
@@ -118,22 +170,21 @@
             {{ t('templateManager.templateCount', { count: filteredTemplates.length }) }}
           </NTag>
         </NSpace>
-        <NButton
-          type="primary"
+        <PoButton
+          variant="primary"
           @click="showAddForm = true"
-          ghost
         >
           <template #icon>
             <UiFilePlus2 />
           </template>
           {{ t('templateManager.addTemplate') }}
-        </NButton>
+        </PoButton>
       </NSpace>
       
       <NScrollbar style="max-height: 60vh;">
         <NSpace vertical :size="12">
           <NCard
-            v-for="template in filteredTemplates"
+            v-for="template in visibleDesktopTemplates"
             :key="template.id"
             hoverable
             :style="{
@@ -262,394 +313,346 @@
           </NCard>
         </NSpace>
       </NScrollbar>
+      <!-- P-009: paginated — "Load more" appends the next 20 templates. -->
+      <PoButton
+        v-if="hasMoreTemplates"
+        block
+        variant="secondary"
+        @click="loadMoreTemplates"
+      >
+        {{ t('common.loadMore') }}
+      </PoButton>
     </NSpace>
 
-    <!-- 查看/编辑模态框 -->
-    <NModal
-      :show="!!(showAddForm || editingTemplate || viewingTemplate)"
-      class="template-editor-modal"
-      compact-class="template-editor-modal--compact"
-      :auto-focus="!isCompact"
-      preset="card"
-      :style="{ width: '90vw', maxWidth: '1200px' }"
-      :title="isCompact && viewingTemplate ? viewingTemplate.name : getEditModalTitle()"
-      size="large"
-      :bordered="false"
-      :segmented="true"
-      @update:show="(value: boolean) => !value && requestCancelEdit()"
-    >
-      <template v-if="!isCompact" #header-extra>
+    </div>
+    <!-- Editor sheet page (was a nested modal) -->
+    <div v-if="sheetPage === 'editor'">
+    <MobileTemplateEditor
+      v-if="isCompact"
+      v-model:form="form"
+      :readonly="!!viewingTemplate"
+      :saving="mobileSaving"
+      :preview="processedPreview"
+      @add-message="addMessage"
+      @remove-message="removeMessage"
+      @move-message="moveMessage"
+      @syntax="showSyntaxGuide = true"
+    />
+    <form v-else @submit.prevent="handleSubmit" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">{{ t('template.name') }}</label>
+        <NInput
+          v-model:value="form.name"
+          :placeholder="t('template.namePlaceholder')"
+          :readonly="!!viewingTemplate"
+        />
+      </div>
+
+      <!-- Template Format Selector -->
+      <div v-if="!viewingTemplate">
+        <label class="block text-sm font-medium mb-2">{{ t('templateManager.templateFormat') }}</label>
         <NSpace>
-          <!-- 在查看或编辑时显示模板类型 -->
-          <NTag
-            v-if="viewingTemplate || editingTemplate"
-            :type="(viewingTemplate || editingTemplate) && TemplateProcessor.isSimpleTemplate((viewingTemplate || editingTemplate)!) ? 'info' : 'warning'"
-            size="small"
-          >
-            {{ (viewingTemplate || editingTemplate) && TemplateProcessor.isSimpleTemplate((viewingTemplate || editingTemplate)!) 
-              ? t('templateManager.simpleTemplate')
-              : t('templateManager.advancedTemplate') }}
-          </NTag>
-          <!-- Template Syntax Guide Toggle -->
           <NButton
-            quaternary
-            circle
-            @click="showSyntaxGuide = true"
-            :title="t('templateManager.syntaxGuide')"
+            :type="!form.isAdvanced ? 'primary' : 'default'"
+            @click="form.isAdvanced = false"
+            class="flex-1"
           >
-            <template #icon>
-              <UiCircleHelp />
-            </template>
+            {{ t('templateManager.simpleTemplate') }}
+          </NButton>
+          <NButton
+            :type="form.isAdvanced ? 'primary' : 'default'"
+            @click="form.isAdvanced = true"
+            class="flex-1"
+          >
+            {{ t('templateManager.advancedTemplate') }}
           </NButton>
         </NSpace>
-      </template>
-
-      <MobileTemplateEditor
-        v-if="isCompact"
-        v-model:form="form"
-        :readonly="!!viewingTemplate"
-        :saving="mobileSaving"
-        :preview="processedPreview"
-        @add-message="addMessage"
-        @remove-message="removeMessage"
-        @move-message="moveMessage"
-        @syntax="showSyntaxGuide = true"
-      />
-      <form v-else @submit.prevent="handleSubmit" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1.5">{{ t('template.name') }}</label>
-          <NInput
-            v-model:value="form.name"
-            :placeholder="t('template.namePlaceholder')"
-            :readonly="!!viewingTemplate"
-          />
-        </div>
-
-        <!-- Template Format Selector -->
-        <div v-if="!viewingTemplate">
-          <label class="block text-sm font-medium mb-2">{{ t('templateManager.templateFormat') }}</label>
-          <NSpace>
-            <NButton
-              :type="!form.isAdvanced ? 'primary' : 'default'"
-              @click="form.isAdvanced = false"
-              class="flex-1"
-            >
-              {{ t('templateManager.simpleTemplate') }}
-            </NButton>
-            <NButton
-              :type="form.isAdvanced ? 'primary' : 'default'"
-              @click="form.isAdvanced = true"
-              class="flex-1"
-            >
-              {{ t('templateManager.advancedTemplate') }}
-            </NButton>
-          </NSpace>
-        </div>
-        
-        <!-- Simple Template Editor -->
-        <NSpace v-if="!form.isAdvanced" vertical :size="8">
-          <NSpace justify="space-between" align="center">
-            <NText>
-              {{ t('template.content') }}
-              <NText depth="3" style="font-size: 12px; margin-left: 8px;">
-                {{ t('templateManager.simpleTemplateHint') }}
-              </NText>
+      </div>
+      
+      <!-- Simple Template Editor -->
+      <NSpace v-if="!form.isAdvanced" vertical :size="8">
+        <NSpace justify="space-between" align="center">
+          <NText>
+            {{ t('template.content') }}
+            <NText depth="3" style="font-size: 12px; margin-left: 8px;">
+              {{ t('templateManager.simpleTemplateHint') }}
             </NText>
-            <NButton
-              v-if="!viewingTemplate"
-              size="tiny"
-              quaternary
-              @click="openFullscreenEditor('simple')"
-              :title="t('templateManager.fullscreenEdit')"
-            >
-              <template #icon>
-                <UiMaximize2 />
-              </template>
-              {{ t('templateManager.fullscreen') }}
-            </NButton>
-          </NSpace>
-          <NInput
-            v-model:value="form.content"
-            type="textarea"
-            :placeholder="t('template.contentPlaceholder')"
-            :autosize="{ minRows: 15, maxRows: 30 }"
-            :readonly="!!viewingTemplate"
-          />
-        </NSpace>
-
-        <!-- Advanced Template Editor -->
-        <NSpace v-else vertical :size="12">
-          <NSpace justify="space-between" align="center">
-            <NText>
-              {{ t('templateManager.messageTemplates') }}
-              <NText depth="3" style="font-size: 12px; margin-left: 8px;">
-                {{ t('templateManager.advancedTemplateHint') }}
-              </NText>
-            </NText>
-            <NButton
-              v-if="!viewingTemplate"
-              @click="addMessage"
-              size="small"
-              secondary
-            >
-              <template #icon>
-                <UiPlus />
-              </template>
-              {{ t('templateManager.addMessage') }}
-            </NButton>
-          </NSpace>
-
-          <!-- Message List -->
-          <NScrollbar style="max-height: 500px;">
-            <NSpace vertical :size="12">
-              <NCard
-                v-for="(message, index) in form.messages"
-                :key="index"
-                size="small"
-                embedded
-              >
-                <div class="flex items-start gap-3">
-                  <!-- Role Selector -->
-                  <NSelect
-                    v-model:value="message.role"
-                    :disabled="!!viewingTemplate"
-                    style="width: 100px; flex-shrink: 0;"
-                    :options="[
-                      { label: t('templateManager.roleSystem'), value: 'system' },
-                      { label: t('templateManager.roleUser'), value: 'user' },
-                      { label: t('templateManager.roleAssistant'), value: 'assistant' }
-                    ]"
-                  />
-
-                  <!-- Message Content -->
-                  <NSpace vertical :size="4" style="flex: 1;">
-                    <NInput
-                      v-model:value="message.content"
-                      type="textarea"
-                      :placeholder="t('templateManager.messageContentPlaceholder')"
-                      :autosize="{ minRows: 3, maxRows: 20 }"
-                      :readonly="!!viewingTemplate"
-                    />
-                    <NButton
-                      v-if="!viewingTemplate"
-                      size="tiny"
-                      quaternary
-                      @click="openFullscreenEditor('advanced', index)"
-                      :title="t('templateManager.fullscreenEdit')"
-                      style="align-self: flex-end;"
-                    >
-                      <template #icon>
-                        <UiMaximize2  :size="12" />
-                      </template>
-                      {{ t('templateManager.fullscreen') }}
-                    </NButton>
-                  </NSpace>
-
-                  <!-- Message Controls -->
-                  <NSpace v-if="!viewingTemplate" vertical :size="4" style="flex-shrink: 0;">
-                    <NButton
-                      quaternary
-                      size="tiny"
-                      @click="moveMessage(index, -1)"
-                      :disabled="index === 0"
-                    >
-                      <template #icon>
-                        <UiChevronUp  :size="12" />
-                      </template>
-                    </NButton>
-                    <NButton
-                      quaternary
-                      size="tiny"
-                      @click="moveMessage(index, 1)"
-                      :disabled="index === form.messages.length - 1"
-                    >
-                      <template #icon>
-                        <UiChevronDown  :size="12" />
-                      </template>
-                    </NButton>
-                    <NButton
-                      quaternary
-                      size="tiny"
-                      type="error"
-                      @click="removeMessage(index)"
-                    >
-                      <template #icon>
-                        <UiX  :size="12" />
-                      </template>
-                    </NButton>
-                  </NSpace>
-                </div>
-              </NCard>
-            </NSpace>
-          </NScrollbar>
-        </NSpace>
-        
-        <!-- Template Preview -->
-        <div v-if="form.isAdvanced && form.messages.length > 0">
-          <label class="block text-sm font-medium mb-2">{{ t('templateManager.preview') }}</label>
-          <NCard size="small" embedded style="max-height: 264px; overflow-y: auto;">
-            <NSpace vertical :size="8">
-              <div
-                v-for="(message, index) in processedPreview"
-                :key="index"
-                class="flex items-start space-x-2 text-sm"
-              >
-                <NTag
-                  size="small"
-                  :type="message.role === 'system' ? 'info' : message.role === 'user' ? 'success' : 'warning'"
-                >
-                  {{ message.role }}
-                </NTag>
-                <span class="opacity-70 font-mono text-xs flex-1">
-                  {{ message.content }}
-                </span>
-              </div>
-            </NSpace>
-          </NCard>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1.5">{{ t('common.description') }}</label>
-          <NInput
-            v-model:value="form.description"
-            type="textarea"
-            :placeholder="t('template.descriptionPlaceholder')"
-            :rows="2"
-            :readonly="!!viewingTemplate"
-          />
-        </div>
-      </form>
-
-      <template #action>
-        <div v-if="isCompact && viewingTemplate" class="mobile-template-detail-actions">
-          <NButton v-if="viewingTemplate.isBuiltin" secondary @click="copyTemplate(viewingTemplate)">{{ t('templateManager.copyTemplate') }}</NButton>
-          <NButton v-else secondary @click="editTemplate(viewingTemplate)">{{ t('common.edit') }}</NButton>
-          <NButton type="primary" @click="useMobileTemplate(viewingTemplate)">{{ t('templateManager.useTemplate') }}</NButton>
-        </div>
-        <NSpace v-else justify="end">
-          <NButton :disabled="isCompact && mobileSaving" @click="requestCancelEdit">
-            {{ viewingTemplate ? t('common.close') : t('common.cancel') }}
-          </NButton>
+          </NText>
           <NButton
             v-if="!viewingTemplate"
-            type="primary"
+            size="tiny"
+            quaternary
+            @click="openFullscreenEditor('simple')"
+            :title="t('templateManager.fullscreenEdit')"
+          >
+            <template #icon>
+              <UiMaximize2 />
+            </template>
+            {{ t('templateManager.fullscreen') }}
+          </NButton>
+        </NSpace>
+        <NInput
+          v-model:value="form.content"
+          type="textarea"
+          :placeholder="t('template.contentPlaceholder')"
+          :autosize="{ minRows: 15, maxRows: 30 }"
+          :readonly="!!viewingTemplate"
+        />
+      </NSpace>
+
+      <!-- Advanced Template Editor -->
+      <NSpace v-else vertical :size="12">
+        <NSpace justify="space-between" align="center">
+          <NText>
+            {{ t('templateManager.messageTemplates') }}
+            <NText depth="3" style="font-size: 12px; margin-left: 8px;">
+              {{ t('templateManager.advancedTemplateHint') }}
+            </NText>
+          </NText>
+          <NButton
+            v-if="!viewingTemplate"
+            @click="addMessage"
+            size="small"
+            secondary
+          >
+            <template #icon>
+              <UiPlus />
+            </template>
+            {{ t('templateManager.addMessage') }}
+          </NButton>
+        </NSpace>
+
+        <!-- Message List -->
+        <NScrollbar style="max-height: 500px;">
+          <NSpace vertical :size="12">
+            <NCard
+              v-for="(message, index) in form.messages"
+              :key="index"
+              size="small"
+              embedded
+            >
+              <div class="flex items-start gap-3">
+                <!-- Role Selector -->
+                <NSelect
+                  v-model:value="message.role"
+                  :disabled="!!viewingTemplate"
+                  style="width: 100px; flex-shrink: 0;"
+                  :options="[
+                    { label: t('templateManager.roleSystem'), value: 'system' },
+                    { label: t('templateManager.roleUser'), value: 'user' },
+                    { label: t('templateManager.roleAssistant'), value: 'assistant' }
+                  ]"
+                />
+
+                <!-- Message Content -->
+                <NSpace vertical :size="4" style="flex: 1;">
+                  <NInput
+                    v-model:value="message.content"
+                    type="textarea"
+                    :placeholder="t('templateManager.messageContentPlaceholder')"
+                    :autosize="{ minRows: 3, maxRows: 20 }"
+                    :readonly="!!viewingTemplate"
+                  />
+                  <NButton
+                    v-if="!viewingTemplate"
+                    size="tiny"
+                    quaternary
+                    @click="openFullscreenEditor('advanced', index)"
+                    :title="t('templateManager.fullscreenEdit')"
+                    style="align-self: flex-end;"
+                  >
+                    <template #icon>
+                      <UiMaximize2  :size="12" />
+                    </template>
+                    {{ t('templateManager.fullscreen') }}
+                  </NButton>
+                </NSpace>
+
+                <!-- Message Controls -->
+                <NSpace v-if="!viewingTemplate" vertical :size="4" style="flex-shrink: 0;">
+                  <NButton
+                    quaternary
+                    size="tiny"
+                    @click="moveMessage(index, -1)"
+                    :disabled="index === 0"
+                  >
+                    <template #icon>
+                      <UiChevronUp  :size="12" />
+                    </template>
+                  </NButton>
+                  <NButton
+                    quaternary
+                    size="tiny"
+                    @click="moveMessage(index, 1)"
+                    :disabled="index === form.messages.length - 1"
+                  >
+                    <template #icon>
+                      <UiChevronDown  :size="12" />
+                    </template>
+                  </NButton>
+                  <NButton
+                    quaternary
+                    size="tiny"
+                    type="error"
+                    @click="removeMessage(index)"
+                  >
+                    <template #icon>
+                      <UiX  :size="12" />
+                    </template>
+                  </NButton>
+                </NSpace>
+              </div>
+            </NCard>
+          </NSpace>
+        </NScrollbar>
+      </NSpace>
+      
+      <!-- Template Preview -->
+      <div v-if="form.isAdvanced && form.messages.length > 0">
+        <label class="block text-sm font-medium mb-2">{{ t('templateManager.preview') }}</label>
+        <NCard size="small" embedded style="max-height: 264px; overflow-y: auto;">
+          <NSpace vertical :size="8">
+            <div
+              v-for="(message, index) in processedPreview"
+              :key="index"
+              class="flex items-start space-x-2 text-sm"
+            >
+              <NTag
+                size="small"
+                :type="message.role === 'system' ? 'info' : message.role === 'user' ? 'success' : 'warning'"
+              >
+                {{ message.role }}
+              </NTag>
+              <span class="opacity-70 font-mono text-xs flex-1">
+                {{ message.content }}
+              </span>
+            </div>
+          </NSpace>
+        </NCard>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1.5">{{ t('common.description') }}</label>
+        <NInput
+          v-model:value="form.description"
+          type="textarea"
+          :placeholder="t('template.descriptionPlaceholder')"
+          :rows="2"
+          :readonly="!!viewingTemplate"
+        />
+      </div>
+    </form>
+
+    </div>
+
+
+    <!-- Guide sheet page (was a nested modal) -->
+    <div v-if="sheetPage === 'guide'">
+    <!-- Markdown Content -->
+    <div class="syntax-guide-content">
+      <MarkdownRenderer :content="syntaxGuideMarkdown" />
+    </div>
+
+    </div>
+
+
+    <!-- Migration sheet page (was a nested modal) -->
+    <div v-if="sheetPage === 'migration'">
+    <NSpace vertical :size="16">
+      <NText>{{ t('templateManager.migrationDescription') }}</NText>
+
+      <!-- Original Template -->
+      <div>
+        <NH4>{{ t('templateManager.originalTemplate') }}</NH4>
+        <NCode :code="migrationDialog.original" language="text" style="max-height: 128px; overflow-y: auto;" />
+      </div>
+
+      <!-- Converted Template -->
+      <div>
+        <NH4>{{ t('templateManager.convertedTemplate') }}</NH4>
+        <NCode :code="JSON.stringify(migrationDialog.converted, null, 2)" language="json" style="max-height: 128px; overflow-y: auto;" />
+      </div>
+    </NSpace>
+
+    </div>
+
+
+    <!-- Fullscreen sheet page (was a nested modal) -->
+    <div v-if="sheetPage === 'fullscreen'">
+    <NEl style="height: calc(90dvh - 220px); min-height: 240px;">
+      <NInput
+        v-model:value="fullscreenEditor.content"
+        type="textarea"
+        :placeholder="fullscreenEditor.type === 'simple'
+          ? t('template.contentPlaceholder')
+          : t('templateManager.messageContentPlaceholder')"
+        style="height: 100%;"
+        :autosize="false"
+      />
+    </NEl>
+
+    </div>
+
+    <template #action>
+      <template v-if="sheetPage === 'editor'">
+        <div v-if="isCompact && viewingTemplate" class="mobile-template-detail-actions">
+          <PoButton v-if="viewingTemplate.isBuiltin" variant="secondary" @click="copyTemplate(viewingTemplate)">{{ t('templateManager.copyTemplate') }}</PoButton>
+          <PoButton v-else variant="secondary" @click="editTemplate(viewingTemplate)">{{ t('common.edit') }}</PoButton>
+          <PoButton variant="primary" @click="useMobileTemplate(viewingTemplate)">{{ t('templateManager.useTemplate') }}</PoButton>
+        </div>
+        <NSpace v-else justify="end">
+          <PoButton variant="secondary" :disabled="isCompact && mobileSaving" @click="requestCancelEdit">
+            {{ viewingTemplate ? t('common.close') : t('common.cancel') }}
+          </PoButton>
+          <PoButton
+            v-if="!viewingTemplate"
+            variant="primary"
             @click="handleSubmit"
             :loading="isCompact && mobileSaving"
             :disabled="isCompact && mobileSaving"
           >
             {{ editingTemplate ? t('template.save') : t('template.add') }}
-          </NButton>
+          </PoButton>
         </NSpace>
       </template>
-    </NModal>
-
-    <!-- Syntax Guide Modal -->
-    <NModal
-      :show="showSyntaxGuide"
-      preset="card"
-      :style="{ width: '90vw', maxWidth: '1200px' }"
-      :title="t('templateManager.syntaxGuide')"
-      size="large"
-      :bordered="false"
-      :segmented="true"
-      @update:show="(value: boolean) => !value && (showSyntaxGuide = false)"
-    >
-      <!-- Markdown Content -->
-      <div class="syntax-guide-content">
-        <MarkdownRenderer :content="syntaxGuideMarkdown" />
-      </div>
-
-      <template #action>
-        <NButton type="primary" @click="showSyntaxGuide = false">
+      <template v-if="sheetPage === 'guide'">
+        <PoButton variant="primary" @click="showSyntaxGuide = false">
           {{ t('common.close') }}
-        </NButton>
+        </PoButton>
       </template>
-    </NModal>
-
-    <!-- Migration Dialog Modal -->
-    <NModal
-      :show="migrationDialog.show"
-      preset="card"
-      :style="{ width: '90vw', maxWidth: '800px' }"
-      :title="t('templateManager.convertToAdvanced')"
-      size="large"
-      :bordered="false"
-      :segmented="true"
-      @update:show="(value: boolean) => !value && (migrationDialog.show = false)"
-    >
-      <NSpace vertical :size="16">
-        <NText>{{ t('templateManager.migrationDescription') }}</NText>
-
-        <!-- Original Template -->
-        <div>
-          <NH4>{{ t('templateManager.originalTemplate') }}</NH4>
-          <NCode :code="migrationDialog.original" language="text" style="max-height: 128px; overflow-y: auto;" />
-        </div>
-
-        <!-- Converted Template -->
-        <div>
-          <NH4>{{ t('templateManager.convertedTemplate') }}</NH4>
-          <NCode :code="JSON.stringify(migrationDialog.converted, null, 2)" language="json" style="max-height: 128px; overflow-y: auto;" />
-        </div>
-      </NSpace>
-
-      <template #action>
+      <template v-if="sheetPage === 'migration'">
         <NSpace justify="end">
-          <NButton @click="migrationDialog.show = false">
+          <PoButton variant="secondary" @click="migrationDialog.show = false">
             {{ t('common.cancel') }}
-          </NButton>
-          <NButton type="primary" @click="applyMigration">
+          </PoButton>
+          <PoButton variant="primary" @click="applyMigration">
             {{ t('templateManager.applyMigration') }}
-          </NButton>
+          </PoButton>
         </NSpace>
       </template>
-    </NModal>
-
-    <!-- Fullscreen Editor Modal -->
-    <NModal
-      :show="fullscreenEditor.show"
-      preset="card"
-      :style="{ width: '95vw', height: '90vh', maxWidth: '1400px' }"
-      :title="t('templateManager.fullscreenEdit')"
-      size="large"
-      :bordered="false"
-      :segmented="true"
-      @update:show="(value: boolean) => !value && closeFullscreenEditor()"
-    >
-      <NEl style="height: calc(90vh - 140px);">
-        <NInput
-          v-model:value="fullscreenEditor.content"
-          type="textarea"
-          :placeholder="fullscreenEditor.type === 'simple'
-            ? t('template.contentPlaceholder')
-            : t('templateManager.messageContentPlaceholder')"
-          style="height: 100%;"
-          :autosize="false"
-        />
-      </NEl>
-
-      <template #action>
+      <template v-if="sheetPage === 'fullscreen'">
         <NSpace justify="space-between" style="width: 100%;">
           <NText depth="3" style="font-size: 12px;">
             {{ t('templateManager.characterCount', { count: fullscreenEditor.content.length }) }}
           </NText>
           <NSpace>
-            <NButton @click="closeFullscreenEditor()">
+            <PoButton variant="secondary" @click="closeFullscreenEditor()">
               {{ t('common.cancel') }}
-            </NButton>
-            <NButton type="primary" @click="saveFullscreenEditor">
+            </PoButton>
+            <PoButton variant="primary" @click="saveFullscreenEditor">
               {{ t('common.save') }}
-            </NButton>
+            </PoButton>
           </NSpace>
         </NSpace>
       </template>
-    </NModal>
-  </NModal>
+    </template>
+  </PoSheet>
 </template>
 
 <script setup lang="ts">
-import { Target as CategoryTarget, User as CategoryUser, RefreshCw as CategoryRefreshCw, Image as CategoryImage, Camera as CategoryCamera, CircleHelp as UiCircleHelp, FilePlus2 as UiFilePlus2, Eye as UiEye, SquarePen as UiSquarePen, Copy as UiCopy, ArrowLeftRight as UiArrowLeftRight, Trash2 as UiTrash2, Maximize2 as UiMaximize2, Plus as UiPlus, ChevronUp as UiChevronUp, ChevronDown as UiChevronDown, X as UiX } from '@lucide/vue'
-import NModal from "./common/AdaptiveModal.vue"
+import { PhTarget as CategoryTarget, PhUser as CategoryUser, PhArrowClockwise as CategoryRefreshCw, PhImage as CategoryImage, PhCamera as CategoryCamera, PhQuestion as UiCircleHelp, PhFilePlus as UiFilePlus2, PhEye as UiEye, PhPencilSimple as UiSquarePen, PhCopy as UiCopy, PhArrowsLeftRight as UiArrowLeftRight, PhTrash as UiTrash2, PhArrowsOut as UiMaximize2, PhPlus as UiPlus, PhCaretUp as UiChevronUp, PhCaretDown as UiChevronDown, PhCaretLeft as UiChevronLeft, PhX as UiX } from '@phosphor-icons/vue'
+import PoSheet from './primitives/PoSheet.vue'
+import PoButton from './primitives/PoButton.vue'
 import MobileTemplateList from './templates/MobileTemplateList.vue'
 import MobileTemplateEditor from './templates/MobileTemplateEditor.vue'
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
@@ -954,7 +957,7 @@ const loadTemplates = async () => {
 // 格式化日期
 const formatDate = (timestamp: number) => {
   if (!timestamp) return t('template.unknownTime')
-  return new Date(timestamp).toLocaleString(String(i18n.global.locale.value || 'vi-VN'))
+  return new Date(timestamp).toLocaleString()
 }
 
 // 编辑提示词
@@ -1394,9 +1397,8 @@ const filteredTemplates = computed(() => {
 
 // 获取当前语言的语法指南内容
 const syntaxGuideMarkdown = computed(() => {
-  const raw = String(i18n.global.locale.value || 'en-US')
-  const lang = (raw.startsWith('vi') ? 'vi-VN' : raw) as keyof typeof syntaxGuideContent
-  return syntaxGuideContent[lang] || syntaxGuideContent['en-US'] || syntaxGuideContent['zh-CN']
+  const lang = i18n.global.locale.value as keyof typeof syntaxGuideContent
+  return syntaxGuideContent[lang] || syntaxGuideContent['zh-CN']
 })
 
 // 处理内置模板语言变化（仅刷新列表，不隐式修改选择）
@@ -1477,6 +1479,41 @@ const close = () => {
   emit('update:show', false)
   emit('close')
 }
+// Slice 7: one sheet, pages instead of nested modals. Priority: the fullscreen
+// editor sits on the editor page, the syntax guide can open from the list or
+// the editor, the migration dialog from the list.
+const editorOpen = computed(() => !!(showAddForm.value || editingTemplate.value || viewingTemplate.value))
+const sheetPage = computed<'list' | 'editor' | 'guide' | 'migration' | 'fullscreen'>(() => {
+  if (fullscreenEditor.value.show) return 'fullscreen'
+  if (showSyntaxGuide.value) return 'guide'
+  if (editorOpen.value) return 'editor'
+  if (migrationDialog.value.show) return 'migration'
+  return 'list'
+})
+const sheetTitle = computed(() => {
+  switch (sheetPage.value) {
+    case 'editor': return isCompact.value && viewingTemplate.value ? viewingTemplate.value.name : getEditModalTitle()
+    case 'guide': return t('templateManager.syntaxGuide')
+    case 'migration': return t('templateManager.convertToAdvanced')
+    case 'fullscreen': return t('templateManager.fullscreenEdit')
+    default: return t('templateManager.title')
+  }
+})
+// Back from a sub-page runs that page's own close (the editor's guarded
+// requestCancelEdit included); closing from the list closes the manager.
+const goBackFromSheetPage = () => {
+  switch (sheetPage.value) {
+    case 'fullscreen': closeFullscreenEditor(); break
+    case 'guide': showSyntaxGuide.value = false; break
+    case 'editor': void requestCancelEdit(); break
+    case 'migration': migrationDialog.value.show = false; break
+    default: close()
+  }
+}
+const onSheetUpdateShow = (value: boolean) => {
+  if (!value) goBackFromSheetPage()
+}
+
 const mobileCategoryOptions = computed(() => [
   { value: 'system-optimize', label: t('templateManager.optimizeTemplates') },
   { value: 'user-optimize', label: t('templateManager.userOptimizeTemplates') },
@@ -1499,35 +1536,65 @@ const mobileFilteredTemplates = computed(() => {
     return [template.name, template.metadata.description, content].some(value => value?.toLocaleLowerCase().includes(query))
   })
 })
+
+// P-009: both template lists rendered EVERY template in the category.
+// Same variable-height problem as HistoryDrawer (P-003): cards/rows vary,
+// so paginate at 20 per page instead of virtualizing.
+const TEMPLATE_PAGE_SIZE = 20
+const visibleTemplateCount = ref(TEMPLATE_PAGE_SIZE)
+const visibleMobileTemplates = computed(() => mobileFilteredTemplates.value.slice(0, visibleTemplateCount.value))
+const visibleDesktopTemplates = computed(() => filteredTemplates.value.slice(0, visibleTemplateCount.value))
+const hasMoreTemplates = computed(() => (isCompact.value ? mobileFilteredTemplates.value.length : filteredTemplates.value.length) > visibleTemplateCount.value)
+const loadMoreTemplates = () => {
+  visibleTemplateCount.value += TEMPLATE_PAGE_SIZE
+}
+const resetTemplatePagination = () => {
+  visibleTemplateCount.value = TEMPLATE_PAGE_SIZE
+}
+watch(currentCategory, resetTemplatePagination)
+watch(mobileSearch, resetTemplatePagination)
+watch(templates, resetTemplatePagination)
 </script>
 
 <style scoped>
-:global(.workspace-compact .template-manager--compact.adaptive-modal-page > .n-card-header),
-:global(.workspace-compact .template-editor-modal--compact.adaptive-modal-page > .n-card-header) {
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-header),
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-header) {
   padding: 10px 12px;
   gap: 8px;
 }
-:global(.workspace-compact .template-manager--compact.adaptive-modal-page > .n-card-header) {
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-header) {
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
-:global(.workspace-compact .template-manager--compact.adaptive-modal-page > .n-card-header > .n-card-header__extra) {
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-header > .n-card-header__extra) {
   grid-column: 2;
   grid-row: 1;
 }
-:global(.workspace-compact .template-manager--compact.adaptive-modal-page > .n-card-header > .n-base-close) {
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-header > .n-base-close) {
   grid-column: 3;
 }
-:global(.workspace-compact .template-manager--compact.adaptive-modal-page > .n-card-content),
-:global(.workspace-compact .template-editor-modal--compact.adaptive-modal-page > .n-card-content) {
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-content),
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card-content) {
   padding: 12px !important;
 }
-:global(.workspace-compact .template-editor-modal--compact.adaptive-modal-page > .n-card__action) {
+:global(.workspace-compact .template-editor-modal.po-sheet--compact.adaptive-modal-sheet > .n-card__action) {
   padding: 10px 12px max(10px, env(safe-area-inset-bottom));
 }
 .mobile-template-detail-actions {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 8px;
+}
+.po-sheet-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.po-sheet-page-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
 }
 /* 添加过渡动画 */
 .modal-enter-active,

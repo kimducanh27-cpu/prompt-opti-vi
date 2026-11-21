@@ -10,7 +10,7 @@ import type {
   MultiImageGenerationRequest,
   MultiImageRequest,
 } from '@prompt-optimizer/core'
-import { getI18nErrorMessage } from '../../utils/error'
+import { getUserFacingErrorMessage } from '../../utils/error'
 import {
   normalizeGeneratedImagePayload,
   persistImagePayloadAsAssetId,
@@ -116,7 +116,7 @@ export function useImageGeneration() {
     } catch (e) {
       // Preserve structured errors ({ code, params }) coming from core / Electron preload.
       // Do not wrap non-Error objects into Error, otherwise code/params get lost.
-      error.value = getI18nErrorMessage(e, 'Image generation failed')
+      error.value = getUserFacingErrorMessage(e, 'Image generation failed')
       progress.value = 'error'
       throw e
     } finally {

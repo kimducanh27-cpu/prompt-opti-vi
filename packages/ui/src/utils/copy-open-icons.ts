@@ -1,6 +1,6 @@
 import BrandGoogle from '../components/icons/GoogleBrandIcon.vue'
 import { h, type Component } from 'vue'
-import { Copy } from '@lucide/vue'
+import { PhCopy as Copy } from '@phosphor-icons/vue'
 import type { CopyOpenActionId } from './copy-open-action'
 
 const ChatGptMark = {

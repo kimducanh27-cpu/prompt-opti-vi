@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { Wrench } from '@lucide/vue'
+import { PhWrench as Wrench } from '@phosphor-icons/vue'
 import { NButton, NFlex } from 'naive-ui'
 
 const emit = defineEmits<{

@@ -10,93 +10,103 @@
         - 从 App.vue 的 #actions slot 提取出来
         - 所有操作通过 emits 通知父组件处理
         - 收藏夹是页面型目的地，其余管理入口保持弹窗型交互
+        - Slice 5: buttons are PoButton (the only button primitive). The
+          `action-button` / `action-button-label` classes are the hook the
+          desktop header in MainLayout.vue uses for its container-query
+          label collapse — keep them on the PoButton / label span.
     -->
     <!-- 页面型管理入口：会接管主内容区 -->
     <div class="page-destination-group" data-testid="header-page-destinations">
-        <ActionButtonUI
-            icon="⭐"
-            :text="$t('nav.favorites')"
-            @click="emit('open-favorites')"
-            :type="favoritesActive ? 'primary' : 'default'"
+        <PoButton
+            class="action-button"
+            :class="{ 'page-destination-active': favoritesActive }"
+            :variant="favoritesActive ? 'primary' : 'secondary'"
+            size="md"
+            round
             data-testid="header-favorites-page-action"
-            size="medium"
-            :ghost="false"
-            :round="true"
             :title="$t('favorites.page.title')"
             :aria-current="favoritesActive ? 'page' : undefined"
-            :class="{ 'page-destination-active': favoritesActive }"
-        />
+            @click="emit('open-favorites')"
+        >
+            <template #icon><Star aria-hidden="true" class="text-base sm:text-lg" /></template>
+            <span class="action-button-label">{{ $t('nav.favorites') }}</span>
+        </PoButton>
     </div>
 
     <!-- 弹窗型管理/配置入口 -->
     <div class="modal-action-group" data-testid="header-modal-actions">
-        <ActionButtonUI
-            icon="📝"
-            :text="$t('nav.templates')"
+        <PoButton
+            class="action-button"
+            variant="secondary"
+            size="md"
+            round
+            :title="$t('nav.templates')"
             @click="emit('open-templates')"
-            type="default"
-            size="medium"
-            :ghost="false"
-            :round="true"
-        />
-        <ActionButtonUI
-            icon="📜"
-            :text="$t('nav.history')"
+        >
+            <template #icon><FileText aria-hidden="true" class="text-base sm:text-lg" /></template>
+            <span class="action-button-label">{{ $t('nav.templates') }}</span>
+        </PoButton>
+        <PoButton
+            class="action-button"
+            variant="secondary"
+            size="md"
+            round
+            :title="$t('nav.history')"
             @click="emit('open-history')"
-            type="default"
-            size="medium"
-            :ghost="false"
-            :round="true"
-        />
-        <ActionButtonUI
-            icon="⚙️"
-            class="nav-config-action"
-            :text="$t('nav.modelManager')"
+        >
+            <template #icon><ClockCounterClockwise aria-hidden="true" class="text-base sm:text-lg" /></template>
+            <span class="action-button-label">{{ $t('nav.history') }}</span>
+        </PoButton>
+        <PoButton
+            class="action-button nav-config-action"
+            variant="secondary"
+            size="md"
+            round
+            :title="$t('nav.modelManager')"
             @click="emit('open-model-manager')"
-            type="default"
-            size="medium"
-            :ghost="false"
-            :round="true"
-        />
+        >
+            <template #icon><Gear aria-hidden="true" class="text-base sm:text-lg" /></template>
+            <span class="action-button-label">{{ $t('nav.modelManager') }}</span>
+        </PoButton>
         <NBadge :show="backupReminderDue" dot processing>
-            <ActionButtonUI
-                icon="💾"
-                class="nav-config-action"
-                :text="$t('nav.dataManager')"
+            <PoButton
+                class="action-button nav-config-action"
+                :class="{ 'backup-reminder-due': backupReminderDue }"
+                variant="secondary"
+                size="md"
+                round
                 @click="emit('open-data-manager')"
-                :type="backupReminderDue ? 'warning' : 'default'"
-                size="medium"
-                :ghost="false"
-                :round="true"
                 :title="backupReminderDue ? $t('dataManager.backupReminder.tooltip') : $t('nav.dataManager')"
-            />
+            >
+                <template #icon><FloppyDisk aria-hidden="true" class="text-base sm:text-lg" /></template>
+                <span class="action-button-label">{{ $t('nav.dataManager') }}</span>
+            </PoButton>
         </NBadge>
-        <ActionButtonUI
-            icon="🔣"
-            class="nav-config-action"
-            :text="$t('nav.variableManager')"
+        <PoButton
+            class="action-button nav-config-action"
+            variant="secondary"
+            size="md"
+            round
+            :title="$t('nav.variableManager')"
             @click="emit('open-variables')"
-            type="default"
-            size="medium"
-            :ghost="false"
-            :round="true"
-        />
+        >
+            <template #icon><Function aria-hidden="true" class="text-base sm:text-lg" /></template>
+            <span class="action-button-label">{{ $t('nav.variableManager') }}</span>
+        </PoButton>
     </div>
     <!-- 辅助功能区 - 使用简化样式降低视觉权重 -->
     <ThemeToggleUI />
     <div class="aux-icon-group">
-        <NButton
-            quaternary
-            circle
-            size="small"
-            class="aux-icon-button"
-            :title="$t('updater.viewOnGitHub')"
+        <PoButton
+            variant="ghost"
+            icon-only
+            :aria-label="$t('updater.viewOnGitHub')"
             @click="emit('open-github')"
         >
             <template #icon>
                 <GitHubIcon class="w-4 h-4" size="1em" />
             </template>
-        </NButton>
+        </PoButton>
         <NPopover
             v-model:show="showAboutPopover"
             trigger="click"
@@ -104,17 +114,15 @@
             :show-arrow="false"
         >
             <template #trigger>
-                <NButton
-                    quaternary
-                    circle
-                    size="small"
-                    class="aux-icon-button"
-                    :title="$t('nav.about')"
+                <PoButton
+                    variant="ghost"
+                    icon-only
+                    :aria-label="$t('nav.about')"
                 >
                     <template #icon>
                         <UiInfo />
                     </template>
-                </NButton>
+                </PoButton>
             </template>
 
             <div class="about-panel">
@@ -122,21 +130,21 @@
                     <NTag round size="small" class="about-version-tag">{{ appVersion }}</NTag>
                 </div>
 
-                <NButton quaternary block class="about-link-button" @click="handleOpenWebsite">
+                <PoButton variant="ghost" block class="about-link-button" @click="handleOpenWebsite">
                     <span class="about-link-copy">
                         <span class="about-link-label">{{ $t('about.website') }}</span>
                         <span class="about-link-value">{{ $t('about.websiteLabel') }}</span>
                     </span>
                     <UiArrowUpRight class="about-link-icon" aria-hidden="true" />
-                </NButton>
+                </PoButton>
 
-                <NButton quaternary block class="about-link-button" @click="handleOpenDocs">
+                <PoButton variant="ghost" block class="about-link-button" @click="handleOpenDocs">
                     <span class="about-link-copy">
                         <span class="about-link-label">{{ $t('about.documentation') }}</span>
                         <span class="about-link-value">{{ $t('about.documentationLabel') }}</span>
                     </span>
                     <UiArrowUpRight class="about-link-icon" aria-hidden="true" />
-                </NButton>
+                </PoButton>
             </div>
         </NPopover>
         <LanguageSwitchDropdown />
@@ -146,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { Info as UiInfo, ArrowUpRight as UiArrowUpRight } from '@lucide/vue'
+import { PhInfo as UiInfo, PhArrowUpRight as UiArrowUpRight, PhStar as Star, PhFileText as FileText, PhClockCounterClockwise as ClockCounterClockwise, PhGear as Gear, PhFloppyDisk as FloppyDisk, PhFunction as Function } from '@phosphor-icons/vue'
 import GitHubIcon from '../icons/GitHubIcon.vue'
 /**
  * App 头部操作按钮组件
@@ -179,11 +187,11 @@ import GitHubIcon from '../icons/GitHubIcon.vue'
  */
 import { ref } from 'vue'
 
-import ActionButtonUI from '../ActionButton.vue'
+import PoButton from '../primitives/PoButton.vue'
 import ThemeToggleUI from '../ThemeToggleUI.vue'
 import LanguageSwitchDropdown from '../LanguageSwitchDropdown.vue'
 import UpdaterIcon from '../UpdaterIcon.vue'
-import { NBadge, NButton, NPopover, NTag } from 'naive-ui'
+import { NBadge, NPopover, NTag } from 'naive-ui'
 
 interface Props {
     appVersion: string
@@ -234,48 +242,42 @@ const handleOpenDocs = () => {
 </script>
 
 <style scoped>
-.aux-icon-button {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-}
-
-.aux-icon-button:hover {
-    transform: translateY(-1px);
-}
-
 .aux-icon-group {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-left: 6px;
+    gap: var(--spacing-1-5);
+    margin-left: var(--spacing-1-5);
 }
 
 .page-destination-group,
 .modal-action-group {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-2);
 }
 
 .page-destination-group {
-    padding-right: 8px;
-    border-right: 1px solid var(--n-border-color);
+    padding-right: var(--spacing-2);
+    border-right: 1px solid var(--color-border);
 }
 
 .page-destination-active {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--n-primary-color) 18%, transparent);
+    box-shadow: 0 0 0 var(--spacing-0-5) color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+/* Stale-backup state (PoButton has no warning variant): a warning border
+   plus the NBadge dot — never colour alone, and the title carries the
+   tooltip text. */
+.backup-reminder-due {
+    border-color: var(--color-status-warning-text);
 }
 
 .about-panel {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--spacing-1-5);
+    /* No width token exists for a popover panel; 220–260px is the
+       pre-existing panel width, kept. */
     min-width: 220px;
     max-width: 260px;
 }
@@ -292,37 +294,37 @@ const handleOpenDocs = () => {
 .about-link-button {
     width: 100%;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--spacing-3);
 }
 
 .about-link-copy {
     display: inline-flex;
     align-items: baseline;
-    gap: 8px;
+    gap: var(--spacing-2);
     min-width: 0;
     text-align: left;
 }
 
 .about-link-label {
     flex-shrink: 0;
-    font-size: 11px;
-    color: var(--n-text-color-3);
+    font-size: var(--text-supporting);
+    color: var(--color-text-secondary);
 }
 
 .about-link-value {
     min-width: 0;
-    font-size: 12px;
+    font-size: var(--text-supporting);
     font-weight: 600;
-    color: var(--n-text-color-2);
+    color: var(--color-text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .about-link-icon {
-    width: 12px;
-    height: 12px;
+    width: var(--spacing-3);
+    height: var(--spacing-3);
     flex-shrink: 0;
-    color: var(--n-text-color-3);
+    color: var(--color-text-secondary);
 }
 </style>

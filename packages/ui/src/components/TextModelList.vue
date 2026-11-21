@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isCompact" class="mobile-text-model-list" data-testid="mobile-text-model-list">
+  <div v-if="isCompact" ref="mobileListRef" class="mobile-text-model-list" data-testid="mobile-text-model-list">
     <NInput
       v-model:value="search"
       :placeholder="t('common.search')"
@@ -30,140 +30,93 @@
     </MobileModelRow>
     <NEmpty v-if="!filteredModels.length" :description="t('common.noContent')" size="small" />
   </div>
-  <NSpace v-else vertical :size="12" class="model-list-stack">
-    <NCard
+  <!-- Slice 7: dense list as PoRow (design-system §2.4) instead of one Card
+       per model. Title + meta carry the old header/tags as text; the same
+       five actions live in the row's action slot. The compact list already
+       uses MobileModelRow, so only the desktop branch changes. -->
+  <div v-else ref="desktopListRef" class="model-list-stack">
+    <PoRow
       v-for="model in models"
       :key="model.id"
-      size="small"
-      hoverable
       class="model-config-card"
-      :style="{ opacity: model.enabled ? 1 : 0.6 }"
+      :class="{ 'model-config-card--disabled': !model.enabled }"
+      :title="modelDisplayName(model)"
+      :meta="modelMeta(model)"
+      :chevron="false"
     >
-      <template #header>
-        <NSpace justify="space-between" align="center">
-          <NSpace vertical :size="4" class="model-card-heading">
-            <NSpace align="center" :size="8">
-              <NText strong>{{ modelDisplayName(model) }}</NText>
-              <NTag v-if="!model.enabled" type="warning" size="small" round :bordered="false">
-                {{ t('modelManager.disabled') }}
-              </NTag>
-            </NSpace>
-
-            <NSpace :size="6" class="model-card-tags">
-              <NTag size="small" type="default" round :bordered="false">
-                {{ providerDisplayName(model) }}
-              </NTag>
-              <NTag size="small" type="info" round :bordered="false">
-                {{ model.modelMeta?.name || model.modelMeta?.id }}
-              </NTag>
-              <NTag
-                v-if="model.providerMeta?.corsRestricted && !isElectronEnv"
-                size="small"
-                type="error"
-                round
-                :bordered="false"
-              >
-                {{ t('modelManager.corsRestrictedTag') }}
-              </NTag>
-              <NTag
-                v-if="model.modelMeta?.capabilities?.supportsTools"
-                size="small"
-                type="success"
-                round
-                :bordered="false"
-              >
-                {{ t('modelManager.capabilities.tools') }}
-              </NTag>
-              <NTag
-                v-if="model.modelMeta?.capabilities?.supportsReasoning"
-                size="small"
-                type="warning"
-                round
-                :bordered="false"
-              >
-                {{ t('modelManager.capabilities.reasoning') }}
-              </NTag>
-            </NSpace>
-          </NSpace>
-        </NSpace>
-      </template>
-
-      <template #header-extra>
-        <NSpace @click.stop :size="4" class="model-card-actions">
-          <NButton
-            @click="emit('test', model.id)"
-            size="small"
-            quaternary
+      <template #action>
+        <NSpace :size="4" class="model-card-actions">
+          <PoButton
+            icon-only
+            variant="ghost"
+            :aria-label="t('modelManager.testConnection')"
             :disabled="isTestingConnectionFor(model.id)"
             :loading="isTestingConnectionFor(model.id)"
+            @click="emit('test', model.id)"
           >
             <template #icon>
               <UiLink />
             </template>
-            <span class="hidden md:inline">{{ t('modelManager.testConnection') }}</span>
-          </NButton>
-
-          <NButton
+          </PoButton>
+          <PoButton
+            icon-only
+            variant="ghost"
+            :aria-label="t('modelManager.editModel')"
             @click="emit('edit', model.id)"
-            size="small"
-            quaternary
           >
             <template #icon>
               <UiSquarePen />
             </template>
-            <span class="hidden md:inline">{{ t('modelManager.editModel') }}</span>
-          </NButton>
-
-          <NButton
+          </PoButton>
+          <PoButton
+            icon-only
+            variant="ghost"
+            :aria-label="t('modelManager.cloneModel')"
             @click="emit('clone', model.id)"
-            size="small"
-            quaternary
           >
             <template #icon>
               <UiCopy />
             </template>
-            <span class="hidden md:inline">{{ t('modelManager.cloneModel') }}</span>
-          </NButton>
-
-          <NButton
+          </PoButton>
+          <PoButton
+            icon-only
+            variant="ghost"
+            :aria-label="model.enabled ? t('common.disable') : t('common.enable')"
             @click="emit(model.enabled ? 'disable' : 'enable', model.id)"
-            size="small"
-            :type="model.enabled ? 'warning' : 'success'"
-            quaternary
           >
             <template #icon>
               <UiPowerOff v-if="model.enabled" />
               <UiPower v-else />
             </template>
-            <span class="hidden md:inline">{{ model.enabled ? t('common.disable') : t('common.enable') }}</span>
-          </NButton>
-
-          <NButton
+          </PoButton>
+          <PoButton
             v-if="!isDefaultModel(model.id)"
+            icon-only
+            variant="destructive"
+            :aria-label="t('common.delete')"
             @click="emit('delete', model.id)"
-            size="small"
-            type="error"
-            quaternary
           >
             <template #icon>
               <UiTrash2 />
             </template>
-            <span class="hidden md:inline">{{ t('common.delete') }}</span>
-          </NButton>
+          </PoButton>
         </NSpace>
       </template>
-    </NCard>
-  </NSpace>
+    </PoRow>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Link as UiLink, SquarePen as UiSquarePen, Copy as UiCopy, PowerOff as UiPowerOff, Power as UiPower, Trash2 as UiTrash2 } from '@lucide/vue'
+import { PhLink as UiLink, PhPencilSimple as UiSquarePen, PhCopy as UiCopy, PhPower as UiPowerOff, PhPower as UiPower, PhTrash as UiTrash2 } from '@phosphor-icons/vue'
 import { computed, ref, type PropType } from 'vue'
 
 import { useI18n } from 'vue-i18n'
-import { NButton, NCard, NTag, NText, NSpace, NInput, NEmpty, type DropdownOption } from 'naive-ui'
+import { NSpace, NInput, NEmpty, type DropdownOption } from 'naive-ui'
+import PoRow from './primitives/PoRow.vue'
+import PoButton from './primitives/PoButton.vue'
 import MobileModelRow from './common/MobileModelRow.vue'
 import { useWorkspaceLayout } from '../composables/ui/useWorkspaceLayout'
+import { useListReveal } from '../composables/ui/useListReveal'
 import { isRunningInElectron, type TextModelConfig } from '@prompt-optimizer/core'
 import { getProviderDisplayName, getTextModelConfigDisplayName } from '../utils/provider-display'
 
@@ -194,6 +147,21 @@ const filteredModels = computed(() => {
   return models.filter(model => [modelDisplayName(model), providerDisplayName(model), model.modelMeta?.name, model.modelMeta?.id]
     .some(value => value?.toLocaleLowerCase().includes(query)))
 })
+
+// M5 (step 7): rows stagger in once, on first mount with content — never
+// on scroll or search re-filter. Mobile rows are MobileModelRow
+// (article.mobile-model-row); desktop rows are PoRow (.model-config-card).
+// Neither row root binds inline :style, so revealList's clearProps cannot
+// strip anything.
+const mobileListRef = ref<HTMLElement | null>(null)
+const desktopListRef = ref<HTMLElement | null>(null)
+useListReveal(
+  () => [
+    ...(mobileListRef.value?.querySelectorAll('.mobile-model-row') ?? []),
+    ...(desktopListRef.value?.querySelectorAll('.model-config-card') ?? []),
+  ],
+  () => filteredModels.value.length > 0 || models.length > 0,
+)
 const isElectronEnv = isRunningInElectron()
 const mobileActions = (model: TextModelConfig): DropdownOption[] => [
   { label: t('modelManager.cloneModel'), key: 'clone' },
@@ -209,13 +177,24 @@ const hasMobileCapabilities = (model: TextModelConfig) =>
   (model.providerMeta?.corsRestricted && !isElectronEnv)
 const modelDisplayName = (model: TextModelConfig) => getTextModelConfigDisplayName(model, t)
 const providerDisplayName = (model: TextModelConfig) => getProviderDisplayName(model.providerMeta, t)
+
+// Slice 7: the row's single meta line carries the old tag row as text.
+const modelMeta = (model: TextModelConfig) => [
+  providerDisplayName(model),
+  model.modelMeta?.name || model.modelMeta?.id,
+  model.modelMeta?.capabilities?.supportsTools ? t('modelManager.capabilities.tools') : '',
+  model.modelMeta?.capabilities?.supportsReasoning ? t('modelManager.capabilities.reasoning') : '',
+  model.providerMeta?.corsRestricted && !isElectronEnv ? t('modelManager.corsRestrictedTag') : '',
+  model.enabled ? '' : t('modelManager.disabled'),
+].filter(Boolean).join(' · ')
 </script>
 
 <style scoped>
 .mobile-text-model-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  /* M04 (M-G): gap 0 so the PoRow dividers sit directly above the next row. */
+  gap: 0;
 }
 
 .mobile-text-model-capabilities {
@@ -235,25 +214,8 @@ const providerDisplayName = (model: TextModelConfig) => getProviderDisplayName(m
   width: 100%;
 }
 
-.model-config-card {
-   border-radius: 16px;
-}
-
-.model-config-card :deep(.n-card-header) {
-  padding-bottom: 10px;
-}
-
-.model-config-card :deep(.n-card__content) {
-  padding-top: 0;
-}
-
-.model-card-heading,
-.model-card-tags {
-  max-width: 100%;
-}
-
-.model-card-tags {
-  flex-wrap: wrap;
+.model-config-card--disabled {
+  opacity: 0.6;
 }
 
 .model-card-actions {

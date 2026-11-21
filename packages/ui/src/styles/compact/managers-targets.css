@@ -1,0 +1,123 @@
+/**
+ * M-B (Medium batch) — Model / Template manager + favorite-editor floors.
+ *
+ * Covers: EU06-01 (per-model Test 46×28, ⋮ 40×36), EU06-04 (Template Add
+ * 58×36, row ⋮ 41×36, "English" language switch 92×28), A11Y-M03 (Save in
+ * the favorite editor 55×32 — Cancel in the same footer is floored too).
+ *
+ * Pattern (Highs batch, arena.css / favorites.css): --n-height: 44px !important
+ * + min-height / min-width: 44px, scoped to .workspace-compact (toggled on
+ * <html>, so it reaches teleported sheets).
+ *
+ * Live verification is PENDING (dist is not rebuilt in this batch; a
+ * verification worker re-measures after the rebuild).
+ */
+
+/* EU06-01 — MobileModelRow (components/common/MobileModelRow.vue): Test is an
+ * NButton size="small" secondary (:17-20) inside .mobile-model-row-meta;
+ * ⋮ is .mobile-model-row-menu with scoped `{ width: 40px }` (:9) — the
+ * (0,3,0) selector below beats the scoped (0,1,0)+attr rule. The row edit
+ * button already has min-height: 44px and is unaffected. V-B-FIX: M-B
+ * targeted `.mobile-model-row-actions`, which exists NOWHERE — the Test
+ * button lives in .mobile-model-row-meta (verified in the component; the
+ * default slot passed by TextModelList / ImageModelManager carries text
+ * spans only, so .mobile-model-row-meta .n-button hits exactly the Test
+ * button). */
+.workspace-compact .mobile-model-row-meta .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.workspace-compact .mobile-model-row-menu.n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU06-04 — TemplateManager mobile list (components/templates/
+ * MobileTemplateList.vue): Add is a plain NButton type="primary" (:5) inside
+ * .mobile-template-search; the row ⋮ is a plain NButton quaternary (:20)
+ * inside .mobile-template-row. The row's open control is a full-row
+ * <button class="mobile-template-open"> and is NOT floored here — it is
+ * already a large target. */
+.workspace-compact .mobile-template-search .n-button,
+.workspace-compact .mobile-template-row .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* EU06-04 — the "English" language switch (BuiltinTemplateLanguageSwitch.vue,
+ * NButton size="small" secondary, 92×28) is rendered in TemplateManager.vue:37
+ * inside the #header-extra NSpace. On compact the syntax-guide PoButton is
+ * `v-if="!isCompact"`, so the language switch is the only NButton there. */
+.workspace-compact .template-editor-modal .n-card-header__extra .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* A11Y-M03 — favorite editor Save 55×32 (probe log: rect w:55 h:32) and its
+ * Cancel sibling: plain NButtons (default size) in .favorite-editor-form__actions
+ * (FavoriteEditorForm.vue:363-370, testids favorite-editor-save /
+ * favorite-editor-cancel). No live compact rule targets them. */
+.workspace-compact .favorite-editor-form__actions .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* V-B new finding — "Create Chrome AI provider" (LocalServiceDiscovery.vue:6-9:
+ * NButton size="small" quaternary per discovered service, rendered in the
+ * Model Manager list via TextModelManager.vue:3). The Chrome AI instance
+ * (data-testid local-service-create-chrome-built-in, label
+ * "Create {name} provider" from i18n/locales/en-US/models.ts:10) measured
+ * 247.73×28 live; no compact rule targeted it. */
+.workspace-compact .local-discovery .n-button {
+  --n-height: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* H4-NEW-01 — model editor back chevrons, 36×36 live (TextModelEditModal
+ * :12-18, ImageModelEditModal :12-18 — quaternary circle NButtons inside
+ * .mobile-text-model-heading / .image-model-editor-heading). Neither editor
+ * uses .po-sheet-page-heading, so the nav-targets.css chevron rule cannot
+ * cover them; same 44px box, same shape as that rule. */
+.workspace-compact .mobile-text-model-heading .n-button,
+.workspace-compact .image-model-editor-heading .n-button {
+  --n-height: 44px !important;
+  height: 44px !important;
+  width: 44px !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* V-B new finding — Model Manager tabs (ModelManager.vue:46-59, NTabs
+ * type="segment" size="small", class .model-manager-tabs): Text / Image /
+ * Function Models measured 29px tall live. Naive segment tabs are
+ * padding-driven (tabPaddingSmallSegment 4px 0, no fixed height var); the
+ * tab is a flex item with centered content, so min-height stretches it to
+ * the 44px floor with the label centered. The capsule pill's empty
+ * .n-tabs-tab matches the same selector and gets the same floor, keeping
+ * the pill the same height as the real tabs. CSS only — does NOT touch
+ * syncTabA11y()'s ARIA stamping (V-D-FIX) or the capsule-placeholder
+ * exclusion. */
+.workspace-compact .model-manager-sheet .model-manager-tabs .n-tabs-tab {
+  min-height: 44px;
+}
+
+/* L-F — EU06-05 search part (tabs were floored above by V-B-FIX, live-verified
+ * PASS by V-R2; the search was never floored). Text tab search is the NInput
+ * in .mobile-text-model-list (TextModelList.vue:3-8, testid text-model-search);
+ * Image tab search is the NInput in .image-model-mobile-list
+ * (ImageModelManager.vue:12). Function tab has no search input. Both are plain
+ * NInputs, default medium height 34px → rendered 36px live (R1/R2). Same
+ * pattern as the History search (history-targets.css): Naive NInput reads
+ * --n-height on the element itself, so the floor needs !important on the var
+ * only — no min-height, no .vue edit. */
+.workspace-compact .mobile-text-model-list .n-input,
+.workspace-compact .image-model-mobile-list .n-input {
+  --n-height: 44px !important;
+}

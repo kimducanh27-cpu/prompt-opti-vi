@@ -70,7 +70,6 @@ vi.mock('vue-i18n', async (importOriginal) => {
         }
         return messages[key] ?? key
       },
-      locale: ref('vi-VN'),
     }),
   }
 })
@@ -80,9 +79,17 @@ import FavoriteDetailPanel from '../../../src/components/FavoriteDetailPanel.vue
 const parseFavoriteMediaMetadataMock = vi.fn()
 const resolveAssetIdToDataUrlMock = vi.fn()
 
-vi.mock('../../../src/utils/favorite-media', () => ({
-  parseFavoriteMediaMetadata: (...args: unknown[]) => parseFavoriteMediaMetadataMock(...args),
-}))
+vi.mock('../../../src/utils/favorite-media', async (importOriginal) => {
+  // SEC-001: keep the real isAllowedExternalImageUrl / buildFavoriteMediaMetadata
+  // (FavoriteReproducibilityDisplay imports the allowlist); mock only
+  // parseFavoriteMediaMetadata. A bare object mock breaks the moment the
+  // module gains an export a component under test imports.
+  const actual = await importOriginal<typeof import('../../../src/utils/favorite-media')>()
+  return {
+    ...actual,
+    parseFavoriteMediaMetadata: (...args: unknown[]) => parseFavoriteMediaMetadataMock(...args),
+  }
+})
 
 vi.mock('../../../src/utils/image-asset-storage', () => ({
   resolveAssetIdToDataUrl: (...args: unknown[]) => resolveAssetIdToDataUrlMock(...args),
@@ -145,10 +152,13 @@ const naiveStubs = {
     template: '<div class="n-descriptions-item"><dt>{{ label }}</dt><dd><slot /></dd></div>',
     props: ['label'],
   },
-  NTable: {
-    name: 'NTable',
-    template: '<table class="n-table"><slot /></table>',
-    props: ['size', 'striped', 'singleLine'],
+  // Slice 8: the variables table is a PoTable (NDataTable on desktop) — stub
+  // it so the real NDataTable (which needs an NConfigProvider) never mounts
+  // here, and render the rows as text so the metadata assertions still hold.
+  PoTable: {
+    name: 'PoTable',
+    template: '<div class="po-table-stub"><span v-for="row in rows" :key="row.name" class="po-table-row">{{ row.name }} {{ row.defaultValue }} {{ row.required }} {{ row.description }}</span></div>',
+    props: ['columns', 'rows'],
   },
   NEllipsis: {
     name: 'NEllipsis',

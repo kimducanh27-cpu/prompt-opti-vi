@@ -34,6 +34,13 @@ const naiveStubs = {
     props: ['show', 'style', 'title', 'preset', 'size', 'bordered', 'segmented', 'maskClosable'],
     emits: ['update:show'],
   },
+  // Slice 7: FavoriteManager's overlay is a PoSheet now.
+  PoSheet: {
+    name: 'PoSheet',
+    template: '<div v-if="show" class="n-modal"><slot /><slot name="action" /></div>',
+    props: ['show', 'style', 'title', 'maskClosable', 'closable'],
+    emits: ['update:show'],
+  },
   NDrawer: {
     name: 'NDrawer',
     template: '<aside v-if="show" class="n-drawer"><slot /></aside>',

@@ -5,6 +5,6 @@
 </template>
 
 <script setup lang="ts">
-import { ChartNoAxesColumnIncreasing as UiChartNoAxesColumnIncreasing } from '@lucide/vue'
+import { PhChartBar as UiChartNoAxesColumnIncreasing } from '@phosphor-icons/vue'
 import { NIcon } from 'naive-ui'
 </script>
